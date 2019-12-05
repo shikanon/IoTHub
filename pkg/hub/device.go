@@ -6,7 +6,8 @@ type Device interface {
 	GoOffline()
 }
 
-type RealDevice sturct {
+
+type RealDevice struct {
 	ID string //设备ID
 }
 
