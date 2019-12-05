@@ -1,7 +1,7 @@
 package hub
 
 type ObjectModel interface {
-	GetAttribute(string) (string, error)
+	GetAttribute(key string) (string, error)
 	Encode(string) (string, error)
 	Dencdoe(string) (string, error)
 }

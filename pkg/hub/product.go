@@ -11,6 +11,7 @@ type Product interface {
 type IoTProduct struct {
 	Key         string            // 产品key
 	Name        string            // 产品名称
+	Model       ObjectModel       // 物模型
 	NetworkMode string            // 联网方式
 	AuthMethod  auth.DeviceAuthen // 认证方式
 	NodeTyep    string            // 节点类型
@@ -18,6 +19,22 @@ type IoTProduct struct {
 	Describe    string            // 产品描述
 }
 
-func NewIoTProduct(ObjectModel) (IoTProduct, error) {}
+func NewDefaultIoTProduct(key, name string) (*IoTProduct, error) {
+	return &IoTProduct{
+		Key:  key,
+		Name: name,
+	}, nil
+}
 
-func (prod *IoTProduct) AddDevice(name, remarks string) (Device, error) {}
+func (prod *IoTProduct) AddDevice(name, remarks string) (Device, error) {
+	controller := DeviceController{}
+	dev, err := controller.CreateDevice()
+	if err != nil {
+		return nil, err
+	}
+	return dev, nil
+}
+
+func (ctl *DeviceController) RemoveDevice(dev Device) error {
+
+}

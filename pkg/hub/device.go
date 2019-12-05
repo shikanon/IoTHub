@@ -1,13 +1,18 @@
 package hub
 
 type Device interface {
-	Active()
-	GoOnline()
-	GoOffline()
+	GetAttribute(key string) (string,error) //获取属性
+	LoadModel(ObjectModel) error//装载物模型
 }
 
 type RealDevice sturct {
 	ID string //设备ID
+	attribute map[string]interface{}
+	event	map[string]Notifier
+}
+
+func (dev *RealDevice) GetAttribute(key string) (string,error){
+
 }
 
 type ShadowDevice struct {
