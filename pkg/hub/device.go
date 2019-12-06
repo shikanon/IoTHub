@@ -5,7 +5,8 @@ type Device interface {
 	LoadModel(ObjectModel) error//装载物模型
 }
 
-type RealDevice sturct {
+
+type RealDevice struct {
 	ID string //设备ID
 	attribute map[string]interface{}
 	event	map[string]Notifier

@@ -14,7 +14,7 @@ type IoTProduct struct {
 	Model       ObjectModel       // 物模型
 	NetworkMode string            // 联网方式
 	AuthMethod  auth.DeviceAuthen // 认证方式
-	NodeTyep    string            // 节点类型
+	NodeType    string            // 节点类型
 	DataFormat  string            // 数据格式,默认支持Alink json
 	Describe    string            // 产品描述
 }
