@@ -38,3 +38,5 @@ func (prod *IoTProduct) AddDevice(name, remarks string) (Device, error) {
 func (ctl *DeviceController) RemoveDevice(dev Device) error {
 
 }
+
+
