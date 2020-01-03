@@ -15,9 +15,23 @@
               <el-radio v-model="ruleForm.type" label="2"  border size="medium">批量上传</el-radio>
         </el-form-item>
     
-        <el-form-item label="设备数量" prop="count">
+        <el-form-item  v-if="ruleForm.type === '1'" label="设备数量" prop="count">
             <el-input-number v-model="ruleForm.count" controls-position="right"  :min="1"  label="请输入设备数量"></el-input-number>
-        </el-form-item>   
+        </el-form-item>  
+          <el-form-item v-if="ruleForm.type === '2'" label="批量上传文件" prop="fileList"> 
+            <el-upload
+                action="https://jsonplaceholder.typicode.com/posts/"
+                :on-success="success"
+                :before-uoload="beforeUpload"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :file-list="fileList"
+                :auto-upload="false"
+                :limit="1">
+                <el-button size="small" type="primary">上次文件</el-button>
+                <div slot="tip" class="el-upload__tip">单次最多添加 1000 台</div>
+            </el-upload>
+         </el-form-item>  
     </el-form>
  
 </template>
@@ -66,6 +80,13 @@
             }
         },    
     
+      submit(){
+        if(this.ruleForm.type === "1"){
+          this.submitForm()
+        }else{
+            this.submitUpload()
+        }
+      },
       submitForm() {
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
@@ -84,7 +105,11 @@
             return false;
           }
         });
-      },   
+      },  
+      submitUpload() {
+          this.$refs.upload.submit();
+          this.$emit('close')
+      }, 
     }
   }
 </script>

@@ -55,7 +55,7 @@
                     <DeviceList :productArr="products"></DeviceList>
                 </el-tab-pane>
                 <el-tab-pane label="批次管理" name="batch">
-                    <BatchList></BatchList>
+                    <ApplyList></ApplyList>
                 </el-tab-pane>     
             </el-tabs>
         </div>
@@ -64,10 +64,10 @@
 </template>
 <script>
   import DeviceList from './DeviceList'
-  import BatchList from './BatchList'
+  import ApplyList from './../apply/ApplyList'
   
 export default {
-    components: { DeviceList, BatchList },
+    components: { DeviceList, ApplyList },
     data() {
       return {
         activeName: 'device',
@@ -84,6 +84,11 @@ export default {
     created(){
         this.product = this.$route.params.product
         this.getProductList()
+        let device = this.$route.params.device
+        if(device){
+            this.openRouter = true
+        }
+        
     },
     methods: {
         getProductList(){

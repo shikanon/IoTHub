@@ -34,7 +34,7 @@ export default new Router({
           name: 'system',
           component:  () =>import( '@/views/Empty.vue'),
           meta: {
-            title: '系统管理',
+            title: '设备管理',
             leftMenu:true
           },
           redirect: "/home/system/user",
@@ -71,7 +71,7 @@ export default new Router({
             }     
             ,{
               path: '/home/device/:id',
-              name: 'device-details',
+              name: 'device-list',
               component:  () =>import( '@/views/device/DeviceManage.vue'),
               meta: {
                 title: '设备',

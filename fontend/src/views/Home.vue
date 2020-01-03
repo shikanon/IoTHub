@@ -103,6 +103,11 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped >
+  .el-header{
+    position: fixed;
+    width: 100%;
+    margin-right: 20px;
+  }
   .el-header, .el-footer { 
     background-color: #B3C0D1;
     color: #333;
@@ -115,12 +120,16 @@ export default {
     color: #333;
     text-align: center;
     line-height: 200px;
+    position:fixed;
+    margin-top: 60px;
   }
   
   .el-main {
     background-color: #E9EEF3;
     color: #333;
     text-align: left;
+    margin-left:200px ;
+    margin-top: 60px;
   }
   
   .el-container {

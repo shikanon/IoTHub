@@ -162,7 +162,6 @@
               }]
         },
         getCardData(){
-          console.log('获取卡片数据')
             this.cards =[
               {"Identifier":"LightStatus","DataType":"bool","Unit":"","Name":"工作状态"},
               {"Identifier":"LightAdjustLevel","DataType":"int","Unit":"%","Name":"调光等级"},

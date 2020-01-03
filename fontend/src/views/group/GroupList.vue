@@ -58,12 +58,12 @@
               </span>
           </el-dialog>
             <el-dialog title="添加标签" :visible.sync="addLabelVisible" width="26%">
-            <AddLabel ref="addLabel" :labelArr="labelArr"  @close="addLabelVisible = false"></AddLabel>
-            <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="addLabelSubmit">确 定</el-button>
-                <el-button @click="addLabelVisible = false">取 消</el-button>
-            </span>
-        </el-dialog>
+              <AddLabel ref="addLabel" :labelArr="labelArr"  @close="addLabelVisible = false"></AddLabel>
+              <span slot="footer" class="dialog-footer">
+                  <el-button type="primary" @click="addLabelSubmit">确 定</el-button>
+                  <el-button @click="addLabelVisible = false">取 消</el-button>
+              </span>
+          </el-dialog>
         </div>   
         <router-view/> 
     </div>
@@ -73,6 +73,12 @@
   import AddGroup from './AddGroup'
 
     export default {
+      props:{
+        superGroupId:{
+          type:String,
+          default:''
+        }
+      },
       components:{AddGroup},
       data() {
         return {
@@ -89,19 +95,31 @@
           value:''
         }
       },
-   
-      watch: {
-        $route: {
-            handler: function(val, oldVal){ 
-                this.openRouter = !this.openRouter  
-            },
-            // 深度观察监听
-            deep: true
+      beforeRouteEnter (to, from, next) {
+        console.log(to)
+        if(to.name === 'group-details' ){
+          next(vm => {
+            vm.openRouter = !vm.openRouter
+            console.log('beforeRouteEnter',vm.openRouter)
+          })
+            
+        }else{
+            next()
         }
+        
+      },
+      watch: {
+        $route:function(){
+          this.openRouter = !this.openRouter  
+          console.log('改变路由',this.openRouter)
+        }
+      
        
     },
       created(){
           this.openRouter = false
+          console.log('初始化',this.openRouter)
+
           this.GroupName = this.$route.params.GroupName
           if(this.GroupName ){
             this.gotoGroupDtl(this.GroupId)
@@ -115,6 +133,7 @@
             //     this.tableData = res.data.objects
             //     this.total = res.data.num_results
             // })
+          
              this.tableData =[
                {
                 "GroupName": "111111111111",
@@ -148,8 +167,13 @@
             },
         
             gotoGroupDtl(groupName){
-                this.$router.push({name :'group-details',params: {groupName:groupName}})             
+              this.$router.push({name :'group-details',params: {groupName:groupName}})   
+              if(this.superGroupId){//父组
+                this.$emit('change',groupName) 
+              }
+                       
             },
+
            deleteClick(index,row){               
               this.$confirm('此操作将永久删除该纪录, 是否继续?', '提示', {
                 confirmButtonText: '确定',

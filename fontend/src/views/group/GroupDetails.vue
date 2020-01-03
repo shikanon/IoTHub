@@ -11,7 +11,7 @@
               <DeviceList type='group'></DeviceList>
         </el-tab-pane>   
         <el-tab-pane label="子分组列表" name="child-group-info">
-          <GroupList></GroupList>
+          <GroupList @change="getGroupInfoByName" :superGroupId="groupId"></GroupList>
         </el-tab-pane>
        
       </el-tabs>
@@ -32,41 +32,51 @@
       data() {
         return {      
           group:{},
-          activeName:'group-info'
+          activeName:'group-info',
+          groupName:'',
+          groupId:''
         }
       },
-      computed:{
-       
-      },
+    
       created(){
         this.groupName = this.$route.params.groupName
         this.getGroupInfoByName() 
+       
       },
       methods:{
           goBack(){
+            // if(this.groupId){
+            //       this.getGroupInfoByName()
+            // }else{
+            //   this.$router.back(-1)
+            // }
             this.$router.back(-1)
           },
 
-         getGroupInfoByName(){
-            console.log(this.groupName)
-            this.group = {GroupName: "111111111111",
+         getGroupInfoByName(groupName){
+           if(groupName){
+            this.activeName = 'group-info'
+            this.groupName = groupName
+           }
+            this.group = {GroupName: this.groupName,
                             UtcCreate: "2019-12-27T02:29:45.000Z",
                             DeviceOnline: 0,
                             GroupDesc: "1111111111111111111",
                             DeviceActive: 0,
                             DeviceCount: 0,
                             GroupId: "BOfqydh6Mpb8Niu8wv5c010200"}
+          
+              this.groupId = this.group.GroupId                
          },
+        
         
            
          
           handleClick(){
 
           },
-          //查看产品密钥
-          showProKeyInfo(){
-
-          }
+          
+       
       }
     }
   </script>

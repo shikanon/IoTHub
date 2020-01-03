@@ -4,25 +4,25 @@
       </el-page-header>
         <productInfoHead :product="ProductInf" ></productInfoHead>
       <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
-        <el-tab-pane label="产品信息" name="third2">
+        <el-tab-pane label="产品信息" name="first">
             <ProductInfo :product="ProductInf"></ProductInfo>
         </el-tab-pane>
-        <el-tab-pane label="Topic类列表" name="third3">
-              <TopicList></TopicList>
+        <el-tab-pane label="Topic类列表" name="second" lazy>
+              <Topic type="product"></Topic>
         </el-tab-pane>   
-        <el-tab-pane label="功能定义" name="third4">
-           
+        <el-tab-pane label="功能定义" name="third" lazy>
+            <Ability></Ability>
         </el-tab-pane>
-        <el-tab-pane label="服务端订阅" name="third5">
+        <el-tab-pane label="服务端订阅" name="fourth" lazy>
            
         </el-tab-pane>
         
-        <el-tab-pane label="日志服务" name="third6">
+        <!-- <el-tab-pane label="日志服务" name="third6">
            
         </el-tab-pane>
         <el-tab-pane label="在线调试" name="fourth">
             <CopyBtn></CopyBtn>
-        </el-tab-pane>
+        </el-tab-pane> -->
       </el-tabs>
     </div>
   </template>
@@ -30,16 +30,18 @@
   <script>
   import productInfoHead from './productInfoHead'
   import ProductInfo from './ProductInfo'
-  import TopicList from '@/views/topic/TopicList'
+  import Ability from '@/views/ability/Ability'
+
+  
   import {mapState, mapMutations, mapGetters} from 'vuex'
 
     export default {
-      components: { productInfoHead,ProductInfo,TopicList },
+      components: { productInfoHead,ProductInfo,Ability },
       data() {
         return {      
           productName:'',
           ProductInf:{},
-          activeName:'third2'
+          activeName:'first'
         }
       },
       computed:{

@@ -7,10 +7,13 @@
               <el-input v-model="ruleForm.ProductName" placeholder="请输入产品名称"></el-input>
           </el-form-item>
           <el-form-item label="所属品类" prop="type">
-              <el-radio-group v-model="ruleForm.type">
-                <el-radio label="标准品类" value="1"></el-radio>
-                <el-radio label="自定义品类" value="2"></el-radio>
-              </el-radio-group>       
+
+            <el-radio v-model="ruleForm.type" label="1">标准品类</el-radio>
+            <el-radio v-model="ruleForm.type" label="2">自定义品类</el-radio>
+              <!-- <el-radio-group v-model="ruleForm.type">
+                <el-radio label="标准品类"  value="1"></el-radio>
+                <el-radio label="自定义品类"  value="2"></el-radio>
+              </el-radio-group>        -->
           </el-form-item>
           <el-form-item >
                <el-select v-if="ruleForm.type === '1'" v-model="CategoryName" placeholder="请选择标准品类" @visible-change="click" > 

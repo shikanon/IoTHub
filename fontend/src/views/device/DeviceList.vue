@@ -1,12 +1,11 @@
 <template>
   <div name="device-list">
-    <div v-if="!openRouter">
         <el-row v-if="type === 'device'">
             <el-button type="primary" @click="addDeviceVisible = true">添加设备</el-button>
             <el-button @click="addDeviceGroupVisible = true">批量添加</el-button>
         </el-row>  
-        <el-row v-else>
-            <el-button type="primary" >添加设备到分组</el-button>
+        <el-row v-if="type === 'group'">
+            <el-button type="primary" @click="drawer = true">添加设备到分组</el-button>
             <el-select v-model="product" placeholder="全部产品">
                     <el-option
                     v-for="item in products"
@@ -27,11 +26,11 @@
             </el-input> 
         </el-row> 
         <el-table
-        ref="multipleTable"
-        :data="tableData"
-        tooltip-effect="dark"
-        style="width: 100%"
-        @selection-change="handleSelectionChange">
+            ref="multipleTable"
+            :data="tableData"
+            tooltip-effect="dark"
+            style="width: 100%"
+            @selection-change="handleSelectionChange">
         <el-table-column
             type="selection"
             width="55">
@@ -47,7 +46,7 @@
             label="设备所属产品"
             width="300">
         </el-table-column>
-        <el-table-column
+        <el-table-column v-if="!drawer"
             prop="NodeType"
             label="节点类型"
             width="120"
@@ -67,10 +66,7 @@
                     class="statu-circle">
                 </el-button>
                  <span> {{ scope.row.Status | deviceStatusFilter}}</span>
-
-                    <!-- <span :class="['statuCircle',scope.row.Status === 'ONLINE' ? 'success': scope.row.Status === 'UNACTIVE' ? 'info': scope.row.Status === 'DISABLE' ? 'danger':'warning']">{{ scope.row.Status | deviceStatusFilter}}</span> -->
-                <!-- <el-switch 
-                ></el-switch>  -->
+                  <el-switch    value ="scope.row.Status === 'UNACTIVE'"></el-switch>  
             </template>
         </el-table-column>
         <el-table-column
@@ -82,21 +78,11 @@
                 label="操作"
                 width="200">
                 <template slot-scope="scope">
-                <el-button @click="handleClick(scope.row)" type="text" size="small">查看 </el-button>
+                <el-button v-if="type === 'device'" @click="goToDeviceDetails(scope.row)" type="text" size="small">查看 </el-button>
+                <el-button  v-else  @click="goToDeviceList(scope.row)" type="text" size="small">查看</el-button>
                 <el-divider direction="vertical"></el-divider>                
-                <el-button  v-if="type === 'device'" type="text" size="small" @click="deleteClick(scope.$index, scope.row.DeviceName)">删除1</el-button>
-                <el-button  v-else type="text" size="small" @click="deleteClick(scope.$index, scope.row.DeviceName)">从分组中删除</el-button>
-
-                <el-divider v-if="type === 'device'"  direction="vertical"></el-divider>     
-                <el-popconfirm v-if="type === 'device'" 
-                    confirmButtonText='确定'
-                    cancelButtonText='取消'
-                    icon="el-icon-info"
-                    iconColor="red"
-                    title="确定删除吗"
-                >
-                    <el-button slot="reference" type="text" size="small" >删除2</el-button>
-                </el-popconfirm>
+                <el-button  v-if="type === 'device'" type="text" size="small" @click="deleteClick('1', scope.row.DeviceName)">删除1</el-button>
+                <el-button  v-else type="text" size="small" @click="deleteClick('2',scope.row.DeviceName)">从分组中删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -106,10 +92,9 @@
             <el-button @click="handledSelection('2')" :disabled="!selectFlg" type="primary">禁用</el-button>
             <el-button @click="handleSelection('3')" :disabled="!selectFlg" type="primary">启用</el-button>
         </div>
-         <div v-else  style="margin-top: 20px;margin-left: 15px;" >
+         <div v-if="type === 'gruop' && !drawer" style="margin-top: 20px;margin-left: 15px;" >
             <el-checkbox v-model="selectFlg" ></el-checkbox>
-            <el-button @click="handleSelection('1')" :disabled="!selectFlg" type="primary">从分组中删除</el-button>
-         
+            <el-button @click="handleSelection('1')" :disabled="!selectFlg" type="primary">从分组中删除</el-button>     
         </div>
         <el-dialog title="添加设备" :visible.sync="addDeviceVisible" width="25%">
             <AddDevice ref="addDevice" :productArr="productArr" @close="addDeviceVisible = false"
@@ -143,7 +128,13 @@
                 <el-button @click="addResultVisible = false">关 闭</el-button>
             </span>
         </el-dialog>
-    </div>
+        <el-drawer
+          title="添加设备到分组"
+          :visible.sync="drawer"
+           size='35%'>
+            <DeviceListCheck @submit="addDeviceToGroup"  @close="drawer = false" :products="products"></DeviceListCheck>
+            
+        </el-drawer>
   </div>
 </template>
 
@@ -152,8 +143,11 @@
   import DeviceCertificate from './DeviceCertificate'
   import AddDeviceGroup from './AddDeviceGroup'
   import AddResult from './AddResult'
+  import DeviceListCheck from './DeviceListCheck'
+
 
   export default {
+      name:"device-list",
       props:{
         productArr:{
             type:Array,
@@ -164,14 +158,13 @@
             default:'device'
         }
       },
-    components: { AddDevice,DeviceCertificate,AddDeviceGroup,AddResult},
+    components: { AddDevice,DeviceCertificate,AddDeviceGroup,AddResult,DeviceListCheck},
 
     data() {
       return {
         tableData: [],
         multipleSelection: [],
         addDeviceVisible:false,
-        openRouter:false,
         deviceCertificateVisible:false,
         certificateInf:{productKey:'',deviceName:'',deviceSecret:''},
         addDeviceGroupVisible:false,
@@ -179,7 +172,11 @@
         addResultTitle:'正在添加设备...',
         loadBtn:false,
         activities:[],
-        products:[]
+        products:[],
+        search:'',
+        product:'',
+        drawer:false
+
       }
     },
     computed:{
@@ -187,18 +184,12 @@
           return this.multipleSelection.length > 0
       }
     },
-    watch: {
-        $route:function(){
-            console.log(123)
-            this.openRouter = !this.openRouter          
-        }
-    },
+  
     created(){
            this.getDiviceList() 
-           if(type === 'group'){
-               this.getProducts()
-           }
-           
+           if(this.type === 'group'){
+               this.getProducts()         
+           }        
     },
 
     methods: {
@@ -296,8 +287,12 @@
       addDeviceSubmit(){  
           this.$refs['addDevice'].submitForm()
       },
-      handleClick(obj){
-       // let device =  {DeviceName:obj.DeviceName,DeviceSecret:obj.CategoryKey,ProductName:obj.ProductName,ProductKey:obj.ProductKey}
+      goToDeviceDetails(obj){  
+        this.$router.push({name :'device-details',params: {device:JSON.stringify(obj)}}) 
+      },
+
+      goToDeviceList(obj){
+        this.openRouter = true 
         this.$router.push({name :'device-details',params: {device:JSON.stringify(obj)}}) 
       },
    
@@ -399,7 +394,38 @@
                 }
             ]
           },
-    }
+
+          deleteClick(type,deviceName){
+              let msg = '此操作将永久删除该纪录, 是否继续?'
+              if(type === '2'){
+                  msg = '此操作将永久从分组中删除该纪录, 是否继续?'
+              }
+              this.$confirm(msg, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                  if(type === '1'){  //删除设备
+
+                  }else if(type === '2'){ //从分组中删除设备
+
+                  }
+                this.tableData =  this.tableData.filter(item => item.name !== row.name);
+              }).catch(() => {
+                this.$message({
+                  type: 'info',
+                  message: '已取消删除'
+                });          
+              });  
+          },
+
+          addDeviceToGroup(deviceArr){
+              console.log(deviceArr)
+              this.drawer = false
+              console.log(this.drawer )
+          }
+
+         }
   }
 </script>
 <style scoped>

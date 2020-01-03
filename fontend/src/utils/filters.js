@@ -3,7 +3,7 @@
 
 
 export function menuFilter(value) {
-        return  `${value}菜单`
+        return  `${value}管理`
 }
  
 //格式化日期
@@ -43,6 +43,22 @@ export function deviceStatusFilter(value) {
         return value
 }
 
+
+export function topicOperationFilter(value) {
+        switch (value) {
+                case '0':
+                        value = "发布";
+                        break;
+                case '1':
+                        value = "订阅";
+                        break;
+                case '2':
+                        value = "发布和订阅";
+                        break;
+                                              
+                } 
+        return value
+}
 
 
 

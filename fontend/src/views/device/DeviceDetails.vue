@@ -14,13 +14,13 @@
               <DeviceInfo :deviceName="device.DeviceName"></DeviceInfo>
         </el-tab-pane>
         <el-tab-pane label="Topic列表" name="first1">
-              <TopicList :addBtnVisible="addBtnVisible"></TopicList>
+              <Topic type="device"></Topic>
         </el-tab-pane>
         <el-tab-pane label="运行状态" name="second">     
             <runState></runState>
         </el-tab-pane>
         <el-tab-pane label="事件管理" name="third2">
-           
+          <EventList></EventList>
         </el-tab-pane>
         <el-tab-pane label="服务调用" name="third3">
             
@@ -46,9 +46,11 @@
   import DeviceInfoHead from './DeviceInfoHead'
   import DeviceInfo from './DeviceInfo'
   import RunState from '@/views/runState/RunState'
+  import EventList from '@/views/event/EventList'
+
   
     export default {
-      components: { DeviceInfoHead,DeviceInfo,runState:RunState },
+      components: { DeviceInfoHead,DeviceInfo,runState:RunState, EventList},
       data() {
         return {
           activeName:'first',
