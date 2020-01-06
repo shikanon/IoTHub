@@ -130,6 +130,7 @@ export default {
     text-align: left;
     margin-left:200px ;
     margin-top: 60px;
+    min-height: calc(100vh - 76px);
   }
   
   .el-container {

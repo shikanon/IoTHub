@@ -4,7 +4,7 @@
         <el-button type="primary" @click="addAbility">{{type === 'standard' ? '添加标准功能':'添加自定义功能'}}</el-button>
         <el-button @click="copyVisible = true">导入物理模式</el-button>
         <el-button @click="objectModeVisible = true">查看物流模型</el-button>
-        <el-button>生成设备端代码</el-button>
+        <el-button @click="exportDeviceEndCode">生成设备端代码</el-button>
      </el-row>
     
     <el-table
@@ -60,7 +60,7 @@
                 <el-button @click="copyVisible = false">取 消</el-button>
             </span>
       </el-dialog>
-      <el-dialog title="查看物模型" :visible.sync="objectModeVisible" width="25%">
+      <el-dialog title="查看物模型" :visible.sync="objectModeVisible" width="35%">
           <ObjectMode ref="objectMode"  @close="objectModeVisible = false"></ObjectMode>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="exportFile">导出模型文件</el-button>
@@ -71,16 +71,23 @@
 
 <script>
 import CopyProductAbility from './CopyProductAbility'
-import objectMode from './objectMode'
+import ObjectMode from './ObjectMode'
+import FileSaver from 'file-saver'
 
   export default {
-    components:{CopyProductAbility},
+    components:{CopyProductAbility,ObjectMode},
      props:{
        type:{
          type:String,
          default:'standard'
-       }
+       },
+        productKey:{
+          type:String,
+          default:''
+        }
      },
+
+  
     data() {
       return {
         tableData: [],
@@ -171,6 +178,20 @@ import objectMode from './objectMode'
        },
        copySubmit(){
           this.$refs.copy.submit()
+       },
+
+       exportFile(){
+          this.$refs.objectMode.exportFile()
+       },
+
+       exportDeviceEndCode(){
+
+           this.$axios.get('http://localhost:8080/static/test.c').then((res) => {
+              //用axios的方法引入地址
+              console.log(res.data)
+              const blob = new Blob([res], {type: ''})
+              FileSaver.saveAs(blob, `${this.productKey}.zip`)
+            })          
        }
       
     }

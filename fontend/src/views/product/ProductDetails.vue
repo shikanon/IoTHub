@@ -11,7 +11,7 @@
               <Topic type="product"></Topic>
         </el-tab-pane>   
         <el-tab-pane label="功能定义" name="third" lazy>
-            <Ability></Ability>
+            <Ability :productKey="ProductInf.ProductKey"></Ability>
         </el-tab-pane>
         <el-tab-pane label="服务端订阅" name="fourth" lazy>
            
