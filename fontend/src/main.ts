@@ -33,6 +33,8 @@ Router.prototype.push = function push(location) {
 import * as filters from './utils/filters'
 //API
 import * as API from './utils/api'
+
+import axios from 'axios'
 //vuex
 import store from './store'
 //国际化
@@ -64,6 +66,9 @@ Vue.config.productionTip = false
 
 //配置公共请求地址
 Vue.prototype.$API = API
+Vue.prototype.$axios = axios
+
+
 
 // 导出的是对象，可以直接通过 key 和 value 来获得过滤器的名和过滤器的方法
 Object.keys(filters).forEach(key => {

@@ -1,0 +1,80 @@
+{
+    "properties": [
+    {
+    "identifier": "GeoLocation",
+    "dataType": {
+        "specs": [
+        {
+            "identifier": "Longitude",
+            "dataType": {
+            "type": "double"
+            }
+        },
+        {
+            "identifier": "Latitude",
+            "dataType": {
+            "type": "double"
+            }
+        },
+        {
+            "identifier": "Altitude",
+            "dataType": {
+            "type": "double"
+            }
+        },
+        {
+            "identifier": "CoordinateSystem",
+            "dataType": {
+            "type": "enum"
+            }
+        },
+        {
+            "identifier": "123123",
+            "dataType": {
+            "type": "int"
+            }
+        }
+        ],
+        "type": "struct"
+    }
+    },
+    {
+    "identifier": "BatteryLevel",
+    "dataType": {
+        "type": "int"
+    }
+    },
+    {
+    "identifier": "MagneticState",
+    "dataType": {
+        "type": "enum"
+    }
+    }
+ ],
+    "events": [
+    {
+    "outputData": [
+        {
+        "identifier": "ErrorCode",
+        "dataType": {
+            "type": "enum"
+        }
+        }
+    ],
+    "identifier": "Error",
+    "type": "info"
+    },
+    {
+    "outputData": [
+        {
+        "identifier": "AlarmType",
+        "dataType": {
+            "type": "enum"
+        }
+        }
+    ],
+    "identifier": "AbnormalAlarm",
+    "type": "info"
+    }
+ ]
+}

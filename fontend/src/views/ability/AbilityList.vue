@@ -73,6 +73,7 @@
 import CopyProductAbility from './CopyProductAbility'
 import ObjectMode from './ObjectMode'
 import FileSaver from 'file-saver'
+import JSZip from 'jszip'
 
   export default {
     components:{CopyProductAbility,ObjectMode},
@@ -185,12 +186,29 @@ import FileSaver from 'file-saver'
        },
 
        exportDeviceEndCode(){
-
+  
            this.$axios.get('http://localhost:8080/static/test.c').then((res) => {
               //用axios的方法引入地址
-              console.log(res.data)
-              const blob = new Blob([res], {type: ''})
-              FileSaver.saveAs(blob, `${this.productKey}.zip`)
+
+              const zip = new JSZip()
+            
+              // let txtData = ""
+              // res.data.forEach((row) => {
+              //   let tempStr = ''
+              //   tempStr = row.toString()
+              //   txtData += `${tempStr}\r\n`
+              // })
+              zip.file(`${this.productKey}.c`, res.data)
+              zip.generateAsync({
+                type: "blob"
+              }).then((blob) => {
+                saveAs(blob,`${this.productKey}.zip`)
+              }, (err) => {
+                alert('导出失败')
+              })
+              //console.log(res.data)
+              // const blob = new Blob([res.data], {type: ''})
+              // FileSaver.saveAs(blob, `${this.productKey}.zip`)
             })          
        }
       

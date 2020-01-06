@@ -17,6 +17,7 @@
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.2.0",
     "gulp-css-wrap": "^0.1.2",
+    "jszip": "^3.2.2",
     "vue": "^2.5.2",
     "vue-clipboard2": "^0.3.1",
     "vue-i18n": "^8.15.1",
