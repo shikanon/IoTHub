@@ -5,7 +5,7 @@ import Pagination from './Pagination'
 import CopyBtn from './CopyBtn'
 import Topic from '@/views/topic/Topic'
 import AddLabel from './AddLabel'
-
+import JsonView from 'vue-json-views'
 
 
 function plugin(Vue){
@@ -20,6 +20,8 @@ function plugin(Vue){
     Vue.component('CopyBtn',CopyBtn)
     Vue.component('Topic',Topic)
     Vue.component('AddLabel',AddLabel)
+    Vue.component('JsonView',JsonView)
+
   
 }
 

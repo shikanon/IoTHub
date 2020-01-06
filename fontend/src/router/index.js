@@ -111,92 +111,29 @@ export default new Router({
             } 
             
           ]
-        }
-        ,{
-          path: '/home/system1',
-          name: 'system1',
-          component:  () =>import( '@/views/Test1.vue'),
+        } ,
+        {
+          path: '/test1',
+          name: 'test1',
+          component: () => import( '@/views/Empty.vue'),
           meta: {
-            title: '营业厅管理',
+            title: '测试1',
             leftMenu:true
-          },
+          }
+        },
+        {
+            path: '/test2',
+            name: 'test2',
+            component: () => import( '@/views/Empty.vue'),
+            meta: {
+              title: '测试2',
+              leftMenu:true
+            }
         }
-      
-      
-        ,{
-          path: '/home/system2',
-          name: 'system2',
-          component:  () =>import( '@/views/Empty.vue'),
-          redirect: "/home/system2/user",
-          meta: {
-            title: '测试管理2',
-            leftMenu:true
-          },
-          children:[
-            {
-              path: '/home/system2/user',
-              name: 'user',
-              component:  () =>import( '@/views/Empty.vue'),
-              redirect:'/home/system/user/query',
-              meta: {
-                title: '用户管理',
-                leftMenu:true
-              },
-              children:[
-                {
-                  path: '/home/system2/user/query',
-                  name: 'user-list',
-                  component:  () =>import( '@/views/UserList.vue'),
-                  meta: {
-                    title: '用户查询',
-                    leftMenu:true
-                  }
-               },
-                {
-                  path: '/home/system2/user/add',
-                  name: 'user-add',
-                  component:  () =>import( '@/views/AddForm.vue'),
-                  meta: {
-                    title: '用户新增',
-                    leftMenu:false
-                  },
-                }  
-                ,{
-                  path: '/home/system2/user/edit/:id',
-                  name: 'user-update',
-                  component:  () =>import( '@/views/AddForm.vue'),
-                  meta: {
-                    title: '用户编辑',
-                    leftMenu:false
-                  },
-                }                                                         
-              ]
-            } ,
-            {
-              path: '/home/system2/children1',
-              name: 'system2-1',
-              component:  () =>import( '@/views/Test2-1.vue'),
-              meta: {
-                title: '测试管理2-1',
-                leftMenu:true
-              },
              
-           },
-            {
-              path: '/home/system2/children2',
-              name: 'system2-2',
-              component:  () =>import( '@/views/Tabs.vue'),
-              meta: {
-                title: '测试管理2-2',
-                leftMenu:true
-              },
-            }                                                                           
-          ]
-        }
-        
       ]
-    },
-  
+    
+    }, 
     {
       path: '/',
       name: 'Login',
