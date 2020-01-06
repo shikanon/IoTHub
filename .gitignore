@@ -20,7 +20,6 @@
 
 # fontent
 
-build
 dist
 node_modules
 npm-debug.log*
