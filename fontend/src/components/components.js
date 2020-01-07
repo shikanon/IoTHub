@@ -7,7 +7,7 @@ import Topic from '@/views/topic/Topic'
 import AddLabel from './AddLabel'
 import JsonView from 'vue-json-views'
 
-
+import LeftMenu from '@/views/knowledge-base/LeftMenu'
 function plugin(Vue){
 
     if(plugin.installed){
@@ -21,6 +21,7 @@ function plugin(Vue){
     Vue.component('Topic',Topic)
     Vue.component('AddLabel',AddLabel)
     Vue.component('JsonView',JsonView)
+    Vue.component('LeftMenu',LeftMenu)
 
   
 }

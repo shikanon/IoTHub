@@ -1,5 +1,19 @@
   
 
+body{margin: 0px;}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 5px;
+}
 /*搜索框*/
  .search-input{width: 300px;}
 
@@ -21,7 +35,7 @@
 
   .title-inf .text-gray{
     color: #888;
-    font-size: 12px;
+    font-size: 14px;
   }
   .title-inf .title{
     min-width: 100px;

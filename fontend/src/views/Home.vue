@@ -1,16 +1,18 @@
 <template>
   <el-container>
     <el-header>    
-      <div class="user-box"> 
-        <el-radio-group v-model="themecolor">
-          <el-radio :label="'00'">00</el-radio>
-          <el-radio :label="'01'">01</el-radio>
-          <el-radio :label="'02'">02</el-radio>
-        </el-radio-group>    
+      <el-dropdown  @command="pickThemeColor">
+          <i class="el-icon-setting"></i>主题设置
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="00" style="color:#409eff">蓝色</el-dropdown-item>
+            <el-dropdown-item command="01" style="color:#ff9040">橙色</el-dropdown-item>
+            <el-dropdown-item command="02" style="color:#ff4080">粉色</el-dropdown-item>
+          </el-dropdown-menu>
+      </el-dropdown>    
+      <div class="flex-center">
         <el-avatar> {{loginName}} </el-avatar>
-        <span @click="loginOut">退出</span>
-        
-      </div>
+        <span @click="loginOut">退出</span>  
+      </div>     
     </el-header>
     <el-container>
       <el-aside width="200px">
@@ -24,7 +26,7 @@
       </el-main>
     </el-container>
   </el-container>
-        
+
 </template>
 
 <script>
@@ -33,95 +35,96 @@ import Breadcrumb from '@/components/Breadcrumb.vue'
 import {mapState,mapGetters, mapMutations} from 'vuex'
 export default {
 
- components:{
-      Submenu,
-      Breadcrumb
- },
-  data () {
-    return {
-      menuNam:'',
-    }
+  components:{
+        Submenu,
+        Breadcrumb
   },
-  computed:{
-    ...mapState({ 
-         loginName:state=>state.loginName 
-      }),
-    themecolor:{
-        get(){
-          return this.$store.state.themecolor
-        // return this.$store.state.themecolor === '00' ? '409EFF':'ffa666'
-
-        },
-        set(val){  
-            this.setThemeColor(val)
-       
-           // this.setThemeColor(val === '409EFF' ? '00' : '01')
-        }
-      }  
-  },
-  watch:{
-    themecolor:{
-      handler(){
-        this.toggleClass(document.body,'custom-' + this.themecolor)
+    data () {
+      return {
+        menuNam:'',
       }
-    }
-  },
-  mounted(){
-    this.toggleClass(document.body,'custom-' + this.themecolor)
-  },
-  created(){
-      this.menuNam = 'home'
-
     },
-  methods:{
-    ...mapMutations([
-      'setLoginName',
-      'setThemeColor'
-    ]),
-  
-   loginOut(){
-      this.setLoginName("")
-      this.$router.push({ path: '/' })
-   }
-   ,
-   // 换肤加class函数
-  toggleClass(element, className) {
-    if (!element || !className) {
-      return;
+    computed:{
+      ...mapState({ 
+          loginName:state=>state.loginName 
+        }),
+      themecolor:{
+          get(){
+            return this.$store.state.themecolor
+          },
+          set(val){  
+              this.setThemeColor(val)    
+          }
+        }  
+    },
+    watch:{
+      themecolor:{
+        handler(){
+          this.toggleClass(document.body,'custom-' + this.themecolor)
+        }
+      }
+    },
+    mounted(){
+      this.toggleClass(document.body,'custom-' + this.themecolor)
+    },
+    created(){
+        this.menuNam = 'home'
+
+      },
+    methods:{
+      ...mapMutations([
+        'setLoginName',
+        'setThemeColor'
+      ]),
+    
+    loginOut(){
+        this.setLoginName("")
+        this.$router.push({ path: '/' })
     }
-    element.className = className;
-  },
-  // pickColor(val){
-  //   this.setThemeColor(val === '409EFF' ? '00' : '01')
-  // }
+    ,
+    // 换肤加class函数
+    toggleClass(element, className) {
+      if (!element || !className) {
+        return;
+      }
+      element.className = className;
+    },
+    pickThemeColor(common){
+      this.themecolor = common
+    }
 
 
-   
-  }
+    
+    }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped >
+  
+
   .el-header{
+    background-color: #B3C0D1;
+    color: #333;
+    line-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     position: fixed;
     width: 100%;
     margin-right: 20px;
-  }
-  .el-header, .el-footer { 
-    background-color: #B3C0D1;
-    color: #333;
-    text-align: center;
-    line-height: 60px;
+    z-index: 9999;
   }
   
-  .el-aside {
+
+  .el-container .el-container{
+    min-height: calc(100vh - 60px);
+    margin-top: 60px;
+  }
+    .el-aside {
     background-color: #D3DCE6;
     color: #333;
-    text-align: center;
-    line-height: 200px;
     position:fixed;
-    margin-top: 60px;
   }
   
   .el-main {
@@ -129,27 +132,16 @@ export default {
     color: #333;
     text-align: left;
     margin-left:200px ;
-    margin-top: 60px;
-    min-height: calc(100vh - 76px);
+    min-height: calc(100vh - 60px);
   }
-  
-  .el-container {
-    min-height: calc(100vh - 76px);
-  }
-  
-  .el-container:nth-child(5) .el-aside,
-  .el-container:nth-child(6) .el-aside {
-    line-height: 260px;
-  }
-  
-  .el-container:nth-child(7) .el-aside {
-    line-height: 320px;
+  .el-card{
+        min-height: calc(100vh - 140px);
   }
 
-  .user-box{
+  .flex-center{
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    height: 60px;
+    align-items: center
   }
+
+
 </style>

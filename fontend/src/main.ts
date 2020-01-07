@@ -52,6 +52,16 @@ Vue.use(VueClipboard)
 import GL_Components from './components/components'
 Vue.use(GL_Components)
 
+import mavonEditor from 'mavon-editor'
+import 'mavon-editor/dist/css/index.css'
+// use
+Vue.use(mavonEditor)
+
+// highlight.js代码高亮插件
+import Highlight from './components/highlight/index'; // from 路径是highlight.js的路径，纯属自定义
+Vue.use(Highlight);
+
+
 const i18n = new VueI18n({
     locale: 'zh', // 将要切换的语言，可以通过url拼的参数获取，用户行为select选择获取，本地manifest配置获取等，根据场景动态获取
     messages: {

@@ -1,0 +1,288 @@
+{
+    "result": {
+        "GroupName": "商品识别",
+        "SdkDemos": {
+            "SdkDemo": [
+                {
+                    "IdeKey": "curl",
+                    "CallDemo": "curl -i -k -X POST 'https://goodsdect.market.alicloudapi.com/goodsdect'  -H 'Authorization:APPCODE 你自己的AppCode' --data 'src=%E5%9B%BE%E7%89%87base64%E7%BC%96%E7%A0%81'"
+                },
+                {
+                    "IdeKey": "Java",
+                    "CallDemo": "\tpublic static void main(String[] args) {\r\n\t    String host = \"https://goodsdect.market.alicloudapi.com\";\r\n\t    String path = \"/goodsdect\";\r\n\t    String method = \"POST\";\r\n\t    String appcode = \"你自己的AppCode\";\r\n\t    Map<String, String> headers = new HashMap<String, String>();\r\n\t    //最后在header中的格式(中间是英文空格)为Authorization:APPCODE 83359fd73fe94948385f570e3c139105\r\n\t    headers.put(\"Authorization\", \"APPCODE \" + appcode);\r\n\t    //根据API的要求，定义相对应的Content-Type\r\n\t    headers.put(\"Content-Type\", \"application/x-www-form-urlencoded; charset=UTF-8\");\r\n\t    Map<String, String> querys = new HashMap<String, String>();\r\n\t    Map<String, String> bodys = new HashMap<String, String>();\r\n\t    bodys.put(\"src\", \"图片base64编码\");\r\n\r\n\r\n\t    try {\r\n\t    \t/**\r\n\t    \t* 重要提示如下:\r\n\t    \t* HttpUtils请从\r\n\t    \t* https://github.com/aliyun/api-gateway-demo-sign-java/blob/master/src/main/java/com/aliyun/api/gateway/demo/util/HttpUtils.java\r\n\t    \t* 下载\r\n\t    \t*\r\n\t    \t* 相应的依赖请参照\r\n\t    \t* https://github.com/aliyun/api-gateway-demo-sign-java/blob/master/pom.xml\r\n\t    \t*/\r\n\t    \tHttpResponse response = HttpUtils.doPost(host, path, method, headers, querys, bodys);\r\n\t    \tSystem.out.println(response.toString());\r\n\t    \t//获取response的body\r\n\t    \t//System.out.println(EntityUtils.toString(response.getEntity()));\r\n\t    } catch (Exception e) {\r\n\t    \te.printStackTrace();\r\n\t    }\r\n\t}\r\n"
+                },
+                {
+                    "IdeKey": "C#",
+                    "CallDemo": "//using System.IO;\r\n//using System.Text;\r\n//using System.Net;\r\n//using System.Net.Security;\r\n//using System.Security.Cryptography.X509Certificates;\r\n\r\n        private const String host = \"https://goodsdect.market.alicloudapi.com\";\r\n        private const String path = \"/goodsdect\";\r\n        private const String method = \"POST\";\r\n        private const String appcode = \"你自己的AppCode\";\r\n\r\n        static void Main(string[] args)\r\n        {\r\n            String querys = \"\";\r\n            String bodys = \"src=%E5%9B%BE%E7%89%87base64%E7%BC%96%E7%A0%81\";\r\n            String url = host + path;\r\n            HttpWebRequest httpRequest = null;\r\n            HttpWebResponse httpResponse = null;\r\n\r\n            if (0 < querys.Length)\r\n            {\r\n                url = url + \"?\" + querys;\r\n            }\r\n\r\n            if (host.Contains(\"https://\"))\r\n            {\r\n                ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);\r\n                httpRequest = (HttpWebRequest)WebRequest.CreateDefault(new Uri(url));\r\n            }\r\n            else\r\n            {\r\n                httpRequest = (HttpWebRequest)WebRequest.Create(url);\r\n            }\r\n            httpRequest.Method = method;\r\n            httpRequest.Headers.Add(\"Authorization\", \"APPCODE \" + appcode);\r\n            //根据API的要求，定义相对应的Content-Type\r\n            httpRequest.ContentType = \"application/x-www-form-urlencoded; charset=UTF-8\";\r\n            if (0 < bodys.Length)\r\n            {\r\n                byte[] data = Encoding.UTF8.GetBytes(bodys);\r\n                using (Stream stream = httpRequest.GetRequestStream())\r\n                {\r\n                    stream.Write(data, 0, data.Length);\r\n                }\r\n            }\r\n            try\r\n            {\r\n                httpResponse = (HttpWebResponse)httpRequest.GetResponse();\r\n            }\r\n            catch (WebException ex)\r\n            {\r\n                httpResponse = (HttpWebResponse)ex.Response;\r\n            }\r\n\r\n            Console.WriteLine(httpResponse.StatusCode);\r\n            Console.WriteLine(httpResponse.Method);\r\n            Console.WriteLine(httpResponse.Headers);\r\n            Stream st = httpResponse.GetResponseStream();\r\n            StreamReader reader = new StreamReader(st, Encoding.GetEncoding(\"utf-8\"));\r\n            Console.WriteLine(reader.ReadToEnd());\r\n            Console.WriteLine(\"\\n\");\r\n\r\n        }\r\n\r\n        public static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)\r\n        {\r\n            return true;\r\n        }\r\n"
+                },
+                {
+                    "IdeKey": "PHP",
+                    "CallDemo": "<?php\r\n    $host = \"https://goodsdect.market.alicloudapi.com\";\r\n    $path = \"/goodsdect\";\r\n    $method = \"POST\";\r\n    $appcode = \"你自己的AppCode\";\r\n    $headers = array();\r\n    array_push($headers, \"Authorization:APPCODE \" . $appcode);\r\n    //根据API的要求，定义相对应的Content-Type\r\n    array_push($headers, \"Content-Type\".\":\".\"application/x-www-form-urlencoded; charset=UTF-8\");\r\n    $querys = \"\";\r\n    $bodys = \"src=%E5%9B%BE%E7%89%87base64%E7%BC%96%E7%A0%81\";\r\n    $url = $host . $path;\r\n\r\n    $curl = curl_init();\r\n    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);\r\n    curl_setopt($curl, CURLOPT_URL, $url);\r\n    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);\r\n    curl_setopt($curl, CURLOPT_FAILONERROR, false);\r\n    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);\r\n    curl_setopt($curl, CURLOPT_HEADER, true);\r\n    if (1 == strpos(\"$\".$host, \"https://\"))\r\n    {\r\n        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);\r\n        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);\r\n    }\r\n    curl_setopt($curl, CURLOPT_POSTFIELDS, $bodys);\r\n    var_dump(curl_exec($curl));\r\n?>"
+                },
+                {
+                    "IdeKey": "Python",
+                    "CallDemo": "import urllib, urllib2, sys\r\nimport ssl\r\n\r\n\r\nhost = 'https://goodsdect.market.alicloudapi.com'\r\npath = '/goodsdect'\r\nmethod = 'POST'\r\nappcode = '你自己的AppCode'\r\nquerys = ''\r\nbodys = {}\r\nurl = host + path\r\n\r\nbodys['src'] = '''图片base64编码'''\r\npost_data = urllib.urlencode(bodys)\r\nrequest = urllib2.Request(url, post_data)\r\nrequest.add_header('Authorization', 'APPCODE ' + appcode)\r\n//根据API的要求，定义相对应的Content-Type\r\nrequest.add_header('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8')\r\nctx = ssl.create_default_context()\r\nctx.check_hostname = False\r\nctx.verify_mode = ssl.CERT_NONE\r\nresponse = urllib2.urlopen(request, context=ctx)\r\ncontent = response.read()\r\nif (content):\r\n    print(content)\r\n"
+                },
+                {
+                    "IdeKey": "ObjectC",
+                    "CallDemo": "NSString *appcode = @\"你自己的AppCode\";\r\nNSString *host = @\"https://goodsdect.market.alicloudapi.com\";\r\nNSString *path = @\"/goodsdect\";\r\nNSString *method = @\"POST\";\r\nNSString *querys = @\"\";\r\nNSString *url = [NSString stringWithFormat:@\"%@%@%@\",  host,  path , querys];\r\nNSString *bodys = @\"src=%E5%9B%BE%E7%89%87base64%E7%BC%96%E7%A0%81\";\r\n\r\nNSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString: url]  cachePolicy:1  timeoutInterval:  5];\r\nrequest.HTTPMethod  =  method;\r\n[request addValue:  [NSString  stringWithFormat:@\"APPCODE %@\" ,  appcode]  forHTTPHeaderField:  @\"Authorization\"];\r\n[request addValue: @\"application/x-www-form-urlencoded; charset=UTF-8\" forHTTPHeaderField: @\"Content-Type\"];\r\nNSData *data = [bodys dataUsingEncoding: NSUTF8StringEncoding];\r\n[request setHTTPBody: data];\r\nNSURLSession *requestSession = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];\r\nNSURLSessionDataTask *task = [requestSession dataTaskWithRequest:request\r\n    completionHandler:^(NSData * _Nullable body , NSURLResponse * _Nullable response, NSError * _Nullable error) {\r\n    NSLog(@\"Response object: %@\" , response);\r\n    NSString *bodyString = [[NSString alloc] initWithData:body encoding:NSUTF8StringEncoding];\r\n\r\n    //打印应答中的body\r\n    NSLog(@\"Response body: %@\" , bodyString);\r\n    }];\r\n\r\n[task resume];"
+                }
+            ]
+        },
+        "Description": "商品识别",
+        "RequestQueries": {
+            "RequestParam": [
+                {
+                    "DemoValue": "test.pdf",
+                    "DefaultValue": "",
+                    "ParameterType": "STRING",
+                    "Description": "文档名称，需带文件后缀",
+                    "Required": "REQUIRED",
+                    "ApiParameterName": "fileName"
+                    },
+                    {
+                    "DemoValue": "en",
+                    "DefaultValue": "",
+                    "ParameterType": "STRING",
+                    "Description": "源语言",
+                    "Required": "REQUIRED",
+                    "ApiParameterName": "from"
+                    },
+                    {
+                    "DefaultValue": "",
+                    "ParameterType": "STRING",
+                    "Description": "文档MD5,用于校验文件",
+                    "Required": "REQUIRED",
+                    "ApiParameterName": "md5"
+                    },
+                    {
+                    "DefaultValue": "",
+                    "ParameterType": "STRING",
+                    "Description": "文件下载链接",
+                    "Required": "REQUIRED",
+                    "ApiParameterName": "remoteUrl"
+                    },
+                    {
+                    "DemoValue": "zh",
+                    "DefaultValue": "",
+                    "ParameterType": "STRING",
+                    "Description": "目标语言",
+                    "Required": "REQUIRED",
+                    "ApiParameterName": "to"
+                    }
+            ]
+        },
+        "PathParameters": {
+            "PathParameter": []
+        },
+        "ErrorCodeSamples": {
+            "ErrorCodeSample": [     
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "请求成功",
+                    "Code": "100"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "没有访问权限",
+                    "Code": "101"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "业务停机",
+                    "Code": "102"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "账户不存在",
+                    "Code": "103"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "账户异常",
+                    "Code": "104"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "系统错误",
+                    "Code": "105"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "参数异常",
+                    "Code": "106"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "黑名单管控",
+                    "Code": "107"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "访问地址频率过高",
+                    "Code": "108"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "该应用不存在",
+                    "Code": "109"
+                    },
+                    {
+                    "Description": "系统状态码（code）",
+                    "Message": "该应用尚未启用",
+                    "Code": "110"
+                    },
+                    {
+                    "Message": "参数为空",
+                    "Code": "300"
+                    },
+                    {
+                    "Message": "文件为空",
+                    "Code": "301"
+                    },
+                    {
+                    "Message": "文件类型不支持",
+                    "Code": "302"
+                    },
+                    {
+                    "Message": "文件MD5不匹配",
+                    "Code": "303"
+                    },
+                    {
+                    "Message": "可用积分不足",
+                    "Code": "304"
+                    },
+                    {
+                    "Message": "文档已加密或被保护",
+                    "Code": "305"
+                    },
+                    {
+                    "Message": "文档不能识别",
+                    "Code": "306"
+                    },
+                    {
+                    "Message": "文档损坏",
+                    "Code": "307"
+                    },
+                    {
+                    "Message": "档无法成功读取或读取超时，请将文件转换成其他版本的word或pdf后再次尝试",
+                    "Code": "309"
+                    },
+                    {
+                    "Message": "自动翻译超时，等待人工处理",
+                    "Code": "310"
+                    },
+                    {
+                    "Message": "文件大小超过限制（50M）",
+                    "Code": "311"
+                    },
+                    {
+                    "Message": "该翻译不存在",
+                    "Code": "312"
+                    },
+                    {
+                    "Description": "该状态下可查询翻译进度（status）",
+                    "Message": "正在翻译",
+                    "Code": "313"
+                    },
+                    {
+                    "Description": "该状态下表示文档翻译完成，可进行下载译文，其它状态不可以下载译文（status）",
+                    "Message": "翻译完成",
+                    "Code": "314"
+                    },
+                    {
+                    "Message": "翻译超时",
+                    "Code": "316"
+                    },
+                    {
+                    "Message": "已取消",
+                    "Code": "317"
+                    },
+                    {
+                    "Message": "该文件不存在",
+                    "Code": "318"
+                    },
+                    {
+                    "Message": "翻译通道已被占用（不能上传进行翻译，需等待正在翻译的文件翻译结束）",
+                    "Code": "319"
+                    },
+                    {
+                    "Message": "没有读取到需要翻译的内容",
+                    "Code": "320"
+                    },
+                    {
+                    "Message": "图片文件大小超过限制（20M）",
+                    "Code": "321"
+                    },
+                    {
+                    "Message": "图片文件像素超过限制（1000万）",
+                    "Code": "322"
+                    },
+                    {
+                    "Message": "图片文件像素超过限制（1000万）",
+                    "Code": "323"
+                    },
+                    {
+                    "Message": "图片文件解析失败",
+                    "Code": "324"
+                    },
+                    {
+                    "Description": "该状态下可查询翻译进度（status）",
+                    "Message": "正在人工处理",
+                    "Code": "325"
+                    },
+                    {
+                    "Message": "重复翻译",
+                    "Code": "326"
+                    },
+                    {
+                    "Message": "文档页数超限",
+                    "Code": "327"
+                    },
+                    {
+                    "Message": "图片生成失败",
+                    "Code": "328"
+                    }
+                    
+            ]
+        },
+        "HttpProtocol": "HTTP,HTTPS",
+        "ResultDescriptions": {
+            "ResultDescription": []
+        },
+        "RequestHeaders": {
+            "RequestParam": []
+        },
+        "RequestBody": {
+            "RequestParam": [
+                {
+                    "DemoValue": "图片base64编码",
+                    "DefaultValue": "",
+                    "ParameterType": "STRING",
+                    "Description": "图片base64编码",
+                    "Required": "REQUIRED",
+                    "ApiParameterName": "src"
+                }
+            ]
+        },
+        "Path": "/goodsdect",
+        "testApiLink": "http://apigateway.console.aliyun.com/inner/#/cn-beijing/apps/testApi/756f25595cf74fe19570a70923a74111/58f010e63e85477c8692da4e71a36300/RELEASE//CloudMarket",
+        "ResultSample": "{\"status\":200,\"msg\":[{\"description\":\"个人护理\",\"score\":0.9782632,\"topicality\":0.9782632}]}",
+        "RequestId": "AD36EE46-E4A1-40F4-A8B7-D11C0410FE8E",
+        "StageName": "RELEASE",
+        "ApiName": "商品识别",
+        "ResultType": "JSON",
+        "FailResultSample": "{\"status\":500}",
+        "GroupId": "58f010e63e85477c8692da4e71a36300",
+        "DeployedTime": "2019-07-19T11:10:29Z",
+        "ServiceTimeout": 10000,
+        "RegionId": "cn-beijing",
+        "ApiId": "756f25595cf74fe19570a70923a74111",
+        "BodyFormat": "FORM",
+        "HttpMethod": "POST"
+    },
+    "code": "200",
+    "requestId": "9b39171f-ffaa-4ca0-bd77-fb360cb191be",
+    "success": true,
+    "message": "success"
+}

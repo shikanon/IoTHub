@@ -15,6 +15,7 @@ export default new Router({
       path: '/home',
       name: 'home',
       component: () => import( '@/views/Home.vue'),
+      redirect:'/index',
       meta: {
         title: '首页',
         requireLogin: true
@@ -26,7 +27,9 @@ export default new Router({
           component: () => import( '@/views/Index.vue'),
           meta: {
             title: '概览',
+            icon:'el-icon-s-home',
             leftMenu:true
+
           },
         },
         {
@@ -35,6 +38,7 @@ export default new Router({
           component:  () =>import( '@/views/Empty.vue'),
           meta: {
             title: '设备管理',
+            icon:'el-icon-menu',
             leftMenu:true
           },
           redirect: "/home/system/user",
@@ -118,6 +122,7 @@ export default new Router({
           component: () => import( '@/views/Empty.vue'),
           meta: {
             title: '测试1',
+            icon:'el-icon-s-help',
             leftMenu:true
           }
         },
@@ -127,9 +132,32 @@ export default new Router({
             component: () => import( '@/views/Empty.vue'),
             meta: {
               title: '测试2',
+              icon:'el-icon-s-help',
               leftMenu:true
             }
-        }
+        },
+        {
+          path: '/home/knowledge-base',
+          name: 'knowledge-base',
+          component: () => import( '@/views/knowledge-base/Base.vue'),
+          meta: {
+            title: '知识库',
+            icon:'el-icon-document',
+            leftMenu:true
+          },
+          children:[
+            {
+              path: '/home/knowledge-base/api-info/:id',
+              name: 'api-info',
+              component:  () =>import( '@/views/knowledge-base/ApiInfo.vue'),
+              meta: {
+                title: 'API接口信息',
+                leftMenu:false
+              },
+            } 
+          ]
+      },
+   
              
       ]
     

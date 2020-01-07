@@ -61,4 +61,12 @@ export function topicOperationFilter(value) {
 }
 
 
+export function formatTags(tags) {
+        
+        return tags.map((item) => item).join("·")
+}
+
+
+
+
 
