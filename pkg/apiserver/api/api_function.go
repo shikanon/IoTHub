@@ -1,0 +1,743 @@
+package api
+
+import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/shikanon/IoTOrbHub/pkg/database"
+	"strconv"
+)
+
+// TODO  权限；参数校验；捕捉错误;标签字段的拆解
+
+// 产品-获取物模型
+// models?accesskeyid=aaaa&signature=bbb
+func GetProductModels(c *gin.Context) {
+	db := database.DbConn()
+	defer db.Close()
+
+	var models []Model
+	db.Preload("Territory").Find(&models)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "所有模型信息查询成功",
+		"data":    models,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-获取节点
+// nodetype?accesskeyid=aaaa&signature=bbb
+func GetProductNodeTypes(c *gin.Context) {
+	db := database.DbConn()
+	defer db.Close()
+
+	var nodetypes []NodeType
+	db.Find(&nodetypes)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "节点类型查询成功",
+		"data":    nodetypes,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-获取联网方式
+// networkway?accesskeyid=aaaa&signature=bbb
+func GetProductNetworkWays(c *gin.Context) {
+	db := database.DbConn()
+	defer db.Close()
+
+	var networks []NetworkWay
+	db.Find(&networks)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "联网方式查询成功",
+		"data":    networks,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-数据格式
+// dataformat?accesskeyid=aaaa&signature=bbb
+func GetProductDataFormats(c *gin.Context) {
+	db := database.DbConn()
+	defer db.Close()
+
+	var dataformats []DataFormat
+	db.Find(&dataformats)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "数据格式查询成功",
+		"data":    dataformats,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-认证方式
+// authmethod?accesskeyid=aaaa&signature=bbb
+func GetProductAuthMethods(c *gin.Context) {
+	db := database.DbConn()
+	defer db.Close()
+
+	var authmethos []AuthMethod
+	db.Find(&authmethos)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "数据格式查询成功",
+		"data":    authmethos,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品首页
+// products?page=1&item=10&accesskeyid=aaaa&signature=bbb
+func GetProducts(c *gin.Context) {
+	// 获取参数
+	page_str := c.Query("page")
+	page, _ := strconv.Atoi(page_str)
+	item_str := c.Query("item")
+	item, _ := strconv.Atoi(item_str)
+
+	// 查询数据
+	db := database.DbConn()
+	defer db.Close()
+	var products []Product
+	db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	// 构建响应数据结构
+	type info struct {
+		ID         int    `json:"id"`
+		Name       string `json:"name"`
+		ProductKey string `json:"product_key"`
+		CreateTime string `json:"create_time"`
+		NodeType   string `json:"node_type"`
+	}
+	result := []info{}
+	for _, val := range products {
+		data := info{
+			ID:         val.ID,
+			Name:       val.Name,
+			ProductKey: val.ProductKey,
+			CreateTime: TimeDeal(val.CreateTime),
+			NodeType:   val.NodeType.Name,
+		}
+		result = append(result, data)
+	}
+
+	var total = 0
+	db.Model(&Product{}).Count(&total)
+
+	type RespData struct {
+		NumResults int    `json:"num_results"`
+		DataList   []info `json:"data_list"`
+	}
+
+	var resp_data = RespData{
+		NumResults: total,
+		DataList:   result,
+	}
+
+	//  响应
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品首页信息查询成功",
+		"data":    resp_data,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-创建产品
+func AddProduct(c *gin.Context) {
+	type Data struct {
+		Name         string `form:"name" json:"name" binding:"required"`
+		Category     string `form:"category" json:"category" binding:"required"`
+		ModelID      int    `form:"model_id" json:"model_id" binding:"required"`
+		NodeTypeID   int    `form:"node_type_id" json:"node_type_id" binding:"required"`
+		NetworkID    int    `form:"network_id" json:"network_id" binding:"required"`
+		DataFormatID int    `form:"data_format_id" json:"data_format_id" binding:"required"`
+		AuthMethodID int    `form:"auth_method_id" json:"auth_method_id" binding:"required"`
+		Describe     string `form:"desc" json:"desc" binding:"required"`
+	}
+
+	data := Data{}
+	if err := c.ShouldBind(&data); err != nil {
+		fmt.Println(err)
+	}
+
+	name := data.Name
+	category := data.Category
+	model_id := data.ModelID
+	node_type_id := data.NodeTypeID
+	network_id := data.NetworkID
+	data_format_id := data.DataFormatID
+	auth_method_id := data.AuthMethodID
+	desc := data.Describe
+
+	// 构建实例
+	product := &Product{
+		Name:          name,
+		Category:      category,
+		ObjectModelID: model_id,
+		NodeTypeID:    node_type_id,
+		NetworkWayID:  network_id,
+		DataFormatID:  data_format_id,
+		AuthMethodID:  auth_method_id,
+		Describe:      desc,
+	}
+
+	// mysql持久化存储。存储topic
+	id := product.SaveProduct()
+	ProductSaveCustomTopic(id)
+
+	// 构建，返回响应
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品创建成功",
+		"data":    map[string]int{"product_id": id},
+		//"data": id,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-查看
+// product?pid=1&accesskeyid=aaaa&signature=bbb
+func GetProduct(c *gin.Context) {
+	product_id := c.Query("pid")
+	db := database.DbConn()
+	defer db.Close()
+
+	type Response struct {
+		ID              int    `json:"id"`
+		Name            string `json:"name"`
+		NodeType        string `json:"node_type"`
+		NodeTypeID      int    `json:"node_type_id"`
+		CreateTime      string `json:"create_time"`
+		ObjectModelName string `json:"object_model_name"`
+		DataFormat      string `json:"data_format"`
+		DataFormatID    int    `json:"data_format_id"`
+		AuthMethod      string `json:"auth_method"`
+		AuthMethodID    int    `json:"auth_method_id"`
+		Status          string `json:"status"`
+		NetworkWay      string `json:"network_way"`
+		NetworkWayID    int    `json:"network_way_id"`
+		Describe        string `json:"desc"`
+		ConciseModelID  string `json:"concise_model_id"`
+		IntactModelID   string `json:"intact_model_id"`
+		ProductKey      string `json:"product_key"`
+		ProductSecret   string `json:"product_secret"`
+		DeviceCount     int    `json:"device_count"` // TODO
+	}
+
+	var product Product
+	db.First(&product, product_id)
+	db.Model(&product).Related(&product.ObjectModel, "ObjectModel")
+	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
+	db.Model(&product).Related(&product.NodeType, "NodeType")
+	db.Model(&product).Related(&product.NetworkWay, "NetworkWay")
+	db.Model(&product).Related(&product.DataFormat, "DataFormat")
+	db.Model(&product).Related(&product.AuthMethod, "AuthMethod")
+	db.Model(&product).Related(&product.Device, "Device")
+
+	response := Response{
+		ID:              product.ID,
+		Name:            product.Name,
+		NodeType:        product.NodeType.Name,
+		NodeTypeID:      product.NodeTypeID,
+		CreateTime:      TimeDeal(product.CreateTime),
+		ObjectModelName: product.ObjectModel.Name,
+		DataFormat:      product.DataFormat.Name,
+		DataFormatID:    product.DataFormatID,
+		AuthMethod:      product.AuthMethod.Name,
+		AuthMethodID:    product.AuthMethodID,
+		Status:          product.Status,
+		NetworkWay:      product.NetworkWay.Name,
+		NetworkWayID:    product.NetworkWayID,
+		Describe:        product.Describe,
+		ConciseModelID:  product.MongodbModel.ConciseModelID,
+		IntactModelID:   product.MongodbModel.IntactModelID,
+		ProductKey:      product.ProductKey,
+		ProductSecret:   product.ProductSecret,
+		DeviceCount:     len(product.Device),
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品信息查询成功",
+		"data":    response,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-查看-编辑(名称、描述、标签)
+func UpdateProduct(c *gin.Context) {
+	name := c.PostForm("name")
+	desc := c.PostForm("desc")
+	product_id := c.PostForm("pid")
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var product Product
+	db.First(&product, product_id)
+	product.Name = name
+	product.Describe = desc
+	db.Save(&product)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品信息更新成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-查看-topic类
+// topics?pid=1&accesskeyid=aaaa&signature=bbb
+func GetProductTopic(c *gin.Context) {
+	product_str := c.Query("pid")
+	product_id, _ := strconv.Atoi(product_str)
+	device_id := 0
+	data := GetTopics(product_id, device_id)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "Topic查询成功",
+		"data":    data,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-查看-topic类，自定义，定义topic类
+func AddProductTopic(c *gin.Context) {
+	product_str := c.PostForm("pid")
+	product_id, _ := strconv.Atoi(product_str)
+	permission_str := c.PostForm("permission_id")
+	permission_id, _ := strconv.Atoi(permission_str)
+	topic := c.PostForm("topic")
+	desc := c.PostForm("desc")
+
+	topic_detail := "/user/%s"
+	detail := "/%s/%s" + fmt.Sprintf(topic_detail, topic)
+
+	data := CustomTopic{
+		ProductID:    product_id,
+		PermissionID: permission_id,
+		Detail:       detail,
+		Describe:     desc,
+	}
+
+	id := database.MysqlInsertOneData(&data)
+	resp := gin.H{
+		"status":  "Y",
+		"message": "自定义topic创建成功",
+		"data":    id,
+	}
+	c.JSON(200, resp)
+}
+
+// 产品-查看-topic类，自定义，编辑topic类
+func UpdateProductTopic(c *gin.Context) {
+	permission_str := c.PostForm("permission_id")
+	permission_id, _ := strconv.Atoi(permission_str)
+	topic := c.PostForm("topic")
+	desc := c.DefaultPostForm("desc", "")
+
+	topic_str := c.PostForm("pid")
+	topic_id, _ := strconv.Atoi(topic_str)
+
+	topic_detail := "/user/%s"
+	detail := "/%s/%s" + fmt.Sprintf(topic_detail, topic)
+
+	db := database.DbConn()
+	defer db.Close()
+	var topic_model CustomTopic
+	db.Find(&topic_model, topic_id)
+	topic_model.PermissionID = permission_id
+	topic_model.Detail = detail
+	topic_model.Describe = desc
+	db.Save(&topic_model)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "数据更新成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+//// 产品-查看-topic类，自定义，删除topic类
+//func DeleteProductTopic(c *gin.Context) {
+//	topidid := 1
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//}
+
+//// 产品-查看-功能定义查看
+//// functions?pid=1&accesskeyid=aaaa&signature=bbb
+//func GetProductFunction(c *gin.Context) {}
+//
+//// 产品-查看-导入物模型 TODO
+//// 产品-查看-查看物模型
+//// model?pid=1&accesskeyid=aaaa&signature=bbb
+//func DownloadModelJS(c *gin.Context) {
+//	// 返回两个模型。完整模型和简单模型
+//}
+//
+//// 产品-查看-生成设备端代码
+//// code?pid=1&accesskeyid=aaaa&signature=bbb
+//func DownloadEquipmentCode(c *gin.Context) {}
+//
+//// 产品-查看-标准功能，添加 TODO
+//// 产品-查看-标准功能，编辑 TODO
+//// 产品-查看-自定义功能，添加 TODO
+//// 产品-查看-自定义功能，编辑 TODO
+//// 产品-查看-自定义功能，删除 TODO
+//// 产品-删除
+//func DeleteProduct(c *gin.Context) {
+//	productid := 1
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//}
+
+// 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理)
+// device?product=1&page=1&item=10&accesskeyid=aaaa&signature=bbb
+func GetDevices(c *gin.Context) {
+	// product为0，设备首页
+	// product不为0，产品-管理设备 / 产品-查看-前往管理
+	product_str := c.Query("pid")
+	product_id, _ := strconv.Atoi(product_str)
+	page_str := c.Query("page")
+	page, _ := strconv.Atoi(page_str)
+	item_str := c.Query("item")
+	item, _ := strconv.Atoi(item_str)
+
+	var total = 0
+	var activate_num = 0
+	var online_num = 0
+	db := database.DbConn()
+	defer db.Close()
+	var devices []Device
+	if product_id == 0 {
+		db.Where("activation_time != ?", "0000-00-00 00:00:00").Find(&devices)
+		activate_num = len(devices)
+		db.Where("last_on_line_time != ?", "0000-00-00 00:00:00").Find(&devices)
+		online_num = len(devices)
+		db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+		db.Model(&Device{}).Count(&total)
+	} else {
+		db.Where("product_id = ? AND activation_time != ?", product_id, "0000-00-00 00:00:00").Find(&devices)
+		activate_num = len(devices)
+		db.Where("product_id = ? AND last_on_line_time != ?", product_id, "0000-00-00 00:00:00").Find(&devices)
+		online_num = len(devices)
+		db.Where("product_id = ?", product_id).Find(&devices)
+		total = len(devices)
+		db.Where("product_id = ?", product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+	}
+
+	type Response struct {
+		ID               int    `json:"id"`                 // 设备id
+		Name             string `json:"name"`               // 备注名称
+		TheirProductName string `json:"their_product_name"` // 所属产品
+		NodeType         string `json:"node_type"`          // 节点类型
+		NodeTypeID       int    `json:"node_type_id"`       // 节点类型id
+		StatusID         int    `json:"status_id"`          // 状态id
+		Status           string `json:"status"`             // 状态
+		LastOnLineTime   string `json:"last_on_line_time"`  // 最后上线时间
+	}
+	var responses []Response
+	for _, device := range devices {
+		var data Response
+		data.ID = device.ID
+		data.Name = device.Name
+		var product Product
+		db.First(&product, device.ProductID).Related(&product.NodeType, "NodeType")
+		data.TheirProductName = product.Name
+		data.NodeType = product.NodeType.Name
+		data.NodeTypeID = product.NodeTypeID
+		data.Status = device.Status.Name
+		data.StatusID = device.StatusID
+		data.LastOnLineTime = TimeDeal(device.LastOnLineTime)
+		responses = append(responses, data)
+	}
+
+	type RespData struct {
+		ActivateCount int        `json:"device_active_count"`
+		OnlineCount   int        `json:"device_online_count"`
+		NumResults    int        `json:"num_results"`
+		DataList      []Response `json:"data_list"`
+	}
+
+	var resp_data = RespData{
+		ActivateCount: activate_num,
+		OnlineCount:   online_num,
+		NumResults:    total,
+		DataList:      responses,
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "所有设备查询成功",
+		"data":    resp_data,
+	}
+	c.JSON(200, resp)
+}
+
+// 获取所有产品的id和名称
+// simpleproducts?accesskeyid=aaaa&signature=bbb
+func GetSimpleProducts(c *gin.Context) {
+	db := database.DbConn()
+	defer db.Close()
+
+	var products []Product
+	db.Find(&products)
+
+	type info struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	}
+	result := []info{}
+	for _, val := range products {
+		data := info{
+			ID:   val.ID,
+			Name: val.Name,
+		}
+		result = append(result, data)
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "所有产品名称查询成功",
+		"data":    result,
+	}
+	c.JSON(200, resp)
+}
+
+// 设备-创建设备
+func AddDevice(c *gin.Context) {
+	db := database.DbConn()
+	defer db.Close()
+
+	type Data struct {
+		ProductID int    `form:"pid" json:"pid" binding:"required"`
+		Name      string `form:"name" json:"name" binding:"required"`
+		Remark    string `form:"remark" json:"remark" binding:"required"`
+	}
+
+	data := Data{}
+	if err := c.ShouldBind(&data); err != nil {
+		fmt.Println(err)
+	}
+
+	product_id := data.ProductID
+	name := data.Name
+	remark := data.Remark
+
+	device := Device{
+		ProductID:   product_id,
+		StatusID:    1,
+		Name:        name,
+		Remark:      remark,
+		BatchCreate: false,
+	}
+
+	id := device.SaveDevice()
+
+	var product Product
+	db.First(&product, product_id)
+	var device_save Device
+	db.First(&device_save, id)
+
+	type RespData struct {
+		ProductKey   string `json:"product_key"`
+		DeviceName   string `json:"device_name"`
+		DeviceSecret string `json:"device_secret"`
+	}
+	var resp_data RespData
+	resp_data.ProductKey = product.ProductKey
+	resp_data.DeviceName = device_save.Name
+	resp_data.DeviceSecret = device_save.DeviceSecret
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品创建成功",
+		"data":    resp_data,
+	}
+	c.JSON(200, resp)
+}
+
+//// 设备-批量添加，自动生成
+//func BatchAutomaticAddProduct(c *gin.Context) {
+//	productid := 1
+//	number := 10
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//}
+//
+//// 设备-批量添加，批量上传，上传文件 TODO
+//// 设备-批量添加，批量上传 TODO
+//
+//// 设备-批次管理
+//// batchdevices?page=1&item=10&accesskeyid=aaaa&signature=bbb
+//func GetBatchDevices(c *gin.Context) {}
+
+// 设备-批次管理-详情
+// batchdevice?pid=1&accesskeyid=aaaa&signature=bbb
+//func GetBatchDevice(c *gin.Context) {}
+//
+//// 设备-批次管理-下载CSV
+//func DownloadBatchDeviceCSV(c *gin.Context) {
+//	productid := 1
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//	// 过滤出批量生成的设备
+//}
+//
+//// 设备-修改信息
+//func UpdateDevice(c *gin.Context) {
+//	statusid := 0
+//	remark := "备注名称"
+//	productid := 1
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//}
+
+// 设备-查看
+// device?did=1&accesskeyid=aaaa&signature=bbb
+func GetDevice(c *gin.Context) {
+	device_str := c.Query("did")
+	device_id, _ := strconv.Atoi(device_str)
+	db := database.DbConn()
+	defer db.Close()
+	device := Device{}
+	db.First(&device, device_id)
+	type Response struct {
+		ID             int    `json:"id"`
+		ProductID      int    `json:"product_id"`
+		ProductKey     string `json:"product_key"`
+		ProductName    string `json:"product_name"`
+		NoteTypeID     int    `json:"node_type_id"`
+		NodeType       string `json:"node_type"`
+		StatusID       int    `json:"status_id"`
+		Name           string `json:"name"`
+		Remark         string `json:"remark"`
+		DeviceSecret   string `json:"device_secret"`
+		IP             string `json:"ip"`
+		CreateTime     string `json:"create_time"`
+		ActivationTime string `json:"activate_time"`
+		LastOnLineTime string `json:"last_online_time"`
+		IotID          string `json:"iot_id"`
+		Label          string `json:"label"`
+		BatchCreate    bool   `json:"batch_create"`
+	}
+	var response Response
+	response.ID = device.ID
+	response.ProductID = device.ProductID
+	response.StatusID = device.StatusID
+	response.Name = device.Name
+	response.Remark = device.Remark
+	response.DeviceSecret = device.DeviceSecret
+	response.IP = device.IP
+	response.CreateTime = TimeDeal(device.CreateTime)
+	response.ActivationTime = TimeDeal(device.ActivationTime)
+	response.LastOnLineTime = TimeDeal(device.LastOnLineTime)
+	response.IotID = device.IotID
+	response.Label = device.Label
+	response.BatchCreate = device.BatchCreate
+
+	var product Product
+	db.First(&product, response.ProductID)
+	db.Model(&product).Related(&product.NodeType, "NodeType")
+	response.ProductKey = product.ProductKey
+	response.ProductName = product.Name
+	response.NoteTypeID = product.NetworkWayID
+	response.NodeType = product.NodeType.Name
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备信息查询成功",
+		"data":    response,
+	}
+	c.JSON(200, resp)
+}
+
+// 设备-查看-查看topic类
+// dtopics?did=1&accesskeyid=aaaa&signature=bbb
+func GetDeviceTopic(c *gin.Context) {
+	device_str := c.Query("did")
+	device_id, _ := strconv.Atoi(device_str)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	device := Device{}
+	db.First(&device, device_id)
+	product_id := device.ProductID
+
+	data := GetTopics(product_id, device_id)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "Topic查询成功",
+		"data":    data,
+	}
+	c.JSON(200, resp)
+}
+
+//// 设备-查看-topic类，自定义，发布消息(限订阅)
+//func CustomTopicSendMessage(c *gin.Context) {
+//	topicid := 1
+//	message := "hello world"
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//}
+//
+//// 设备-查看-运行状态，图
+//// mapstatus?did=1&accesskeyid=aaaa&signature=bbb
+//func GetRunningStatusMap(c *gin.Context) {}
+//
+//// 设备-查看-运行状态，表
+//// tablestatus??did=1&accesskeyid=aaaa&signature=bbb
+//func GetRunningStatusTable(c *gin.Context) {}
+//
+//// 设备-查看-运行状态，实时刷新 TODO 待商讨
+//// 设备-查看-运新状态，查看数据 TODO
+//// 设备-查看-事件管理 TODO 暂缓
+//// 设备-查看-服务调用 TODO 暂缓
+//
+//// 设备-查看-影子设备，查看
+//// shadowdevice?did=1&accesskeyid=aaaa&signature=bbb
+//func GetShadowDeviceInfo(c *gin.Context) {}
+//
+//// 设备-查看-影子设备，更新影子
+//func UpdateShadowDevice(c *gin.Context) {
+//	device := 1
+//	message := `{
+// "state": {
+//   "reported": {},
+//   "desired": {}
+// },
+// "metadata": {
+//   "reported": {},
+//   "desired": {}
+// },
+// "timestamp": 0,
+// "version": 0
+//}`
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//}
+//
+//// 设备-查看-文件管理 TODO 暂缓
+//// 设备-查看-日志服务 TODO 暂缓
+//
+//// 设备-删除
+//func DeleteDevice(c *gin.Context) {
+//	deviceid := 1
+//	accesskeyid := "aaa"
+//	signature := "bbb"
+//	// 删除关联数据
+//}
