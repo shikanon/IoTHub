@@ -347,7 +347,7 @@ func DeviceNameToDevice(product_key, device_name string) (device Device) {
 
 	var device_model Device
 	var product Product
-	db.Where("product_key = ?", product_key).First(&product_key)
+	db.Where("product_key = ?", product_key).First(&product)
 	product_id := product.ID
 	db.Where("name = ? AND product_id= ?", device_name, product_id).First(&device_model)
 
