@@ -341,16 +341,20 @@ func GetTopics(pid, did int) (topic Topics) {
 }
 
 // 设备名称获取设备
-func DeviceNameToDevice(device_name string) (device Device) {
+func DeviceNameToDevice(product_key, device_name string) (device Device) {
 	db := database.DbConn()
 	defer db.Close()
 
 	var device_model Device
-	db.Where("name = ?", device_name).First(&device_model)
+	var product Product
+	db.Where("product_key = ?", product_key).First(&product_key)
+	product_id := product.ID
+	db.Where("name = ? AND product_id= ?", device_name, product_id).First(&device_model)
+
 	return device_model
 }
 
-// 获取完整物模型 TODO
+// 获取完整物模型
 func GetIntactModel(producy_key string) (result primitive.M) {
 	db := database.DbConn()
 	defer db.Close()
@@ -363,7 +367,8 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
 	filter := bson.M{"_id": model_id}
 	data := database.MongoDbGetFilterData(intact_collection_name, filter)
-	fmt.Printf("%T\n", data)
+	delete(data, "_id")
+
 	return data
 }
 
