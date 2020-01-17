@@ -27,18 +27,19 @@ export function cardValFilter(value,unit) {
 
 export function deviceStatusFilter(value) {
         switch (value) {
-                case 'DISABLE':
-                        value = "已禁用";
-                        break;
-                case 'UNACTIVE':
+          
+                case 1:
                         value = "未激活";
                         break;
-                case 'ONLINE':
+                case 2:
+                        value = "禁用";
+                        break;        
+                case 3:
                         value = "在线";
-                        break;
-                case 'OFFLINE':
+                        break;   
+                case 4:
                         value = "离线";
-                        break;                                   
+                        break;                        
                 } 
         return value
 }
@@ -46,16 +47,16 @@ export function deviceStatusFilter(value) {
 
 export function topicOperationFilter(value) {
         switch (value) {
-                case '0':
+                case 1:
                         value = "发布";
                         break;
-                case '1':
+                case 2:
                         value = "订阅";
                         break;
-                case '2':
+                case 3:
                         value = "发布和订阅";
                         break;
-                                              
+                                                
                 } 
         return value
 }
@@ -64,6 +65,24 @@ export function topicOperationFilter(value) {
 export function formatTags(tags) {
         
         return tags.map((item) => item).join("·")
+}
+
+
+export function nodeTypeFilter(nodeType) {
+        
+        switch (nodeType) {
+                case '0':
+                        nodeType = "直连设备";
+                        break;
+                case '1':
+                        nodeType = "网关子设备";
+                        break;
+                case '2':
+                        nodeType = "网关设备";
+                        break;
+                                              
+                } 
+        return nodeType
 }
 
 

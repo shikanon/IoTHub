@@ -96,6 +96,38 @@ export default {
     methods:{
 
         init(){
+
+            this.$API_SOTA.getIndexList().then((res) => {
+                console.log(res.data)          
+                this.data = res.data
+            })
+
+            // [
+            //     {
+            //         "id": 1,
+            //         "name": "基础模型",
+            //         "APIType": 0,
+            //         "Image": "icon-concept.svg"
+            //     },
+            //     {
+            //         "id": 2,
+            //         "name": "SOTA模型",
+            //         "APIType": 0,
+            //         "Image": "icon-concept.svg"
+            //     },
+            //     {
+            //         "id": 3,
+            //         "name": "行业解决方案",
+            //         "APIType": 1,
+            //         "Image": "icon-concept.svg"
+            //     },
+            //     {
+            //         "id": 4,
+            //         "name": "数据集",
+            //         "APIType": 2,
+            //         "Image": "icon-concept.svg"
+            //     }
+            // ]
             this.data = 
             {"knowledge":[
                 {"total_count":694,"type_en":"concept","type":"基础概念","icon":"icon-concept.svg","data":{"id":"ce06fe06-610e-4a82-8af3-a7e1c0d5d351","name":"用户画像"}},
@@ -103,14 +135,14 @@ export default {
                 {"total_count":516,"type_en":"tech_task","type":"技术任务","icon":"icon-task.svg","data":{"id":"d43c21c2-131f-4166-abe9-ec02e2efeb21","name":"图像聚类"}}
                 ],
                 
-                "resource":[
+            "resource":[
                     {"total_count":1423,"type_en":"data_set","type":"数据集","icon":"icon-dataset.svg","data":{"id":"32796975-9890-4966-af95-5f5309f78336","name":"SQuAD"}},
                     {"total_count":956,"type_en":"tool","type":"开发工具","icon":"icon-tool.svg","data":{"id":"3feca874-32fb-4694-9ca1-82c37e4fcec6","name":"nullabor"}},
                     {"total_count":778,"type_en":"tutorial","type":"教程","icon":"icon-tutorial.svg","data":{"id":"778e86c6-c5f2-4928-b7f0-9b2f6f6f3112","name":"图神经网络相关资料"}},
                     {"total_count":344,"type_en":"event","type":"活动及会议","icon":"icon-event.svg","data":{"id":"955766d6-8a05-41e6-91e8-e3ecab344739","name":"SEKE  International Conference on Software Engineering \u0026 Knowledge Engineering"}},
                     {"total_count":366,"type_en":"publication","type":"书籍期刊","icon":"icon-publication.svg","data":{"id":"fb957a10-70fe-4ba2-b854-9ad9d7ab0bb4","name":"IEEE transactions of industrial informatics"}}
                     ],
-                "people":[
+            "people":[
                     {"total_count":2087,"type_en":"expert","type":"专家","icon":"icon-expert.svg","data":{"id":"454ea7d2-f5d2-4e1f-bac6-dd2d74400490","name":"陈文亚"}}
                     ]
             }

@@ -32,13 +32,20 @@
             fixed="right"
             label="操作"
             >
-            <template slot-scope="scope">
-              <el-button type="text" size="small" @click="showBatchDlt(scope.row.ApplyId)">详情</el-button><el-divider direction="vertical"></el-divider>
-              <el-button type="text" size="small" @click="download(scope.$index, scope.row)">下载CSV</el-button>
+            <template slot-scope="scope" >
+              <div class="flex-center">
+                <el-button type="text" size="small" @click="showBatchDlt(scope.row.ApplyId)">详情</el-button><el-divider direction="vertical"></el-divider>
+                <download-excel
+                :data = "json_data"
+                :fields = "json_fields"
+                name = "Triad.xls">
+                <el-button type="text" size="small" @click="download(scope.$index, scope.row)">下载CSV</el-button>
+              </download-excel> 
+              </div>
             </template>
           </el-table-column>
         </el-table>
-        <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" :pageSizes="pageSizes"
+        <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" 
           @handleSizeChange="handleSizeChange" @handleCurrentChange="handleCurrentChange"
         ></Pagination>
 
@@ -57,6 +64,12 @@
   import {mapState, mapMutations, mapGetters} from 'vuex'
 
     export default {
+      props:{
+        productId:{
+            type:Number,
+            default:0
+        }
+      },
       components: { ApplyDtlList },
       data() {
         return {
@@ -64,26 +77,38 @@
           currentPage:1,
           pageSize:10,
           total:0,
-          pageSizes:[5,10,30,50],
           drawer:false,
-          applyId:''
+          applyId:'',
+           json_fields: {
+          "DeviceName": "DeviceName",    //常规字段
+          "DeviceSecret": "DeviceSecret", //支持嵌套属性
+          "ProductKey": "ProductKey"       
+          },
+          json_data:[]
         }
       },
-      computed:{
-        ...mapState({  
-          userEditFlg:'isUserEdit'                                                
-        }),
-          
+      watch:{
+        //监听productId,若发生变化，重新查询设备批次
+        productId:{  
+            handler:function(val,oldval){ 
+                if(val!=oldval){
+                    this.$nextTick(()=>{
+                        this.getApplyList()
+                    })
+                }
+            },  
+            immediate:true,//关键
+            deep:true
+          },
       },
+     
       created(){
-        this.init() 
+        this.getApplyList() 
       },
       methods:{
-        ...mapMutations([
-            'changeUserEdit'
-        ]),
-         init (){
-            // this.$API.getUser(this.currentPage,this.pageSize,this.username).then((res) => {
+     
+         getApplyList(){
+            // this.$API_IOT.getApplyList(this.currentPage,this.pageSize,this.productId).then((res) => {
             //     this.tableData = res.data.objects
             //     this.total = res.data.num_results
             // })
@@ -129,18 +154,9 @@
         
          
            download(index,row){               
-              this.$confirm('此操作将永久删除该纪录, 是否继续?', '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-              }).then(() => {
-                this.tableData =  this.tableData.filter(item => item.name !== row.name);
-              }).catch(() => {
-                this.$message({
-                  type: 'info',
-                  message: '已取消删除'
-                });          
-              });                       
+            
+             this.json_data = [{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"1aTVy5xU40rPijlmzjGxrKNmYO1MdSxG","ProductKey":"a1Ibli2tqC2","DeviceName":"0iV7vxaUCOdHu57Cz61h"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"leiqy5nm5dBd0BzzsIayEv6FTXEmKhbi","ProductKey":"a1Ibli2tqC2","DeviceName":"1Cwbu6U4TJkZis7iiwZ1"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"HVi2e9hLKw9vsRkd1hoLq3rH6qzD05Cc","ProductKey":"a1Ibli2tqC2","DeviceName":"2D87VhVL3Pn0G8v9qE2K"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"cmB5fRPwbvq6Opu37KsKkqjyA9jsFOZr","ProductKey":"a1Ibli2tqC2","DeviceName":"2QDnYGpFwDNEioJYRcIw"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"LZalQwxQ2RDAUrSNDHyZUU17R3W7R5FW","ProductKey":"a1Ibli2tqC2","DeviceName":"4cUq41BU58m2QmoNN0zr"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"UvMnfHtWQ1bvI4jXuj4f3v6T6EqO5Az7","ProductKey":"a1Ibli2tqC2","DeviceName":"6Q0IphH37mIoN30lXNdf"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"FEIIbM5jzfSagEUFRqdLLF8htXYs9HyR","ProductKey":"a1Ibli2tqC2","DeviceName":"6XOocf0TTacaOG7IZ2Ww"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"JoJoHi857P8MWKrLpPom2l7GeniDnBKh","ProductKey":"a1Ibli2tqC2","DeviceName":"6c8mUv27FdrvUAeAXor6"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"5wGWMTJGfEHZSHsyOfTyuiV4SuKPnMut","ProductKey":"a1Ibli2tqC2","DeviceName":"7Qm4NdoezXiYeS5WtmwW"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"Bblk3v7NS6JQXzIzua8hlD5mt6dsOxNK","ProductKey":"a1Ibli2tqC2","DeviceName":"7elX8EQw6egJZxmeDW74"}]
+
           },
           showBatchDlt(applyId){
             this.drawer = true
@@ -155,6 +171,10 @@
   <style scoped>
     .search-input{
       width:200px;
+    }
+    .flex-center{
+      display: flex;
+      align-items: center;
     }
   </style>
 

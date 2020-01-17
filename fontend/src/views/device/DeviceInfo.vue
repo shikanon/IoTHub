@@ -1,18 +1,18 @@
 <template>
     <div name="device-info"> 
-        <p class="label-title"> 设备信息
-        </p>
+        <p class="label-title"> 设备信息</p>
+  
         <div class="table-info">
           <div class="table-row">
                 <div class="table-row-label">产品名称</div> 
                 <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
+                    <span>{{device.name}}</span>
                 </div>
            
                 <div class="table-row-label">ProductKey</div>
                 <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
-                    <CopyBtn :content="device.ProductName"></CopyBtn>
+                    <span>{{device.product_key}}</span>
+                    <CopyBtn :content="device.product_key"></CopyBtn>
                 </div>
            
                 <div class="table-row-label">区域</div>
@@ -23,12 +23,12 @@
             <div class="table-row">
                 <div class="table-row-label">节点类型</div> 
                 <div class="table-row-info">
-                    <span>{{device.CategoryName}}</span>
+                    <span>{{device.node_type}}</span>
                 </div>          
                 <div class="table-row-label">DeviceName</div>
                 <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
-                    <CopyBtn :content="device.ProductName"></CopyBtn>
+                    <span>{{device.name}}</span>
+                    <CopyBtn :content="device.name"></CopyBtn>
                 </div>
             
                 <div class="table-row-label">认证方式</div>
@@ -39,9 +39,8 @@
             <div class="table-row">
                 <div class="table-row-label">备注名称</div> 
                 <div class="table-row-info">
-                    <span>{{device.deviceKey}}</span>
-                </div>
-          
+                    <span>{{device.remark}}</span>
+                </div>        
                 <div class="table-row-label">IP地址</div>
                 <div class="table-row-info">
                     <span>{{device.ProductName}}</span>
@@ -54,22 +53,21 @@
              <div class="table-row">
                 <div class="table-row-label">添加时间</div> 
                 <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
-                </div>
-          
+                    <span>{{device.create_time}}</span>
+                </div>         
                 <div class="table-row-label">激活时间</div>
                 <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
+                    <span>{{device.activate_time}}</span>
                 </div>
                 <div class="table-row-label">最后上线时间</div>
                 <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
+                    <span>{{device.last_online_time}}</span>
                 </div>
             </div>
              <div class="table-row">
                 <div class="table-row-label">当前状态</div> 
                 <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
+                    <span>{{device.status_id | deviceStatusFilter}}</span>
                 </div>
           
                 <div class="table-row-label">实时延迟</div>
@@ -105,9 +103,11 @@
         <p class="label-title">标签信息
           <el-button type="text" @click="addLabelVisible = true ">编辑</el-button>
         </p>
-        <p>设备标签</p>
+        <p>设备标签
+             <span v-for="(item,index) in labelArr" :key = "index" class="label-span">{{item['key']}}:{{item['value']}}</span>
+        </p>
         <el-dialog title="添加标签" :visible.sync="addLabelVisible" width="26%">
-            <AddLabel  :labelArr="labelArr" type="device" @close="addLabelVisible = false"></AddLabel>
+            <AddLabel  ref="addLabel" :labelArr="labelArr" type="device" @close="addLabelVisible = false"></AddLabel>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="addLabelSubmit">确 定</el-button>
                 <el-button @click="addLabelVisible = false">取 消</el-button>
@@ -119,14 +119,13 @@
   <script>
     export default {
       props:{
-        ProductName:{
-          type:String,
-          default:''
+        device:{
+          type:Object,
+          default:() => ({})
         }      
       },
       data() {
         return {      
-            device:{},
             addLabelVisible:false,
             labelArr:[]
         }
@@ -135,32 +134,16 @@
        
       },
       created(){
-          this.getDeviceInf()
       },
       methods:{
           
-        getDeviceInf(){
-                this.device ={Status: "UNACTIVE",
-                Owner: true,
-                ProductName: "3231323",
-                DeviceSecret: "HVi2e9hLKw9vsRkd1hoLq3rH6qzD05Cc",
-                UtcOnline: "",
-                IotId: "2D87VhVL3Pn0G8v9qE2K000100",
-                GmtCreate: "2019-12-23 15:43:25",
-                UtcCreate: "2019-12-23T07:43:25.000Z",
-                UtcActive: "",
-                GmtActive: "",
-                NodeType: 0,
-                Region: "cn-shanghai",
-                GmtOnline: "",
-                ProductKey: "a1Ibli2tqC2",
-                DeviceName: "2D87VhVL3Pn0G8v9qE2K",
-            }
-        }
-        ,addLabelSubmit(){
+        addLabelSubmit(){
+           this.labelArr =  this.$refs.addLabel.label
+           this.addLabelVisible = false
+           console.log(`编辑label信息提交${this.labelArr }`)
 
-        }
-        ,test(){
+        },
+        test(){
            this.$confirm('测试网络延迟时将会向设备发送一条空消息，请确认对设备端业务没有影响！', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
@@ -187,3 +170,4 @@
     }
 
   </style>
+

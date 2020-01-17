@@ -15,7 +15,7 @@ body{margin: 0px;}
   border-radius: 5px;
 }
 /*搜索框*/
- .search-input{width: 300px;}
+ .search-input{width: 200px;}
 
 /*标签*/
  .tag{
@@ -26,6 +26,11 @@ body{margin: 0px;}
 }
 
   /*产品详情，设备详情，头部信息*/
+  .page-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
    .title-inf{
     display: flex;
     height: 36px;
@@ -75,7 +80,7 @@ body{margin: 0px;}
        border-bottom:none
    }
    .table-row-label{
-     width: 100px;
+     width: 110px;
      background: #fbfbfc;
      border-right: 1px solid #ccc;
      color: #73777a;
@@ -100,3 +105,9 @@ body{margin: 0px;}
    .margin-b-20{
     margin-bottom: 20px;
    }
+
+   .step-desc{
+    font-size: 20px;
+    color: #333;
+    margin-top: 0px;
+}

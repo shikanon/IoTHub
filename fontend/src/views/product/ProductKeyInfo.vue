@@ -1,20 +1,24 @@
 <template>
-    <div name="product-key-info">    
-        <p class="title">产品证书</p>
+    <div name="product-key-info">   
+        <div class="desc-txt-gray">
+            <i class="el-icon-question"></i> 
+            <div>ProductSecret 是由物联网平台颁发的产品密钥，通常与ProductKey成对出现，可用于一型一密的认证方案。该参数很重要，需要您保管好，不能泄露。</div>
+        </div> 
+        <p class="title">产品证书</p>   
         <div class="table-info">
             <div class="table-row">
                 <div class="table-row-label">ProductSecret</div> 
                 <div class="table-row-info">
-                    <span>{{product.ProductSecret}}</span>
-                    <CopyBtn :content="product.ProductSecret"></CopyBtn>
+                    <span>{{product.product_secret}}</span>
+                    <CopyBtn :content="product.product_secret"></CopyBtn>
                     <el-button type="text" @click="resetSecret" style="color:#f56c6c">重置</el-button>
                 </div>
             </div>
             <div class="table-row">
                 <div class="table-row-label">ProductKey</div>
                 <div class="table-row-info">
-                    <span>{{product.ProductKey}}</span>
-                    <CopyBtn :content="product.ProductKey"></CopyBtn>
+                    <span>{{product.product_key}}</span>
+                    <CopyBtn :content="product.product_key"></CopyBtn>
                 </div>
             </div>    
         </div>
@@ -36,6 +40,7 @@
                 当设备与物联网平台建立连接时，物联网平台对其携带的设备证书信息进行认证。
             如果您期望使用一机一密烧录方式，请前往对应的设备详情，来获取设备证书烧录，</p>
             <div class="desc-txt-blue">
+                <i class="el-icon-info"></i>
                 <span>如果您期望使用一机一密烧录方式，请前往对应的设备详情，来获取设备证书烧录，</span>
                 <el-button  type = "text" size="medium" @click="gotoDeviceList">前往查看</el-button>
             </div>
@@ -63,9 +68,12 @@
       },
     
       methods:{
+          //跳转到设备列表
           gotoDeviceList(){
-               this.$router.push({name :'device-list',params: {product:this.product.ProductName}}) 
+               this.$router.push({name :'device-list',params: {productId:this.product.id}}) 
           },
+
+          //重置设备Secret
           resetSecret(){
                this.$confirm('重置后将导致原有ProductSecret失效，您需要将新生成的ProductSecret烧录到设备中，是否确定要重置？', '提示', {
                 confirmButtonText: '确定',
@@ -90,6 +98,18 @@
   <style scoped>
     .title{
         margin-top:0px
+    }
+
+    .desc-txt-gray{
+        display: flex;
+        align-items: center;
+    }
+
+    .el-icon-question{
+        margin-right: 20px;
+    }
+    .el-icon-info{
+        color:#0070cc
     }
  
   </style>

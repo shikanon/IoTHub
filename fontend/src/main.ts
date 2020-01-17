@@ -32,8 +32,8 @@ Router.prototype.push = function push(location) {
 //过滤器
 import * as filters from './utils/filters'
 //API
-import * as API from './utils/api'
-
+import * as API_IOT from './utils/api-iot'
+import * as API_SOTA from './utils/api-sota'
 import axios from 'axios'
 //vuex
 import store from './store'
@@ -58,9 +58,13 @@ import 'mavon-editor/dist/css/index.css'
 Vue.use(mavonEditor)
 
 // highlight.js代码高亮插件
-import Highlight from './components/highlight/index'; // from 路径是highlight.js的路径，纯属自定义
-Vue.use(Highlight);
+import Highlight from './components/highlight/index' // from 路径是highlight.js的路径，纯属自定义
+Vue.use(Highlight)
 
+
+import jsoneditor from 'jsoneditor'
+
+Vue.prototype.$jsoneditor = jsoneditor
 
 const i18n = new VueI18n({
     locale: 'zh', // 将要切换的语言，可以通过url拼的参数获取，用户行为select选择获取，本地manifest配置获取等，根据场景动态获取
@@ -75,7 +79,10 @@ const i18n = new VueI18n({
 Vue.config.productionTip = false
 
 //配置公共请求地址
-Vue.prototype.$API = API
+Vue.prototype.$API_IOT = API_IOT
+Vue.prototype.$API_SOTA = API_SOTA
+
+
 Vue.prototype.$axios = axios
 
 

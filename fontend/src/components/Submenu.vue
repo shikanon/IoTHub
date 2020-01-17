@@ -84,11 +84,10 @@ export default {
   watch: {
    
     $route:function(){   
-        console.log(this.$route.matched)
-        console.log(this.$route.name)
-        console.log(this.$route)
+      
         //匹配路由
-        this.defaultActive = this.$route.matched.filter(route => route.name === this.$route.name)[0].path
+        //this.defaultActive = this.$route.matched.filter(route => route.name === this.$route.name)[0].path
+        this.defaultActive = this.$route.matched.filter(route => route.meta.leftMenu === true && !route.redirect)[0].path
     }
   },
   created(){

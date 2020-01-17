@@ -1,28 +1,27 @@
 'use strict'
 // Template version: 1.3.1
 // see http://vuejs-templates.github.io/webpack for documentation.
-
+// API_IOT:'"http://10.10.6.78:9898/iot/api/v1"',
+// API_SOTA:'"http://10.10.6.15:8000/sota/api/v1"'
 const path = require('path')
 module.exports = {
   dev: {
-
-    // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
-      '/api': {
-        target: 'http://117.48.209.47:8081/api/obs',
+      '/iot': {
+        target: 'http://10.10.6.78:9898/iot/api/v1',
         changeOrigin: true,//是否跨域
         pathRewrite:{
           '^/api': ''
         }
       },
-      '/train': {
-        target: 'http://117.48.209.47:16009/api',
+      '/sota': {
+        target: 'http://10.10.6.15:8000/sota/api/v1',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
-          '^/train': ''
+          '^/sota': ''
         }
       }
     },

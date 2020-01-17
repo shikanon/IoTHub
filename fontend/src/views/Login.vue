@@ -78,7 +78,7 @@ export default {
             //   this.setLoginName(this.loginForm.user_name)
             //   this.$router.push({ path: '/home' })
             // });
-            this.$API.login(this.loginForm).then((res) => {
+            this.$API_IOT.login(this.loginForm).then((res) => {
                console.log(res)
                if(res.data.errorCode === 0){
 
@@ -86,8 +86,8 @@ export default {
                   this.$alert(this.$t('text.login_err_txt'), this.$t('text.system_tips'), {
                      confirmButtonText: this.$t('btn.sure')
                   })
-            console.log('error submit!!');
-            return false;
+               console.log('error submit!!');
+                  return false;
                }else{
                   this.setLoginName(this.loginForm.user_name)
                   this.setTOKEN(res.data.token)

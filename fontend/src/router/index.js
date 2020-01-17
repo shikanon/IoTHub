@@ -8,7 +8,7 @@ export default new Router({
   routes: [
     {
       path: '/login',
-      name: 'Login',
+      name: 'login',
       component: () => import('@/views/Login.vue')
     },
     {
@@ -41,11 +41,13 @@ export default new Router({
             icon:'el-icon-menu',
             leftMenu:true
           },
-          redirect: "/home/system/user",
+          redirect: "/home/product/product-list",
           children:[
                
             {
-              path: '/home/product/product-list/:id',
+            //  path: '/home/product/product-list/:id',
+              path: '/home/product/product-list',
+
               name: 'product-list',
               component:  () =>import( '@/views/product/ProductList.vue'),
               meta: {
@@ -63,7 +65,8 @@ export default new Router({
                   },
                 } ,
                 {
-                  path: '/home/product/details/:id',
+                  // path: '/home/product/details/:id',
+                  path: '/home/product/details',
                   name: 'product-details',
                   component:  () =>import( '@/views/product/ProductDetails.vue'),
                   meta: {
@@ -74,7 +77,8 @@ export default new Router({
               ]
             }     
             ,{
-              path: '/home/device/:id',
+              path: '/home/device',
+              // path: '/home/device/:id',
               name: 'device-list',
               component:  () =>import( '@/views/device/DeviceManage.vue'),
               meta: {
@@ -83,7 +87,8 @@ export default new Router({
               },
               children:[
                 {
-                  path: '/home/device/details/:id',
+                 // path: '/home/device/details/:id',
+                  path: '/home/device/details',
                   name: 'device-details',
                   component:  () =>import( '@/views/device/DeviceDetails.vue'),
                   meta: {
@@ -94,7 +99,8 @@ export default new Router({
               ]
             }  
             ,{
-              path: '/home/group/:id',
+             // path: '/home/group/:id',
+              path: '/home/group',
               name: 'group-list',
               component:  () =>import( '@/views/group/GroupList.vue'),
               meta: {
@@ -103,7 +109,9 @@ export default new Router({
               },
               children:[
                 {
-                  path: '/home/group/details/:id',
+                  path: '/home/group/details',
+                //  path: '/home/group/details/:id',
+
                   name: 'group-details',
                   component:  () =>import( '@/views/group/GroupDetails.vue'),
                   meta: {
@@ -164,8 +172,8 @@ export default new Router({
     }, 
     {
       path: '/',
-      name: 'Login',
-      component: () => import( '@/views/Login.vue')
+      name: 'home',
+      component: () => import( '@/views/Home.vue')
     }
   ]
   

@@ -6,6 +6,11 @@ import CopyBtn from './CopyBtn'
 import Topic from '@/views/topic/Topic'
 import AddLabel from './AddLabel'
 import JsonView from 'vue-json-views'
+import JsonExcel from 'vue-json-excel'
+import UseStep from '@/views/useStep/UseStep'
+import AceEditor from 'vue-ace-editor'
+import VueJsonEditor from 'vue-json-editor'
+
 
 import LeftMenu from '@/views/knowledge-base/LeftMenu'
 function plugin(Vue){
@@ -22,7 +27,12 @@ function plugin(Vue){
     Vue.component('AddLabel',AddLabel)
     Vue.component('JsonView',JsonView)
     Vue.component('LeftMenu',LeftMenu)
+    Vue.component('downloadExcel', JsonExcel)
+    Vue.component('UseStep', UseStep)
+    Vue.component('AceEditor', AceEditor)
+    Vue.component('VueJsonEditor', VueJsonEditor)
 
+    
   
 }
 

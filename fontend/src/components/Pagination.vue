@@ -26,7 +26,7 @@
               },
                pageSizes: {
                 type: Array,
-                default: [10,30,50,100]
+                default: () => [10,30,50,100]
               }
       },
    
@@ -54,5 +54,6 @@
 <style scoped >
   .el-pagination{
     margin-top: 20px;
+    float: right;
   }
 </style>

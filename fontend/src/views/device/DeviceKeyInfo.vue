@@ -5,22 +5,22 @@
             <div class="table-row">
                 <div class="table-row-label">ProductKey</div> 
                 <div class="table-row-info">
-                    <span>{{device.ProductKey}}</span>
-                    <CopyBtn :content="device.ProductKey"></CopyBtn>
+                    <span>{{device.product_key}}</span>
+                    <CopyBtn :content="device.product_key"></CopyBtn>
                 </div>
             </div>
             <div class="table-row">
                 <div class="table-row-label">DeviceName</div>
                 <div class="table-row-info">
-                    <span>{{device.DeviceName}}</span>
-                    <CopyBtn :content="device.DeviceName"></CopyBtn>
+                    <span>{{device.name}}</span>
+                    <CopyBtn :content="device.name"></CopyBtn>
                 </div>
             </div>    
             <div class="table-row">
                 <div class="table-row-label">DeviceSecret</div>
                 <div class="table-row-info">
-                    <span>{{device.DeviceSecret}}</span>
-                    <CopyBtn :content="device.DeviceSecret"></CopyBtn>
+                    <span>{{device.device_secret}}</span>
+                    <CopyBtn :content="device.device_secret"></CopyBtn>
                 </div>
             </div> 
         </div>
@@ -35,6 +35,7 @@
             <p>同一产品下所有设备可以烧录相同产品证书（即 ProductKey 和 ProductSecret ）。
                 设备发送激活请求时，物联网平台进行产品身份确认，认证通过，下发该设备对应的DeviceSecret。</p>
              <div class="desc-txt-blue">
+                 <i class="el-icon-info"></i>
                 <span>如果您期望使用一型一密烧录方式，请前往对应的产品详情，来获取产品证书烧录，</span>
                 <el-button  type = "text" size="medium" @click="gotoProductDtl">前往查看</el-button>
             </div>
@@ -70,13 +71,15 @@
         }
       },
       created(){        
-         this.copyTxt.ProductKey =  this.device.ProductKey
-         this.copyTxt.DeviceName =  this.device.DeviceName
-         this.copyTxt.DeviceSecret =  this.device.DeviceSecret  
+         this.copyTxt.ProductKey =  this.device.product_key
+         this.copyTxt.DeviceName =  this.device.name
+         this.copyTxt.DeviceSecret =  this.device.device_secret  
+
+         
      },
       methods:{
           gotoProductDtl(){
-               this.$router.push({name :'product-list',params: {productName:this.device.ProductName}}) 
+               this.$router.push({name :'product-list',params: {productId:this.device.product_id}}) 
           }
       }
     }
@@ -84,7 +87,11 @@
 
   <style scoped>
  
-  .title{
+    .title{
         margin-top:0px
+     }
+
+    .el-icon-info{
+        color:#0070cc
     }
   </style>

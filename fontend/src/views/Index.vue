@@ -4,7 +4,7 @@
             <div class="hello-msg">{{helloMsg}}</div>
             <div class="card-box margin-b-10">
                 <el-card  shadow="hover">     
-                    <div class="">当月设备消息量</div>
+                    <div class="margin-b-10">当月设备消息量</div>
                     <div>2</div>                  
                 </el-card>
                 <el-card shadow="hover">     
@@ -36,7 +36,7 @@
                                     <div class="margin-b-10">
                                         <p>快速连接设备</p>
                                         <div class="desc-div"> 基于该流程，可快速将你的计算机，或者设备连接到阿里云物联网平台。</div>
-                                        <el-button size="medium">开始体验</el-button>                                   
+                                        <el-button size="medium" @click="startUseStep ">开始体验</el-button>                                   
                                     </div> 
                                 </div>                                             
                             </el-card>
@@ -64,7 +64,7 @@
                             <el-button type="text">更多</el-button>
                         </div>
                         <div class="card-box">
-                               <div class="card-box">
+                               <div class="flex-box">
                             <a>                               
                                 <div class="margin-b-10">
                                     <img  class="image" src="https://img.alicdn.com/tfs/TB1sUzLbxD1gK0jSZFyXXciOVXa-600-336.jpg"/>
@@ -212,6 +212,15 @@
                  </el-card>    
              </div>
         </div>
+        <el-dialog title="如何连接设备" :visible.sync="dialogVisible" width="40%">
+            <UseStep :step="step" @addStep="addStep($event)"  @load="hasloaded = true" ref="useStep"></UseStep>
+             <span slot="footer" class="dialog-footer">
+                <el-button v-if="step > 0" @click="back">返 回</el-button>
+                <el-button type="primary" @click="next" :disabled=" step === 3 && !hasloaded">
+                    {{step === 0 ? '开始体验': step === 4 ? '完成':'下一步'}}
+                </el-button>
+            </span>
+        </el-dialog>
     </div>
 </template>
 
@@ -219,7 +228,10 @@
 export default {
     data() {
         return {      
-         helloMsg:''
+         helloMsg:'',
+         dialogVisible:false,
+         step:0,
+         hasloaded:false
         }
       },
       created(){
@@ -227,7 +239,34 @@ export default {
           var hours = now.getHours();
           this.helloMsg = hours >= 12 ? "下午好!" : "上午好!" 
 
+      },
+      methods:{
+          startUseStep(){
+                this.step = 0
+                this.dialogVisible = true
+          },
+          next(){
+              //提交
+            if(this.step === 0){
+                this.step += 1
+            }else{
+                if(this.step === 4){
+                    this.dialogVisible = false
+                }else{
+                    this.$refs['useStep'].$refs[`step${(this.step)}`].nextStep();
+                }
+                
+            }
+              
+          },
+          back(){
+              this.step -= 1
+          },
+          addStep(){
+              this.step += 1
+          }
       }
+
 }
 </script>
 
@@ -266,6 +305,9 @@ export default {
 .space-between{
       justify-content: space-between;
 }
+.flex-box a{
+    margin-right: 20px;
+}
 .img-box{
     display: flex;
     align-items: center;
@@ -280,7 +322,6 @@ export default {
     color: #999;
     margin-bottom: 15px;
 }
-
 
 .left-box{
  width: 80%;
@@ -319,6 +360,9 @@ export default {
     font-size: 12px;
     padding: 5px;
 }
+
+
+
 
 
 </style>

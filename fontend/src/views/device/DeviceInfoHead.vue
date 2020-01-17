@@ -3,8 +3,8 @@
         <div class="title-inf">  
             <div >
                 <span class="text-gray title">产品</span> 
-                <span class="text-gray">{{device.ProductName}}</span>
-                <CopyBtn :content="device.ProductName"></CopyBtn>        
+                <span class="text-gray">{{device.product_name}}</span>
+                <CopyBtn :content="device.product_name"></CopyBtn>        
             </div>
             <div >
                 <span class="text-gray title">DeviceSecret</span> 
@@ -15,8 +15,8 @@
         </div>
         <div class="title-inf">
             <div>
-                <span class="text-gray title">ProductKey</span> <span class="text-gray">{{device.ProductKey}}</span>
-                <CopyBtn :content="device.ProductKey"></CopyBtn>    
+                <span class="text-gray title">ProductKey</span> <span class="text-gray">{{device.product_key}}</span>
+                <CopyBtn :content="device.product_key"></CopyBtn>    
             </div>    
         </div>
         <el-dialog title="设备证书" :visible.sync="devKeyVisible" width="26%">
@@ -42,7 +42,7 @@ export default {
              devKeyVisible:false
          }
      },
-   
+
     methods:{
   
     }

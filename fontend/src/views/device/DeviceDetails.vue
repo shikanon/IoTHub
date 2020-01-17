@@ -1,41 +1,41 @@
 
 <template>
   <div name="device-info">
-    <div class="page-header">
-        <el-page-header @back="goBack" :content="device.DeviceName" >       
+    <div class="header">
+        <el-page-header @back="goBack" :content="deviceInfo.name" >       
         </el-page-header>
-        <el-tag :type="device.Status === 'ONLINE' ? 'success': device.Status === 'UNACTIVE' ? 'info': device.Status === 'DISABLE' ? 'danger':'warning' " 
-        class="tag">{{ device.Status | deviceStatusFilter }}</el-tag>
+        <el-tag :type="deviceInfo.status_id === 5 ? 'success': deviceInfo.status_id === 1 ? 'info': deviceInfo.status_id === 4 ? 'danger':'warning' " 
+        class="tag">{{ deviceInfo.status_id | deviceStatusFilter }}</el-tag>
     </div>
-       <DeviceInfoHead :device="device" ></DeviceInfoHead>
+       <DeviceInfoHead :device="deviceInfo" ></DeviceInfoHead>
 
       <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
-        <el-tab-pane label="设备信息" name="first">
-              <DeviceInfo :deviceName="device.DeviceName"></DeviceInfo>
+        <el-tab-pane label="设备信息" name="deviceInfo">
+              <DeviceInfo :device="deviceInfo"></DeviceInfo>
         </el-tab-pane>
-        <el-tab-pane label="Topic列表" name="first1">
-              <Topic type="device"></Topic>
+        <el-tab-pane label="Topic列表" name="topic" lazy>
+              <Topic type="device" :queryKey="deviceId"></Topic>
         </el-tab-pane>
-        <el-tab-pane label="运行状态" name="second">     
+        <el-tab-pane label="运行状态" name="runState" lazy>     
             <runState></runState>
         </el-tab-pane>
-        <el-tab-pane label="事件管理" name="third2">
+        <el-tab-pane label="事件管理" name="EventList" lazy>
           <EventList></EventList>
         </el-tab-pane>
-        <el-tab-pane label="服务调用" name="third3">
+        <el-tab-pane label="服务调用" name="service" lazy>
             
         </el-tab-pane>   
-        <el-tab-pane label="设备影子" name="third4">
-           
+        <el-tab-pane label="设备影子" name="DeviceShadow" lazy> 
+             <DeviceShadow :status="deviceInfo.status_id"></DeviceShadow>
         </el-tab-pane>
-        <el-tab-pane label="文件管理" name="third5">
+        <el-tab-pane label="文件管理" name="fileList" lazy>
            
         </el-tab-pane>
         
-        <el-tab-pane label="日志服务" name="third6">
+        <el-tab-pane label="日志服务" name="logService" lazy>
            
         </el-tab-pane>
-        <el-tab-pane label="在线调试" name="fourth">
+        <el-tab-pane label="在线调试" name="debug" lazy>
             
         </el-tab-pane>
       </el-tabs>
@@ -47,20 +47,23 @@
   import DeviceInfo from './DeviceInfo'
   import RunState from '@/views/runState/RunState'
   import EventList from '@/views/event/EventList'
+  import DeviceShadow from './DeviceShadow'
 
   
     export default {
-      components: { DeviceInfoHead,DeviceInfo,runState:RunState, EventList},
+      components: { DeviceInfoHead,DeviceInfo,runState:RunState, EventList,DeviceShadow},
       data() {
         return {
-          activeName:'first',
-          device:{},
+          activeName:'deviceInfo',
+          deviceId:'',
+          deviceInfo:{},
           addBtnVisible:false
         }
       },
      
       created(){     
-        this.device = JSON.parse(this.$route.params.device)
+        this.deviceId = this.$route.params.deviceId
+        this.getDeviceDtl()
       },
      
       methods:{
@@ -72,6 +75,12 @@
        
         handleClick(tab, event) {
           //console.log(tab, event);
+        },
+
+        getDeviceDtl(){
+             this.$API_IOT.getDeviceDtl(this.deviceId).then((res) => {
+                 this.deviceInfo = res.data.data         
+            })
         },
        
       
@@ -85,10 +94,10 @@
   </script>
 
   <style scoped>
-    .page-header{
+    .header{
       margin-bottom: 20px;
       display: flex;
-     line-height: 32px;  
+      line-height: 32px;  
     }
     .tag{
         border-radius: 20px;

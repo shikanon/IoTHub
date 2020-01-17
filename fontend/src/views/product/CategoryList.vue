@@ -1,27 +1,25 @@
 <template>
     <div name="category-list"> 
-        <div >
-            <el-row>
-                <el-select v-model="value" placeholder="全部领域">
-                    <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value">
-                    </el-option>
-                </el-select>
-                <el-input
-                    v-model="query"
-                    placeholder='请输入品类名称或者所属场景'
-                    class="search-input"
-                    clearable
-                    size="medium"
-                    @keyup.enter.native="getCategoryList(1)"
-                >
-                    <i slot="suffix" class="el-input__icon el-icon-search" @click="getCategoryList(1)"></i>
-                </el-input> 
-            </el-row>
-        </div>
+        <el-row>
+            <el-select v-model="value" placeholder="全部领域">
+                <el-option
+                v-for="item in options"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id">
+                </el-option>
+            </el-select>
+            <el-input
+                v-model="query"
+                placeholder='请输入品类名称或者所属场景'
+                class="search-input"
+                clearable
+                size="medium"
+                @keyup.enter.native="getCategoryList(1)"
+            >
+                <i slot="suffix" class="el-input__icon el-icon-search" @click="getCategoryList(1)"></i>
+            </el-input> 
+        </el-row>
 
         <el-table 
           :data="tableData"
@@ -32,12 +30,12 @@
             label="品类名称"
             width="200">
               <template slot-scope="scope">
-                  <span >{{scope.row.CategoryName}}</span>
+                  <span >{{scope.row.name}}</span>
                    <i class="el-icon-info" @click="showAttribute(scope.row.attribute)"></i>
             </template>
           </el-table-column>
            <el-table-column
-            prop="type"
+            prop="scene"
             label="所属场景"
             width="150">
           </el-table-column>
@@ -49,7 +47,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" :pageSizes="pageSizes"
+        <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" 
           @handleSizeChange="handleSizeChange" @handleCurrentChange="handleCurrentChange"
         ></Pagination>
         <el-drawer
@@ -71,27 +69,11 @@
           currentPage:1,
           pageSize:10,
           total:0,
-          pageSizes:[5,10,30,50],
-            options: [{
-            value: '选项1',
-            label: '智能城市'
-            }, {
-            value: '选项2',
-            label: '智能审核和'
-            }, {
-            value: '选项3',
-            label: '智能工业'
-            }, {
-            value: '选项4',
-            label: '边缘计算'
-            }, {
-            value: '选项5',
-            label: '商业共享'
-            }],
-        value: '',
-        attribute:[],
-        query:'',
-        drawer:false
+          options: [],
+          value: '',
+          attribute:[],
+          query:'',
+          drawer:false
         }
       },
    
@@ -102,17 +84,40 @@
     },
       created(){
         this.openRouter = false
+        this.get
         this.getCategoryList() 
       },
       methods:{
        
-         getCategoryList(){
-            //  this.$API.getUser(this.currentPage,this.pageSize,this.username).then((res) => {
-            //     this.tableData = res.data.objects
+         getCategoryList(num){
+           if(num){
+             this.currentPage = num 
+           }
+             this.$API_IOT.getCategoryList(this.currentPage,this.pageSize,this.value).then((res) => {
+                this.tableData = res.data.data
+                this.total = res.data.num_results
+            })           
+         },
+         
+         getModelTypeList(){
+            this.options = [{id:1,name:"智能城市"},
+            {id:2,name:"智能生活"},
+            {id:3,name:"	智能工业"},
+            {id:4,name:"	边缘计算"},
+            {id:5,name:"	商业共享"},
+            {id:6,name:"	智能模板"},
+            {id:7,name:"	智能电力"},
+           {id: 8,name:"	智能农业"},
+            {id:9,name:"	智能建筑"},
+           {id: 10,name:"	智能园区"}]
+
+            //  this.$API_IOT.getCategoryList(this.currentPage,this.pageSize,this.username).then((res) => {
+            //     this.tableData = res.data.data
             //     this.total = res.data.num_results
-            // })
+            // })           
+         },
 
-
+         getAttributeList(){
             this.attribute =[
                 {type:'属性',
                  name:'工作状态',
@@ -128,84 +133,27 @@
                  name:'地理位置',
                  symbal:'GeoLocation',
                  dataType:'STRUCT',
-                },
-             
-            ]
-             this.tableData =[
-                 {
-                    CategoryId: "0",
-                    CategoryName: "路灯照明",
-                    type: "公共服务",
-                    "attribute": this.attribute,
-                   
-                },
-                 {
-                    CategoryId: "1",
-                    CategoryName: "车辆定位卡",
-                    type: "公共服务",
-                    "attribute": this.attribute,
-                   
-                },
-                 {
-                    CategoryId: "2",
-                    CategoryName: "水浸检测",
-                    type: "公共服务",
-                    "attribute": this.attribute,
-                   
-                },
-                 {
-                    CategoryId: "3",
-                    CategoryName: "井盖移位检测",
-                    type: "公共服务",
-                    "attribute": this.attribute,
-                   
-                },
-                 {
-                    CategoryId: "4",
-                    CategoryName: "垃圾满溢检测",
-                    type: "公共服务",
-                    "attribute": this.attribute,
-                   
-                },
-                 {
-                    CategoryId: "5",
-                    CategoryName: "地磁检测器",
-                    type: "公共服务",
-                    "attribute": this.attribute,
-                   
-                },
-                 {
-                    CategoryId: "6",
-                    CategoryName: "红外对射探测器",
-                    type: "公共服务",
-                    "attribute": this.attribute,
-                   
                 },           
             ]
-            this.total = this.tableData.length
          },
 
          handleSizeChange(val) {
-            console.log(`每页 ${val} 条`)
             this.pageSize = val 
-            this.currentPage = 1
-            this.getCategoryList()
+            this.getCategoryList(1)
 
           },
           handleCurrentChange(val) {
-            console.log(`当前页: ${val}`)
             this.currentPage = val 
             this.getCategoryList()
           },
 
             handleClick(category){     
-                this.$emit('select',category.CategoryId,category.CategoryName)            
+                this.$emit('select',category)            
             },
             handleCurrentChange(category){
-                this.$emit('select',category.CategoryId,category.CategoryName)            
+                this.$emit('select',category)            
             },
-            showAttribute(){
-                alert(1);
+            showAttribute(){        
                 this.drawer = true 
             }
         

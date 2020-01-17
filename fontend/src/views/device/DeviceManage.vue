@@ -2,12 +2,12 @@
     <div name="device">
         <div v-if="!openRouter">
             <el-row :span="24" class="device-info">
-                <el-select v-model="product" placeholder="全部产品">
+                <el-select v-model="productId" placeholder="全部产品"  @change="changeProductId">
                     <el-option
-                    v-for="item in products"
-                    :key="item.ProductKey"
-                    :label="item.ProductName"
-                    :value="item.ProductName">
+                    v-for="item in productArr"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
                     </el-option>
                 </el-select>
                 <el-divider direction="vertical"></el-divider>
@@ -18,44 +18,35 @@
                          <i class="el-icon-question"></i>
                         </el-tooltip>                    
                     </p>
-                    <p>4</p>
+                    <p>{{device_count}}</p>
                 </div>
                 <el-divider direction="vertical"></el-divider>
-                <div  class="device-view">
-                    <!-- <el-button 
-                    type="primary"  
-                    circle 
-                    size="mini"
-                  ></el-button> -->
+                <div  class="device-view">           
                     <p>
                         激活设备
                         <el-tooltip content="当前已激活的设备总数" placement="top" effect="light">
                          <i class="el-icon-question"></i>
                         </el-tooltip>
                     </p>
-                    <p>1</p>
+                    <p>{{device_active_count}}</p>
                 </div>
                 <el-divider direction="vertical"></el-divider>
                 <div  class="device-view">
                     <p>
-                        <!-- <el-button
-                        type="success" 
-                        circle 
-                        size="mini"></el-button> -->
                         当前在线
                         <el-tooltip content="当前在线的设备总数" placement="top" effect="light">
                          <i class="el-icon-question"></i>
                         </el-tooltip>
                     </p>
-                    <p>0</p>
+                    <p>{{device_online_count}}</p>
                 </div>         
             </el-row>
             <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
                 <el-tab-pane label="设备列表" name="device">
-                    <DeviceList :productArr="products"></DeviceList>
+                    <DeviceList :productArr="productArr" :productId="productId" @setAcount="setDeviceAcount($event)"></DeviceList>
                 </el-tab-pane>
                 <el-tab-pane label="批次管理" name="batch">
-                    <ApplyList></ApplyList>
+                    <ApplyList :productId="productId"></ApplyList>
                 </el-tab-pane>     
             </el-tabs>
         </div>
@@ -71,9 +62,12 @@ export default {
     data() {
       return {
         activeName: 'device',
-        product:'',
-        products:[],
-        openRouter:false
+        productId:0,
+        productArr:[],
+        openRouter:false,
+        device_count:0,
+        device_active_count:0,
+        device_online_count:0
       }
     },
      watch: {
@@ -82,8 +76,13 @@ export default {
         }
     },
     created(){
-        this.product = this.$route.params.product
-        this.getProductList()
+        
+        //传了productId，需要根据productId查询设备
+        if(this.$route.params.productId){
+             this.productId = this.$route.params.productId
+        }
+        this.getSimpleProductList()
+        //传了device，
         let device = this.$route.params.device
         if(device){
             this.openRouter = true
@@ -91,65 +90,27 @@ export default {
         
     },
     methods: {
-        getProductList(){
-            this.products = [{
-                    "Type": "owned",
-                    "ProductName": "4444444",
-                    "ProductKey": "a1ELejzj0h9",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "123123123",
-                    "ProductKey": "a1qfUCxdfqg",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "3231323",
-                    "ProductKey": "a1Ibli2tqC2",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "22222",
-                    "ProductKey": "a1RIivcyWf0",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "1111",
-                    "ProductKey": "a1Vr6NBfa0i",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "123213",
-                    "ProductKey": "a10TD9i7WFi",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "213213",
-                    "ProductKey": "a1qJfSBZss0",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "3123",
-                    "ProductKey": "a1VT5Q8pKbu",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                },
-                {
-                    "Type": "owned",
-                    "ProductName": "test",
-                    "ProductKey": "a1zJA7k9sjd",
-                    "PublishStatus": "DEVELOPMENT_STATUS"
-                }
-            ]
+        //查询所有产品的id和编号
+        getSimpleProductList(){
+            this.$API_IOT.getSimpleProductList().then((res) => {
+                this.productArr= res.data.data 
+                this.productArr.unshift({id:0,name:'全部产品'})
+
+            })
         },
       handleClick(tab, event) {
         //console.log(tab, event);
+      },
+
+      changeProductId(val){
+        this.productId = val
+      },
+    
+      //设置设备的数量（总数，激活，在线）
+      setDeviceAcount(event){
+        this.device_count = event.device_count
+        this.device_active_count =  event.device_active_count
+        this.device_online_count =  event.device_online_count
       }
     }
   };

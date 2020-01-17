@@ -4,13 +4,13 @@ import store from '../store'
 import {Message} from 'element-ui'
 axios.defaults.timeout = 60 * 1000    //超时时间
 axios.defaults.headers.post['Content-Type'] = 'application/json'        //配置请求头
-//axios.defaults.baseURL = process.env.API_ROOT   //配置接口地址
-axios.defaults.baseURL = '/api'   //配置接口地址
+//axios.defaults.baseURL = process.env.API_IOT   //配置接口地址
+//axios.defaults.baseURL = '/api'   //配置接口地址
 let cancelToken = axios.CancelToken
 let retryCount = 5
+
 //添加请求拦截器
 axios.interceptors.request.use(config=>{
-    
     if (store.state.TOKEN) {
         config.headers.token = store.state.TOKEN
       } else {
@@ -35,7 +35,6 @@ axios.interceptors.request.use(config=>{
  
 //添加响应拦截器
 axios.interceptors.response.use((response) =>{
-    console.log(response.config.url)
    //在一个ajax响应后再执行一下取消操作，把已经完成的请求从pending中移除
     store.commit('deletePending',response.config)
     //没有token信息
@@ -89,7 +88,6 @@ axios.interceptors.response.use((response) =>{
 
 //返回一个Promise(发送post请求)
 export function post(url, params ={}) {
-
     return new Promise((resolve, reject) => {
         axios.post(url, params)
             .then(response => {
@@ -104,6 +102,7 @@ export function post(url, params ={}) {
 }
 //返回一个Promise(发送get请求)
 export function get(url, param = {}) {
+
     return new Promise((resolve, reject) => {
         axios.get(url, {params: param})
             .then(response => {

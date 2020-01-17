@@ -9,7 +9,12 @@
                      <div></div>
                 </div>  
             </div>
-            <el-button type="primary">下载CSV</el-button>
+            <download-excel
+              :data = "tableData"
+              :fields = "json_fields"
+              name = "Triad.xls">
+              <el-button type="primary">下载CSV</el-button>
+            </download-excel>     
         </div>
         <el-table 
           :data="tableData"
@@ -54,7 +59,7 @@
             </template>
           </el-table-column>
         </el-table>
-        <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" :pageSizes="pageSizes"
+        <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" 
           @handleSizeChange="handleSizeChange" @handleCurrentChange="handleCurrentChange"
         ></Pagination>
   
@@ -70,20 +75,22 @@
           currentPage:1,
           pageSize:10,
           total:0,
-          pageSizes:[5,10,30,50],
+          json_fields: {
+          "DeviceName": "DeviceName",    //常规字段
+          "DeviceSecret": "DeviceSecret", //支持嵌套属性
+          "ProductKey": "ProductKey"       
+          }
         }
-      },
-      computed:{
         
-          
       },
+      
       created(){
         this.init() 
       },
       methods:{
         
          init (){
-            // this.$API.getApplyList(this.currentPage,this.pageSize,this.username).then((res) => {
+            // this.$API_IOT.getApplyList(this.currentPage,this.pageSize,this.username).then((res) => {
             //     this.tableData = res.data.objects
             //     this.total = res.data.num_results
             // })

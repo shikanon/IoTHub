@@ -13,7 +13,14 @@
             >
               <i slot="suffix" class="el-input__icon el-icon-search" @click="getGroupList(1)"></i>
             </el-input> 
-             <el-select  v-model="value" placeholder="请选择标签分组" @visible-change="addLabelVisible = true " > </el-select>
+             <el-input
+              placeholder="请选择标签分组"
+              suffix-icon="el-icon-arrow-down"
+              @focus="addLabelVisible = true"
+              class="search-input"
+              size="medium"
+              value="">
+            </el-input>
           </el-row>    
           <el-table 
             :data="tableData"
@@ -47,7 +54,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" :pageSizes="pageSizes"
+          <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" 
             @handleSizeChange="handleSizeChange" @handleCurrentChange="handleCurrentChange"
           ></Pagination>
           <el-dialog title="新建分组" :visible.sync="addGroupVisible" width="25%">
@@ -57,7 +64,7 @@
                   <el-button @click="addGroupVisible = false">取 消</el-button>
               </span>
           </el-dialog>
-            <el-dialog title="添加标签" :visible.sync="addLabelVisible" width="26%">
+            <el-dialog title="标签筛选" :visible.sync="addLabelVisible" width="26%">
               <AddLabel ref="addLabel" :labelArr="labelArr"  @close="addLabelVisible = false"></AddLabel>
               <span slot="footer" class="dialog-footer">
                   <el-button type="primary" @click="addLabelSubmit">确 定</el-button>
@@ -86,7 +93,6 @@
           currentPage:1,
           pageSize:10,
           total:0,
-          pageSizes:[5,10,30,50],
           search:'',
           addGroupVisible:false,
           GroupName:'',
@@ -111,14 +117,12 @@
       watch: {
         $route:function(){
           this.openRouter = !this.openRouter  
-          console.log('改变路由',this.openRouter)
         }
       
        
     },
       created(){
           this.openRouter = false
-          console.log('初始化',this.openRouter)
 
           this.GroupName = this.$route.params.GroupName
           if(this.GroupName ){
@@ -129,7 +133,7 @@
       },
       methods:{
          getGroupList(){
-            //  this.$API.getUser(this.currentPage,this.pageSize,this.username).then((res) => {
+            //  this.$API_IOT.getUser(this.currentPage,this.pageSize,this.username).then((res) => {
             //     this.tableData = res.data.objects
             //     this.total = res.data.num_results
             // })
