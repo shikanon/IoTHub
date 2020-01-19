@@ -41,7 +41,7 @@ func (p *Product) SaveProduct() (id int) {
 	return id
 }
 
-// 绑定deviceKey,iotid
+// 保存设备
 func (d *Device) SaveDevice() (id int) {
 	device_secret := hub.GenerateDeviceSecret()
 	iot_id := hub.GenerateIotId()
@@ -51,14 +51,14 @@ func (d *Device) SaveDevice() (id int) {
 	return data_id
 }
 
-// 提产品保存物模型
-func ProductSaveModel(id int, key string) (mongodb_model_id int) {
+// 产品保存物模型
+func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id int) {
 	intact_product_tab := config.MongodbConfig.IntactProductModel
 	concise_product_tab := config.MongodbConfig.ConciseProductModel
 	concise_base_tab := config.MongodbConfig.BaseModelConcise
 	intact_base_tab := config.MongodbConfig.BaseModelIntact
 
-	filter := bson.M{"id": id}
+	filter := bson.M{"id": base_model_id}
 
 	concise_data := database.MongoDbGetFilterData(concise_base_tab, filter)
 	delete(concise_data, "_id")
@@ -68,7 +68,7 @@ func ProductSaveModel(id int, key string) (mongodb_model_id int) {
 	delete(intact_data, "_id")
 	delete(intact_data, "id")
 	intact_data["profile"] = map[string]string{
-		"productKey": key,
+		"productKey": product_key,
 	}
 
 	concise_id_str := database.MongoDbInsertOneData(concise_product_tab, concise_data)
@@ -78,27 +78,43 @@ func ProductSaveModel(id int, key string) (mongodb_model_id int) {
 		ConciseModelID: concise_id_str,
 		IntactModelID:  intact_id_str,
 	}
-	id = database.MysqlInsertOneData(mongo_model)
-	return id
+	save_id := database.MysqlInsertOneData(mongo_model)
+	return save_id
 }
 
-// 提供key，生成topic，并存储数据库
-func ProductSaveCustomTopic(id int) {
+// 产品删除物模型
+func ProductDeleteMongodbModel(pid int) {
+	db := database.DbConn()
+	defer db.Close()
+
+	var product Product
+	db.First(&product, pid)
+	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
+	concise_model_id := product.MongodbModel.ConciseModelID
+	concise_collection_name := config.MongodbConfig.ConciseProductModel
+	database.MongodbDeleteOneData(concise_collection_name, concise_model_id)
+
+	intact_collection_name := config.MongodbConfig.IntactProductModel
+	intact_model_id := product.MongodbModel.IntactModelID
+	database.MongodbDeleteOneData(intact_collection_name, intact_model_id)
+}
+
+func ProductSaveCustomTopic(pid int) {
 	base_cuntom_topic := []CustomTopic{
 		{
-			ProductID:    id,
+			ProductID:    pid,
 			PermissionID: 2,
 			Detail:       "/%s/%s/user/update",
 			Describe:     "",
 		},
 		{
-			ProductID:    id,
+			ProductID:    pid,
 			PermissionID: 2,
 			Detail:       "/%s/%s/user/update/error",
 			Describe:     "",
 		},
 		{
-			ProductID:    id,
+			ProductID:    pid,
 			PermissionID: 1,
 			Detail:       "/%s/%s/user/get",
 			Describe:     "",
@@ -108,7 +124,7 @@ func ProductSaveCustomTopic(id int) {
 	for _, value := range base_cuntom_topic {
 		data := CustomTopic{}
 		data.Describe = value.Describe
-		data.ProductID = id
+		data.ProductID = pid
 		data.Detail = value.Detail
 		data.PermissionID = value.PermissionID
 		_ = database.MysqlInsertOneData(&data)
@@ -340,6 +356,17 @@ func GetTopics(pid, did int) (topic Topics) {
 	return datas
 }
 
+// 处理转化时间
+func TimeDeal(time time.Time) (result string) {
+	time_str := time.Format(config.GeneralConfig.TimeFormat)
+	//if (time == ){}else {}
+	if time_str == "0001/01/01 00:00:00" {
+		return "-"
+	} else {
+		return time_str
+	}
+}
+
 // 设备名称获取设备
 func DeviceNameToDevice(product_key, device_name string) (device Device) {
 	db := database.DbConn()
@@ -370,15 +397,4 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 	delete(data, "_id")
 
 	return data
-}
-
-// 处理转化时间
-func TimeDeal(time time.Time) (result string) {
-	time_str := time.Format(config.GeneralConfig.TimeFormat)
-	//if (time == ){}else {}
-	if time_str == "0001/01/01 00:00:00" {
-		return "-"
-	} else {
-		return time_str
-	}
 }

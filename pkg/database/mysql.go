@@ -26,7 +26,7 @@ func DbConn() *gorm.DB {
 }
 
 // 插入一条数据，返回记录id
-func MysqlInsertOneData(data interface{})(id int){
+func MysqlInsertOneData(data interface{}) (id int) {
 	db := DbConn()
 	defer db.Close()
 	var result []int
