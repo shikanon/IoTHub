@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	addr            = "http://localhost:8086"
+	addr            = "http://10.10.6.53:8086"
 	MyDB            = "orbbeciot"
 	username        = "orbbec"
 	password        = "orbbec"
