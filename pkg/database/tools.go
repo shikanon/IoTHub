@@ -1,10 +1,9 @@
-package api
+package database
 
 import (
 	"fmt"
 	"github.com/shikanon/IoTOrbHub/config"
-	"github.com/shikanon/IoTOrbHub/pkg/database"
-	"github.com/shikanon/IoTOrbHub/pkg/hub"
+	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -29,25 +28,25 @@ type Topics struct {
 // 3. 存储topic信息到mysql数据库
 // 4. 保存product信息到mysql数据库
 func (p *Product) SaveProduct() (id int) {
-	product_key := hub.GenerateProductKey()
-	product_secret := hub.GenerateProductSecret()
+	product_key := tool.GenerateProductKey()
+	product_secret := tool.GenerateProductSecret()
 	p.ProductKey = product_key
 	p.ProductSecret = product_secret
 
 	mongodb_model_id := ProductSaveModel(p.ObjectModelID, p.ProductKey)
 	p.MongodbModelID = mongodb_model_id
 
-	id = database.MysqlInsertOneData(p)
+	id = MysqlInsertOneData(p)
 	return id
 }
 
 // 保存设备
 func (d *Device) SaveDevice() (id int) {
-	device_secret := hub.GenerateDeviceSecret()
-	iot_id := hub.GenerateIotId()
+	device_secret := tool.GenerateDeviceSecret()
+	iot_id := tool.GenerateIotId()
 	d.DeviceSecret = device_secret
 	d.IotID = iot_id
-	data_id := database.MysqlInsertOneData(d)
+	data_id := MysqlInsertOneData(d)
 	return data_id
 }
 
@@ -60,31 +59,31 @@ func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id i
 
 	filter := bson.M{"id": base_model_id}
 
-	concise_data := database.MongoDbGetFilterData(concise_base_tab, filter)
+	concise_data := MongoDbGetFilterData(concise_base_tab, filter)
 	delete(concise_data, "_id")
 	delete(concise_data, "id")
 
-	intact_data := database.MongoDbGetFilterData(intact_base_tab, filter)
+	intact_data := MongoDbGetFilterData(intact_base_tab, filter)
 	delete(intact_data, "_id")
 	delete(intact_data, "id")
 	intact_data["profile"] = map[string]string{
 		"productKey": product_key,
 	}
 
-	concise_id_str := database.MongoDbInsertOneData(concise_product_tab, concise_data)
-	intact_id_str := database.MongoDbInsertOneData(intact_product_tab, intact_data)
+	concise_id_str := MongoDbInsertOneData(concise_product_tab, concise_data)
+	intact_id_str := MongoDbInsertOneData(intact_product_tab, intact_data)
 
 	mongo_model := &MongodbModel{
 		ConciseModelID: concise_id_str,
 		IntactModelID:  intact_id_str,
 	}
-	save_id := database.MysqlInsertOneData(mongo_model)
+	save_id := MysqlInsertOneData(mongo_model)
 	return save_id
 }
 
 // 产品删除物模型
 func ProductDeleteMongodbModel(pid int) {
-	db := database.DbConn()
+	db := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -92,11 +91,11 @@ func ProductDeleteMongodbModel(pid int) {
 	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
 	concise_model_id := product.MongodbModel.ConciseModelID
 	concise_collection_name := config.MongodbConfig.ConciseProductModel
-	database.MongodbDeleteOneData(concise_collection_name, concise_model_id)
+	MongodbDeleteOneData(concise_collection_name, concise_model_id)
 
 	intact_collection_name := config.MongodbConfig.IntactProductModel
 	intact_model_id := product.MongodbModel.IntactModelID
-	database.MongodbDeleteOneData(intact_collection_name, intact_model_id)
+	MongodbDeleteOneData(intact_collection_name, intact_model_id)
 }
 
 func ProductSaveCustomTopic(pid int) {
@@ -127,13 +126,13 @@ func ProductSaveCustomTopic(pid int) {
 		data.ProductID = pid
 		data.Detail = value.Detail
 		data.PermissionID = value.PermissionID
-		_ = database.MysqlInsertOneData(&data)
+		_ = MysqlInsertOneData(&data)
 	}
 }
 
 // 获取用户自定义Topic模板
 func GetCustomTopic(pid int) (data []TopicModel) {
-	db := database.DbConn()
+	db := DbConn()
 	defer db.Close()
 
 	data_list := []CustomTopic{}
@@ -307,7 +306,7 @@ func GetTopicModels(id int) (result Topics) {
 
 // 获取Topic类
 func GetTopics(pid, did int) (topic Topics) {
-	db := database.DbConn()
+	db := DbConn()
 	defer db.Close()
 
 	datas := GetTopicModels(pid)
@@ -369,7 +368,7 @@ func TimeDeal(time time.Time) (result string) {
 
 // 设备名称获取设备
 func DeviceNameToDevice(product_key, device_name string) (device Device) {
-	db := database.DbConn()
+	db := DbConn()
 	defer db.Close()
 
 	var device_model Device
@@ -383,7 +382,7 @@ func DeviceNameToDevice(product_key, device_name string) (device Device) {
 
 // 获取完整物模型
 func GetIntactModel(producy_key string) (result primitive.M) {
-	db := database.DbConn()
+	db := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -393,7 +392,7 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 	intact_collection_name := config.MongodbConfig.IntactProductModel
 	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
 	filter := bson.M{"_id": model_id}
-	data := database.MongoDbGetFilterData(intact_collection_name, filter)
+	data := MongoDbGetFilterData(intact_collection_name, filter)
 	delete(data, "_id")
 
 	return data

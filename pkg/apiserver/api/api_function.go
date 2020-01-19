@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
+	"github.com/shikanon/IoTOrbHub/pkg/util"
 	"go.mongodb.org/mongo-driver/bson"
 	"strconv"
 )
@@ -105,13 +106,11 @@ func Home(c *gin.Context) {
 
 // TODO  权限；参数校验；捕捉错误;标签字段的拆解
 
-// 产品-获取物模型
-// models?accesskeyid=aaaa&signature=bbb
 func GetProductModels(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var models []Model
+	var models []database.Model
 	db.Preload("Territory").Find(&models)
 
 	resp := gin.H{
@@ -122,13 +121,11 @@ func GetProductModels(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-获取节点
-// nodetype?accesskeyid=aaaa&signature=bbb
 func GetProductNodeTypes(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var nodetypes []NodeType
+	var nodetypes []database.NodeType
 	db.Find(&nodetypes)
 
 	resp := gin.H{
@@ -139,13 +136,11 @@ func GetProductNodeTypes(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-获取联网方式
-// networkway?accesskeyid=aaaa&signature=bbb
 func GetProductNetworkWays(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var networks []NetworkWay
+	var networks []database.NetworkWay
 	db.Find(&networks)
 
 	resp := gin.H{
@@ -156,13 +151,11 @@ func GetProductNetworkWays(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-数据格式
-// dataformat?accesskeyid=aaaa&signature=bbb
 func GetProductDataFormats(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var dataformats []DataFormat
+	var dataformats []database.DataFormat
 	db.Find(&dataformats)
 
 	resp := gin.H{
@@ -173,13 +166,11 @@ func GetProductDataFormats(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-认证方式
-// authmethod?accesskeyid=aaaa&signature=bbb
 func GetProductAuthMethods(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var authmethos []AuthMethod
+	var authmethos []database.AuthMethod
 	db.Find(&authmethos)
 
 	resp := gin.H{
@@ -190,8 +181,6 @@ func GetProductAuthMethods(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品首页
-// products?page=1&item=10&accesskeyid=aaaa&signature=bbb
 func GetProducts(c *gin.Context) {
 	// 获取参数
 	page_str := c.Query("page")
@@ -202,7 +191,7 @@ func GetProducts(c *gin.Context) {
 	// 查询数据
 	db := database.DbConn()
 	defer db.Close()
-	var products []Product
+	var products []database.Product
 	db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
 	// 构建响应数据结构
 	type info struct {
@@ -218,14 +207,14 @@ func GetProducts(c *gin.Context) {
 			ID:         val.ID,
 			Name:       val.Name,
 			ProductKey: val.ProductKey,
-			CreateTime: TimeDeal(val.CreateTime),
+			CreateTime: database.TimeDeal(val.CreateTime),
 			NodeType:   val.NodeType.Name,
 		}
 		result = append(result, data)
 	}
 
 	var total = 0
-	db.Model(&Product{}).Count(&total)
+	db.Model(&database.Product{}).Count(&total)
 
 	type RespData struct {
 		NumResults int    `json:"num_results"`
@@ -246,7 +235,6 @@ func GetProducts(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-创建产品
 func AddProduct(c *gin.Context) {
 	type Data struct {
 		Name         string `form:"name" json:"name" binding:"required"`
@@ -274,7 +262,7 @@ func AddProduct(c *gin.Context) {
 	desc := data.Describe
 
 	// 构建实例
-	product := &Product{
+	product := &database.Product{
 		Name:          name,
 		Category:      category,
 		ObjectModelID: model_id,
@@ -287,7 +275,7 @@ func AddProduct(c *gin.Context) {
 
 	// mysql持久化存储。存储topic
 	id := product.SaveProduct()
-	ProductSaveCustomTopic(id)
+	database.ProductSaveCustomTopic(id)
 
 	// 构建，返回响应
 	resp := gin.H{
@@ -299,8 +287,6 @@ func AddProduct(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-查看
-// product?pid=1&accesskeyid=aaaa&signature=bbb
 func GetProduct(c *gin.Context) {
 	product_id := c.Query("pid")
 	db := database.DbConn()
@@ -328,7 +314,7 @@ func GetProduct(c *gin.Context) {
 		DeviceCount     int    `json:"device_count"` // TODO
 	}
 
-	var product Product
+	var product database.Product
 	db.First(&product, product_id)
 	db.Model(&product).Related(&product.ObjectModel, "ObjectModel")
 	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
@@ -343,7 +329,7 @@ func GetProduct(c *gin.Context) {
 		Name:            product.Name,
 		NodeType:        product.NodeType.Name,
 		NodeTypeID:      product.NodeTypeID,
-		CreateTime:      TimeDeal(product.CreateTime),
+		CreateTime:      database.TimeDeal(product.CreateTime),
 		ObjectModelName: product.ObjectModel.Name,
 		DataFormat:      product.DataFormat.Name,
 		DataFormatID:    product.DataFormatID,
@@ -368,7 +354,6 @@ func GetProduct(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-查看-编辑(名称、描述、标签)
 func UpdateProduct(c *gin.Context) {
 	name := c.PostForm("name")
 	desc := c.PostForm("desc")
@@ -377,7 +362,7 @@ func UpdateProduct(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var product Product
+	var product database.Product
 	db.First(&product, product_id)
 	product.Name = name
 	product.Describe = desc
@@ -391,13 +376,11 @@ func UpdateProduct(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-查看-topic类
-// topics?pid=1&accesskeyid=aaaa&signature=bbb
 func GetProductTopic(c *gin.Context) {
 	product_str := c.Query("pid")
 	product_id, _ := strconv.Atoi(product_str)
 	device_id := 0
-	data := GetTopics(product_id, device_id)
+	data := database.GetTopics(product_id, device_id)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -407,7 +390,6 @@ func GetProductTopic(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-查看-topic类，自定义，定义topic类
 func AddProductTopic(c *gin.Context) {
 	product_str := c.PostForm("pid")
 	product_id, _ := strconv.Atoi(product_str)
@@ -419,7 +401,7 @@ func AddProductTopic(c *gin.Context) {
 	topic_detail := "/user/%s"
 	detail := "/%s/%s" + fmt.Sprintf(topic_detail, topic)
 
-	data := CustomTopic{
+	data := database.CustomTopic{
 		ProductID:    product_id,
 		PermissionID: permission_id,
 		Detail:       detail,
@@ -435,7 +417,6 @@ func AddProductTopic(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 产品-查看-topic类，自定义，编辑topic类
 func UpdateProductTopic(c *gin.Context) {
 	permission_str := c.PostForm("permission_id")
 	permission_id, _ := strconv.Atoi(permission_str)
@@ -450,7 +431,7 @@ func UpdateProductTopic(c *gin.Context) {
 
 	db := database.DbConn()
 	defer db.Close()
-	var topic_model CustomTopic
+	var topic_model database.CustomTopic
 	db.Find(&topic_model, topic_id)
 	topic_model.PermissionID = permission_id
 	topic_model.Detail = detail
@@ -493,7 +474,6 @@ func UpdateProductTopic(c *gin.Context) {
 //// 产品-查看-自定义功能，编辑 TODO
 //// 产品-查看-自定义功能，删除 TODO
 
-// 产品-删除
 func DeleteProduct(c *gin.Context) {
 	type Data struct {
 		ProductID int `json:"pid"`
@@ -511,7 +491,7 @@ func DeleteProduct(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var devices []Device
+	var devices []database.Device
 	db.Where("product_id = ?", product_id).Find(&devices)
 
 	if (len(devices) > 0 ){
@@ -522,14 +502,14 @@ func DeleteProduct(c *gin.Context) {
 		}
 		c.JSON(200, resp)
 	} else {
-		var product Product
+		var product database.Product
 		db.Where("id = ?", product_id).First(&product)
 		mongodb_model_id := product.MongodbModelID
 
-		ProductDeleteMongodbModel(product_id)
-		db.Where("id = ?", product_id).Delete(&Product{})
-		db.Where("id = ?", mongodb_model_id).Delete(&MongodbModel{})
-		db.Where("product_id = ?", product_id).Delete(&CustomTopic{})
+		database.ProductDeleteMongodbModel(product_id)
+		db.Where("id = ?", product_id).Delete(&database.Product{})
+		db.Where("id = ?", mongodb_model_id).Delete(&database.MongodbModel{})
+		db.Where("product_id = ?", product_id).Delete(&database.CustomTopic{})
 
 		resp := gin.H{
 			"status":  "Y",
@@ -540,8 +520,6 @@ func DeleteProduct(c *gin.Context) {
 	}
 }
 
-// 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理)
-// device?product=1&page=1&item=10&accesskeyid=aaaa&signature=bbb
 func GetDevices(c *gin.Context) {
 	// product为0，设备首页
 	// product不为0，产品-管理设备 / 产品-查看-前往管理
@@ -557,14 +535,14 @@ func GetDevices(c *gin.Context) {
 	var online_num = 0
 	db := database.DbConn()
 	defer db.Close()
-	var devices []Device
+	var devices []database.Device
 	if product_id == 0 {
 		db.Where("activation_time != ?", "0000-00-00 00:00:00").Find(&devices)
 		activate_num = len(devices)
 		db.Where("last_on_line_time != ?", "0000-00-00 00:00:00").Find(&devices)
 		online_num = len(devices)
 		db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
-		db.Model(&Device{}).Count(&total)
+		db.Model(&database.Device{}).Count(&total)
 	} else {
 		db.Where("product_id = ? AND activation_time != ?", product_id, "0000-00-00 00:00:00").Find(&devices)
 		activate_num = len(devices)
@@ -590,14 +568,14 @@ func GetDevices(c *gin.Context) {
 		var data Response
 		data.ID = device.ID
 		data.Name = device.Name
-		var product Product
+		var product database.Product
 		db.First(&product, device.ProductID).Related(&product.NodeType, "NodeType")
 		data.TheirProductName = product.Name
 		data.NodeType = product.NodeType.Name
 		data.NodeTypeID = product.NodeTypeID
 		data.Status = device.Status.Name
 		data.StatusID = device.StatusID
-		data.LastOnLineTime = TimeDeal(device.LastOnLineTime)
+		data.LastOnLineTime = database.TimeDeal(device.LastOnLineTime)
 		responses = append(responses, data)
 	}
 
@@ -623,13 +601,11 @@ func GetDevices(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 获取所有产品的id和名称
-// simpleproducts?accesskeyid=aaaa&signature=bbb
 func GetSimpleProducts(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	var products []Product
+	var products []database.Product
 	db.Find(&products)
 
 	type info struct {
@@ -653,7 +629,6 @@ func GetSimpleProducts(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 设备-创建设备
 func AddDevice(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
@@ -673,7 +648,7 @@ func AddDevice(c *gin.Context) {
 	name := data.Name
 	remark := data.Remark
 
-	device := Device{
+	device := database.Device{
 		ProductID:   product_id,
 		StatusID:    1,
 		Name:        name,
@@ -683,9 +658,9 @@ func AddDevice(c *gin.Context) {
 
 	id := device.SaveDevice()
 
-	var product Product
+	var product database.Product
 	db.First(&product, product_id)
-	var device_save Device
+	var device_save database.Device
 	db.First(&device_save, id)
 
 	type RespData struct {
@@ -742,14 +717,12 @@ func AddDevice(c *gin.Context) {
 //	signature := "bbb"
 //}
 
-// 设备-查看
-// device?did=1&accesskeyid=aaaa&signature=bbb
 func GetDevice(c *gin.Context) {
 	device_str := c.Query("did")
 	device_id, _ := strconv.Atoi(device_str)
 	db := database.DbConn()
 	defer db.Close()
-	device := Device{}
+	device := database.Device{}
 	db.First(&device, device_id)
 	type Response struct {
 		ID             int    `json:"id"`
@@ -778,14 +751,14 @@ func GetDevice(c *gin.Context) {
 	response.Remark = device.Remark
 	response.DeviceSecret = device.DeviceSecret
 	response.IP = device.IP
-	response.CreateTime = TimeDeal(device.CreateTime)
-	response.ActivationTime = TimeDeal(device.ActivationTime)
-	response.LastOnLineTime = TimeDeal(device.LastOnLineTime)
+	response.CreateTime = database.TimeDeal(device.CreateTime)
+	response.ActivationTime = database.TimeDeal(device.ActivationTime)
+	response.LastOnLineTime = database.TimeDeal(device.LastOnLineTime)
 	response.IotID = device.IotID
 	response.Label = device.Label
 	response.BatchCreate = device.BatchCreate
 
-	var product Product
+	var product database.Product
 	db.First(&product, response.ProductID)
 	db.Model(&product).Related(&product.NodeType, "NodeType")
 	response.ProductKey = product.ProductKey
@@ -801,8 +774,6 @@ func GetDevice(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-// 设备-查看-查看topic类
-// dtopics?did=1&accesskeyid=aaaa&signature=bbb
 func GetDeviceTopic(c *gin.Context) {
 	device_str := c.Query("did")
 	device_id, _ := strconv.Atoi(device_str)
@@ -810,11 +781,11 @@ func GetDeviceTopic(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	device := Device{}
+	device := database.Device{}
 	db.First(&device, device_id)
 	product_id := device.ProductID
 
-	data := GetTopics(product_id, device_id)
+	data := database.GetTopics(product_id, device_id)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -871,7 +842,6 @@ func GetDeviceTopic(c *gin.Context) {
 //// 设备-查看-文件管理 TODO 暂缓
 //// 设备-查看-日志服务 TODO 暂缓
 
-// 设备-删除
 func DeleteDevice(c *gin.Context) {
 	type Data struct {
 		DeviceIDList []int `json:"dids"`
@@ -888,13 +858,63 @@ func DeleteDevice(c *gin.Context) {
 	defer db.Close()
 
 	for index, _ := range device_id_list{
-		db.Where("id = ?", device_id_list[index]).Delete(&Device{})
+		db.Where("id = ?", device_id_list[index]).Delete(&database.Device{})
 	}
 
 	resp := gin.H{
 		"status":  "Y",
 		"message": "设备删除成功",
 		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+func GetDeviceDesireStatus(c *gin.Context) {
+	device_str := c.Query("did")
+	device_id, _ := strconv.Atoi(device_str)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	product_id := device.ProductID
+	device_iot := device.IotID
+	var product database.Product
+	db.First(&product, product_id)
+	product_key := product.ProductKey
+
+	data := util.GetDeviceDesiredPropertyInfo(product_key, device_iot)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备期望状态查询成功",
+		"data":    data,
+	}
+	c.JSON(200, resp)
+}
+
+func GetDevicePropertyStatus(c *gin.Context) {
+	device_str := c.Query("did")
+	device_id, _ := strconv.Atoi(device_str)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	product_id := device.ProductID
+	device_iot := device.IotID
+	var product database.Product
+	db.First(&product, product_id)
+	product_key := product.ProductKey
+
+	data := util.GetDevicePropertyStatusInfo(product_key, device_iot)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备期望状态查询成功",
+		"data":    data,
 	}
 	c.JSON(200, resp)
 }

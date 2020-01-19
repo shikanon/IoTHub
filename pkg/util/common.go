@@ -2,7 +2,7 @@ package util
 
 import (
 	"encoding/json"
-	"github.com/shikanon/IoTOrbHub/pkg/apiserver/api"
+	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/influxdb"
 	"strconv"
 
@@ -409,7 +409,7 @@ func CheckArray(key string, value, result gjson.Result) (interface{}, error) {
 }
 
 func GetDevicePropertyStatusInfo(productKey,deviceId string) (properties []map[string]interface{}) {
-	model := api.GetIntactModel(productKey)
+	model := database.GetIntactModel(productKey)
 	modelJson,err := json.Marshal(model)
 	if err != nil {
 		fmt.Println(err)
@@ -432,7 +432,7 @@ func GetDevicePropertyStatusInfo(productKey,deviceId string) (properties []map[s
 }
 
 func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[string]interface{}) {
-	model := api.GetIntactModel(productKey)
+	model := database.GetIntactModel(productKey)
 	modelJson,err := json.Marshal(model)
 	if err != nil {
 		fmt.Println(err)

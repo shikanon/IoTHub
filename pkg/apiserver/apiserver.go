@@ -63,7 +63,9 @@ func ApiRegister() {
 		//v1.GET("/tablestatus", api.GetRunningStatusTable)      // 设备-查看-运新状态，表
 		//v1.GET("/shadowdevice", api.GetShadowDeviceInfo)       // 设备-查看-影子设备，查看
 		//v1.PUT("/shadowdevice", Uapi.pdateShadowDevice)        // 设备-查看-影子设备，更新影子
-		v1.DELETE("/device", api.DeleteDevice) // 设备-删除
+		v1.DELETE("/device", api.DeleteDevice)            // 设备-删除
+		v1.GET("/desstatus", api.GetDeviceDesireStatus)   // 获取设备期望状态
+		v1.GET("/prostatus", api.GetDevicePropertyStatus) // 获取设备实时状态
 
 		v1.GET("/", Cors(), api.Home)
 	}

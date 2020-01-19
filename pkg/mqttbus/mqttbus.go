@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
-	"github.com/shikanon/IoTOrbHub/pkg/apiserver/api"
 	"github.com/shikanon/IoTOrbHub/pkg/constants"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/influxdb"
@@ -148,8 +147,8 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 			User := make(map[string]interface{})
 			logs.Info(fmt.Sprintf("设备上线:%s&%s", deviceName,productKey))
 			ts := time.Now()
-			device := api.DeviceNameToDevice(productKey,deviceName)
-			if api.TimeDeal(device.ActivationTime) == "-" {
+			device := database.DeviceNameToDevice(productKey,deviceName)
+			if database.TimeDeal(device.ActivationTime) == "-" {
 				User["ActivationTime"] = ts
 			}
 			User["LastOnLineTime"] = ts
@@ -185,9 +184,9 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		}
 		replyMsg.Id = id.String()
 		// 数据校验
-		device := api.DeviceNameToDevice(productKey, deviceName)
+		device := database.DeviceNameToDevice(productKey, deviceName)
 		deviceId := device.IotID
-		model := api.GetIntactModel(productKey)
+		model := database.GetIntactModel(productKey)
 		modelJson,err := json.Marshal(model)
 		if err != nil {
 			fmt.Println(err)
@@ -274,9 +273,9 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		}
 		replyMsg.Id = id.String()
 		// 数据校验
-		device := api.DeviceNameToDevice(productKey, deviceName)
+		device := database.DeviceNameToDevice(productKey, deviceName)
 		deviceId := device.IotID
-		model := api.GetIntactModel(productKey)
+		model := database.GetIntactModel(productKey)
 		modelJson,err := json.Marshal(model)
 		if err != nil {
 			fmt.Println(err)
@@ -664,7 +663,7 @@ func (mq *Client) SetProperty(productKey, deviceName string, params map[string]i
 	// 设置设备属性
 	topic := fmt.Sprintf("/sys/%s/%s/thing/service/property/set", productKey, deviceName)
 	// TODO：cilent设为全局变量,params校验,设备是否在线,需要设置版本所以每次设置期望属性只能设置一个
-	device := api.DeviceNameToDevice(productKey, deviceName)
+	device := database.DeviceNameToDevice(productKey, deviceName)
 	fmt.Println(device)
 	deviceId := device.IotID
 	var deviceMsg DeviceMsg
