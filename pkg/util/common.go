@@ -423,7 +423,11 @@ func GetDevicePropertyStatusInfo(productKey,deviceId string) (properties []map[s
 		property["DataType"] = v.Map()["dataType"].Map()["type"].String()
 		ts, value, err := influxdb.GetDevicePropertyFromPropertyReported(influxdb.InfluxClient, deviceId, property["Identifier"].(string))
 		if err == nil {
-			property["Time"] = ts
+			t, err := time.Parse(time.RFC3339, ts.(string))
+			if err != nil {
+				fmt.Println(err)
+			}
+			property["Time"] = t.Format("2006/01/02 15:04:05")
 			property["Value"] = value
 		}
 		properties = append(properties, property)
@@ -447,7 +451,11 @@ func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[
 		property["Version"] = 0
 		ts, value, version, err := influxdb.GetDevicePropertyFromPropertyDesired(influxdb.InfluxClient, deviceId, property["Identifier"].(string))
 		if err == nil {
-			property["Time"] = ts
+			t, err := time.Parse(time.RFC3339, ts.(string))
+			if err != nil {
+				fmt.Println(err)
+			}
+			property["Time"] = t.Format("2006/01/02 15:04:05")
 			property["Value"] = value
 			property["Version"] = version
 		}
@@ -461,8 +469,12 @@ func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}
 	res := influxdb.GetDeviceServiceInfoFromService(influxdb.InfluxClient, deviceId)
 	if res != nil {
 		for _,v := range res {
+			t, err := time.Parse(time.RFC3339, v[0].(string))
+			if err != nil {
+				fmt.Println(err)
+			}
 			service := map[string]interface{}{
-				"Time": v[0],
+				"Time": t.Format("2006/01/02 15:04:05"),
 				"Identifier": v[2],
 				"Name": v[5],
 				"InputData": v[4],
@@ -478,8 +490,12 @@ func GetDeviceEventInfo(deviceId string) (eventInfo []map[string]interface{}) {
 	res := influxdb.GetDeviceEventInfoFromEvent(influxdb.InfluxClient, deviceId)
 	if res != nil {
 		for _,v := range res {
+			t, err := time.Parse(time.RFC3339, v[0].(string))
+			if err != nil {
+				fmt.Println(err)
+			}
 			event := map[string]interface{}{
-				"Time": v[0],
+				"Time": t.Format("2006/01/02 15:04:05"),
 				"Identifier": v[4],
 				"Name": v[2],
 				"EventType": v[3],

@@ -660,37 +660,63 @@ func (mq *Client) Subscribe(topic string) {
 	}
 }
 
-func (mq *Client) SetProperty(productKey, deviceName string, params map[string]interface{}) {
+func (mq *Client) SetProperty(productKey, deviceName string, params string) (errData map[string]interface{}) {
 	// 设置设备属性
-	topic := fmt.Sprintf("/sys/%s/%s/thing/service/property/set", productKey, deviceName)
-	// TODO：cilent设为全局变量,params校验,设备是否在线,需要设置版本所以每次设置期望属性只能设置一个
-	device := database.DeviceNameToDevice(productKey, deviceName)
-	fmt.Println(device)
-	deviceId := device.IotID
-	var deviceMsg DeviceMsg
-	deviceMsgId := influxdb.GetDeviceMsgIdFromService(influxdb.InfluxClient) //消息ID号，由物联网平台生成。
-	deviceMsg.Id = strconv.FormatInt(deviceMsgId, 10)
-	deviceMsg.Version = constants.Version
-	deviceMsg.Method = constants.SetProperty
-	deviceMsg.Params = params
-	deviceMsgStr, err := json.Marshal(deviceMsg)
+	// TODO：设备是否在线
+	// 数据校验
+	errData = make(map[string]interface{})
+	fields := make(map[string]interface{})
+	model := database.GetIntactModel(productKey)
+	modelJson,err := json.Marshal(model)
 	if err != nil {
-		logs.Error(err)
-	}
-	payLoad := deviceMsgStr
-	mq.Publish(topic, payLoad)
-	paramsStr, err := json.Marshal(params)
-	if err == nil {
-		service := map[string]interface{}{"identifier": "set", "service_name": "set", "params": string(paramsStr), "msg_id": deviceMsgId}
-		influxdb.AddPointToService(influxdb.InfluxClient, deviceId, service)
-	} else {
 		fmt.Println(err)
 	}
-	for k, v := range params {
-		version := influxdb.GetPropertyVersionFromPropertyDesired(influxdb.InfluxClient, deviceId, k)
-		param := map[string]interface{}{k: v, "version": version, "msg_id": deviceMsgId}
-		influxdb.AddPointToPropertyDesired(influxdb.InfluxClient, deviceId, param)
+	res := gjson.Parse(params)
+	fmt.Println(res)
+	for k, v := range res.Map() {
+		result := gjson.Get(string(modelJson), fmt.Sprintf("properties.#(identifier==%s)", k))
+		if !result.Exists() {
+			err := errors.New("tsl parse: params not exist")
+			errData[k] = err.Error()
+			continue
+		}
+		dataType := result.Get("dataType.type")
+		if value, err := util.DataVerification(k, dataType.String(), v, result); err != nil {
+			errData[k] = err.Error()
+		} else {
+			fields[k] = value
+		}
 	}
+	if len(fields) != 0 {
+		topic := fmt.Sprintf("/sys/%s/%s/thing/service/property/set", productKey, deviceName)
+		device := database.DeviceNameToDevice(productKey, deviceName)
+		deviceId := device.IotID
+		var deviceMsg DeviceMsg
+		deviceMsgId := influxdb.GetDeviceMsgIdFromService(influxdb.InfluxClient) //消息ID号，由物联网平台生成。
+		deviceMsg.Id = strconv.FormatInt(deviceMsgId, 10)
+		deviceMsg.Version = constants.Version
+		deviceMsg.Method = constants.SetProperty
+		deviceMsg.Params = fields
+		deviceMsgStr, err := json.Marshal(deviceMsg)
+		if err != nil {
+			logs.Error(err)
+		}
+		payLoad := deviceMsgStr
+		mq.Publish(topic, payLoad)
+		paramsStr, err := json.Marshal(fields)
+		if err == nil {
+			service := map[string]interface{}{"identifier": "set", "service_name": "set", "params": string(paramsStr), "msg_id": deviceMsgId}
+			influxdb.AddPointToService(influxdb.InfluxClient, deviceId, service)
+		} else {
+			fmt.Println(err)
+		}
+		for k, v := range fields {
+			version := influxdb.GetPropertyVersionFromPropertyDesired(influxdb.InfluxClient, deviceId, k)
+			param := map[string]interface{}{k: v, "version": version, "msg_id": deviceMsgId}
+			influxdb.AddPointToPropertyDesired(influxdb.InfluxClient, deviceId, param)
+		}
+	}
+	return errData
 }
 
 func (mq *Client) CallService(productKey, deviceName, service string, params map[string]interface{}) {
