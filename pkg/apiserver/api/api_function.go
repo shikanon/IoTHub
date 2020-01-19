@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
+	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"github.com/shikanon/IoTOrbHub/pkg/util"
 	"go.mongodb.org/mongo-driver/bson"
 	"strconv"
@@ -207,7 +208,7 @@ func GetProducts(c *gin.Context) {
 			ID:         val.ID,
 			Name:       val.Name,
 			ProductKey: val.ProductKey,
-			CreateTime: database.TimeDeal(val.CreateTime),
+			CreateTime: tool.TimeDeal(val.CreateTime),
 			NodeType:   val.NodeType.Name,
 		}
 		result = append(result, data)
@@ -329,7 +330,7 @@ func GetProduct(c *gin.Context) {
 		Name:            product.Name,
 		NodeType:        product.NodeType.Name,
 		NodeTypeID:      product.NodeTypeID,
-		CreateTime:      database.TimeDeal(product.CreateTime),
+		CreateTime:      tool.TimeDeal(product.CreateTime),
 		ObjectModelName: product.ObjectModel.Name,
 		DataFormat:      product.DataFormat.Name,
 		DataFormatID:    product.DataFormatID,
@@ -575,7 +576,7 @@ func GetDevices(c *gin.Context) {
 		data.NodeTypeID = product.NodeTypeID
 		data.Status = device.Status.Name
 		data.StatusID = device.StatusID
-		data.LastOnLineTime = database.TimeDeal(device.LastOnLineTime)
+		data.LastOnLineTime = tool.TimeDeal(device.LastOnLineTime)
 		responses = append(responses, data)
 	}
 
@@ -751,9 +752,9 @@ func GetDevice(c *gin.Context) {
 	response.Remark = device.Remark
 	response.DeviceSecret = device.DeviceSecret
 	response.IP = device.IP
-	response.CreateTime = database.TimeDeal(device.CreateTime)
-	response.ActivationTime = database.TimeDeal(device.ActivationTime)
-	response.LastOnLineTime = database.TimeDeal(device.LastOnLineTime)
+	response.CreateTime = tool.TimeDeal(device.CreateTime)
+	response.ActivationTime = tool.TimeDeal(device.ActivationTime)
+	response.LastOnLineTime = tool.TimeDeal(device.LastOnLineTime)
 	response.IotID = device.IotID
 	response.Label = device.Label
 	response.BatchCreate = device.BatchCreate
@@ -885,11 +886,12 @@ func GetDeviceDesireStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDeviceDesiredPropertyInfo(product_key, device_iot)
+	result := tool.DealJsonStr(data)
 
 	resp := gin.H{
 		"status":  "Y",
 		"message": "设备期望状态查询成功",
-		"data":    data,
+		"data":    result,
 	}
 	c.JSON(200, resp)
 }
@@ -910,11 +912,13 @@ func GetDevicePropertyStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDevicePropertyStatusInfo(product_key, device_iot)
+	result := tool.DealJsonStr(data)
+
 
 	resp := gin.H{
 		"status":  "Y",
-		"message": "设备期望状态查询成功",
-		"data":    data,
+		"message": "设备实时状态查询成功",
+		"data":    result,
 	}
 	c.JSON(200, resp)
 }

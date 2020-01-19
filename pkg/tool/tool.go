@@ -1,11 +1,13 @@
 package tool
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/oklog/ulid"
 	"github.com/rs/xid"
 	"github.com/satori/go.uuid"
 	"github.com/segmentio/ksuid"
+	"github.com/shikanon/IoTOrbHub/config"
 	"math/rand"
 	"regexp"
 	"time"
@@ -38,3 +40,26 @@ func GenerateIotId() (IotId string) {
 }
 
 // TODO 生成随机唯一的产品名称-批量生成
+
+// 处理数据中的json字符串
+func DealJsonStr(arg []map[string]interface{})(result []map[string]interface{}){
+	for index, value := range arg{
+		var dat map[string]interface{}
+		var json_str string
+		json_str = value["Value"].(string)
+		json.Unmarshal([]byte(json_str), &dat)
+		arg[index]["Value"] = dat
+	}
+	return arg
+}
+
+// 处理转化时间
+func TimeDeal(time time.Time) (result string) {
+	time_str := time.Format(config.GeneralConfig.TimeFormat)
+	//if (time == ){}else {}
+	if time_str == "0001/01/01 00:00:00" {
+		return "-"
+	} else {
+		return time_str
+	}
+}

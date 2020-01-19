@@ -6,7 +6,6 @@ import (
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
 )
 
 type TopicModel struct {
@@ -353,17 +352,6 @@ func GetTopics(pid, did int) (topic Topics) {
 	}
 
 	return datas
-}
-
-// 处理转化时间
-func TimeDeal(time time.Time) (result string) {
-	time_str := time.Format(config.GeneralConfig.TimeFormat)
-	//if (time == ){}else {}
-	if time_str == "0001/01/01 00:00:00" {
-		return "-"
-	} else {
-		return time_str
-	}
 }
 
 // 设备名称获取设备

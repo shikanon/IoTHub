@@ -21,6 +21,7 @@ import (
 	"github.com/shikanon/IoTOrbHub/pkg/constants"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/influxdb"
+	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"github.com/shikanon/IoTOrbHub/pkg/util"
 	logs "github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -148,7 +149,7 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 			logs.Info(fmt.Sprintf("设备上线:%s&%s", deviceName,productKey))
 			ts := time.Now()
 			device := database.DeviceNameToDevice(productKey,deviceName)
-			if database.TimeDeal(device.ActivationTime) == "-" {
+			if tool.TimeDeal(device.ActivationTime) == "-" {
 				User["ActivationTime"] = ts
 			}
 			User["LastOnLineTime"] = ts
