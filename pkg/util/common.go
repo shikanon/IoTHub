@@ -421,6 +421,8 @@ func GetDevicePropertyStatusInfo(productKey,deviceId string) (properties []map[s
 		property["Name"] = v.Map()["name"].String()
 		property["Unit"] = v.Map()["dataType"].Map()["specs"].Map()["unit"].String()
 		property["DataType"] = v.Map()["dataType"].Map()["type"].String()
+		property["Time"] = ""
+		property["Value"] = ""
 		ts, value, err := influxdb.GetDevicePropertyFromPropertyReported(influxdb.InfluxClient, deviceId, property["Identifier"].(string))
 		if err == nil {
 			t, err := time.Parse(time.RFC3339, ts.(string))
@@ -449,6 +451,8 @@ func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[
 		property["Unit"] = v.Map()["dataType"].Map()["specs"].Map()["unit"].String()
 		property["DataType"] = v.Map()["dataType"].Map()["type"].String()
 		property["Version"] = 0
+		property["Time"] = ""
+		property["Value"] = ""
 		ts, value, version, err := influxdb.GetDevicePropertyFromPropertyDesired(influxdb.InfluxClient, deviceId, property["Identifier"].(string))
 		if err == nil {
 			t, err := time.Parse(time.RFC3339, ts.(string))
