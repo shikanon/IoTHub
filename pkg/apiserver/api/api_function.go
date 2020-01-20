@@ -3,11 +3,9 @@ package api
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"github.com/shikanon/IoTOrbHub/pkg/util"
-	"go.mongodb.org/mongo-driver/bson"
 	"strconv"
 )
 
@@ -33,7 +31,7 @@ func Home(c *gin.Context) {
 	//db := database.DbConn()
 	//defer db.Close()
 	//
-	//data := Model{
+	//data := database.Model{
 	//	MongodbID:   2,
 	//	Name:        "路灯照明",
 	//	Scene:       "公共服务",
@@ -64,11 +62,11 @@ func Home(c *gin.Context) {
 	//data := GetIntactModel("01DYPKYMSGD4CSNK86Z8H09WBC") // 5e201036c39081ab3d77e230
 	//data := DeviceNameToDevice("01DYPJKERMSARPYM1ZM8ZJEV7A", "demo_01")
 
-	db := config.MongodbConfig.BaseModelConcise
-	filter := bson.M{"id": 1}
-	data := database.MongoDbGetFilterData(db, filter)
-	fmt.Println(data["_id"])
-	fmt.Printf("%T", data["_id"])
+	//db := config.MongodbConfig.BaseModelConcise
+	//filter := bson.M{"id": 1}
+	//data := database.MongoDbGetFilterData(db, filter)
+	//fmt.Println(data["_id"])
+	//fmt.Printf("%T", data["_id"])
 
 
 	//data := Model{
@@ -96,8 +94,8 @@ func Home(c *gin.Context) {
 	resp := gin.H{
 		"status":  "Y",
 		"message": "数据格式查询成功",
-		//"data":    ".............",
-		"data":    data,
+		"data":    ".............",
+		//"data":    data,
 	}
 	c.JSON(200, resp)
 
@@ -886,7 +884,7 @@ func GetDeviceDesireStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDeviceDesiredPropertyInfo(product_key, device_iot)
-	result := tool.DealJSequentialDatabaseData(data)
+	result := tool.DealSequentialDatabaseData(data)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -912,7 +910,10 @@ func GetDevicePropertyStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDevicePropertyStatusInfo(product_key, device_iot)
-	result := tool.DealJSequentialDatabaseData(data)
+	fmt.Println(data)
+	fmt.Printf("%T\n", data)
+	fmt.Printf("**************************************")
+	result := tool.DealSequentialDatabaseData(data)
 
 
 	resp := gin.H{

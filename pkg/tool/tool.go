@@ -37,13 +37,15 @@ func GenerateIotId() (IotId string) {
 
 // TODO 生成随机唯一的产品名称-批量生成
 
-func DealJSequentialDatabaseData(arg []map[string]interface{}) (result []map[string]interface{}) {
+func DealSequentialDatabaseData(arg []map[string]interface{}) (result []map[string]interface{}) {
 	for index, value := range arg {
 		var dat map[string]interface{}
 		var json_str string
 		json_str = value["Value"].(string)
-		json.Unmarshal([]byte(json_str), &dat)
-		arg[index]["Value"] = dat
+		if (json_str != ""){
+			json.Unmarshal([]byte(json_str), &dat)
+			arg[index]["Value"] = dat
+		}
 	}
 	return arg
 }
