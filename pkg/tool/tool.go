@@ -13,7 +13,6 @@ import (
 	"time"
 )
 
-// 生成productKey (ulid)
 func GenerateProductKey() (secret string) {
 	t := time.Now().UTC()
 	entropy := rand.New(rand.NewSource(t.UnixNano()))
@@ -21,12 +20,10 @@ func GenerateProductKey() (secret string) {
 	return id.String()
 }
 
-// 生成productSecret (xid)
 func GenerateProductSecret() (secret string) {
 	return xid.New().String()
 }
 
-// 生成deviceSecret  (uuid)
 func GenerateDeviceSecret() (secret string) {
 	data := fmt.Sprintf("%s", uuid.NewV4())
 	filter, _ := regexp.Compile("-")
@@ -34,16 +31,14 @@ func GenerateDeviceSecret() (secret string) {
 	return result
 }
 
-// 生成设备唯一id  (ksuid)
 func GenerateIotId() (IotId string) {
 	return ksuid.New().String()
 }
 
 // TODO 生成随机唯一的产品名称-批量生成
 
-// 处理数据中的json字符串
-func DealJsonStr(arg []map[string]interface{})(result []map[string]interface{}){
-	for index, value := range arg{
+func DealJSequentialDatabaseData(arg []map[string]interface{}) (result []map[string]interface{}) {
+	for index, value := range arg {
 		var dat map[string]interface{}
 		var json_str string
 		json_str = value["Value"].(string)
@@ -53,7 +48,6 @@ func DealJsonStr(arg []map[string]interface{})(result []map[string]interface{}){
 	return arg
 }
 
-// 处理转化时间
 func TimeDeal(time time.Time) (result string) {
 	time_str := time.Format(config.GeneralConfig.TimeFormat)
 	//if (time == ){}else {}

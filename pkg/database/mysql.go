@@ -8,7 +8,6 @@ import (
 	"log"
 )
 
-// 连接数据库
 func DbConn() *gorm.DB {
 	user := config.MysqlConfig.User
 	pwd := config.MysqlConfig.Pwd
@@ -25,7 +24,6 @@ func DbConn() *gorm.DB {
 	return db
 }
 
-// 插入一条数据，返回记录id
 func MysqlInsertOneData(data interface{}) (id int) {
 	db := DbConn()
 	defer db.Close()

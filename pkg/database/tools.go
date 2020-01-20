@@ -22,10 +22,6 @@ type Topics struct {
 	Custom  []TopicModel `json:"custom"`
 }
 
-// 1. 生成productKey, productSecret
-// 2. 绑定model，存储mongodb
-// 3. 存储topic信息到mysql数据库
-// 4. 保存product信息到mysql数据库
 func (p *Product) SaveProduct() (id int) {
 	product_key := tool.GenerateProductKey()
 	product_secret := tool.GenerateProductSecret()
@@ -39,7 +35,6 @@ func (p *Product) SaveProduct() (id int) {
 	return id
 }
 
-// 保存设备
 func (d *Device) SaveDevice() (id int) {
 	device_secret := tool.GenerateDeviceSecret()
 	iot_id := tool.GenerateIotId()
@@ -49,7 +44,6 @@ func (d *Device) SaveDevice() (id int) {
 	return data_id
 }
 
-// 产品保存物模型
 func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id int) {
 	intact_product_tab := config.MongodbConfig.IntactProductModel
 	concise_product_tab := config.MongodbConfig.ConciseProductModel
@@ -80,7 +74,6 @@ func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id i
 	return save_id
 }
 
-// 产品删除物模型
 func ProductDeleteMongodbModel(pid int) {
 	db := DbConn()
 	defer db.Close()
@@ -129,7 +122,6 @@ func ProductSaveCustomTopic(pid int) {
 	}
 }
 
-// 获取用户自定义Topic模板
 func GetCustomTopic(pid int) (data []TopicModel) {
 	db := DbConn()
 	defer db.Close()
@@ -149,7 +141,6 @@ func GetCustomTopic(pid int) (data []TopicModel) {
 	return result
 }
 
-// 获取topic模板
 func GetTopicModels(id int) (result Topics) {
 	var data Topics
 	base_data := []TopicModel{
@@ -303,7 +294,6 @@ func GetTopicModels(id int) (result Topics) {
 	return data
 }
 
-// 获取Topic类
 func GetTopics(pid, did int) (topic Topics) {
 	db := DbConn()
 	defer db.Close()
@@ -354,7 +344,6 @@ func GetTopics(pid, did int) (topic Topics) {
 	return datas
 }
 
-// 设备名称获取设备
 func DeviceNameToDevice(product_key, device_name string) (device Device) {
 	db := DbConn()
 	defer db.Close()
@@ -368,7 +357,6 @@ func DeviceNameToDevice(product_key, device_name string) (device Device) {
 	return device_model
 }
 
-// 获取完整物模型
 func GetIntactModel(producy_key string) (result primitive.M) {
 	db := DbConn()
 	defer db.Close()

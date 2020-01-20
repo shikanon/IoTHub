@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-// 连接mongodb中的数据库，返回数据库连接
 func MongoDbClient() (connect *mongo.Database) {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	host := config.MongodbConfig.Host
@@ -26,7 +25,6 @@ func MongoDbClient() (connect *mongo.Database) {
 	return db_client
 }
 
-// 插入一条数据
 func MongoDbInsertOneData(collection_name string, data bson.M) (id_str string) {
 	db_client := MongoDbClient()
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
@@ -36,7 +34,6 @@ func MongoDbInsertOneData(collection_name string, data bson.M) (id_str string) {
 	return id
 }
 
-// 根据条件，获取一条数据
 func MongoDbGetFilterData(collection_name string, filter bson.M) (result bson.M) {
 	db_client := MongoDbClient()
 	data := bson.M{}
@@ -49,8 +46,7 @@ func MongoDbGetFilterData(collection_name string, filter bson.M) (result bson.M)
 	return data
 }
 
-// 删除一条记录
-func MongodbDeleteOneData(collection_name string, _id string){
+func MongodbDeleteOneData(collection_name string, _id string) {
 	id, _ := primitive.ObjectIDFromHex(_id) // string转objectID
 	db_client := MongoDbClient()
 	collection := db_client.Collection(collection_name)

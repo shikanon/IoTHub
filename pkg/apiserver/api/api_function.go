@@ -886,7 +886,7 @@ func GetDeviceDesireStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDeviceDesiredPropertyInfo(product_key, device_iot)
-	result := tool.DealJsonStr(data)
+	result := tool.DealJSequentialDatabaseData(data)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -912,7 +912,7 @@ func GetDevicePropertyStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDevicePropertyStatusInfo(product_key, device_iot)
-	result := tool.DealJsonStr(data)
+	result := tool.DealJSequentialDatabaseData(data)
 
 
 	resp := gin.H{
