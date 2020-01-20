@@ -423,7 +423,7 @@ func GetDevicePropertyStatusInfo(productKey,deviceId string) (properties []map[s
 		property["DataType"] = v.Map()["dataType"].Map()["type"].String()
 		property["Time"] = ""
 		property["Value"] = ""
-		ts, value, err := influxdb.GetDevicePropertyFromPropertyReported(influxdb.InfluxClient, deviceId, property["Identifier"].(string))
+		ts, value, err := influxdb.GetDevicePropertyFromPropertyReported(deviceId, property["Identifier"].(string))
 		if err == nil {
 			t, err := time.Parse(time.RFC3339, ts.(string))
 			if err != nil {
@@ -453,7 +453,7 @@ func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[
 		property["Version"] = 0
 		property["Time"] = ""
 		property["Value"] = ""
-		ts, value, version, err := influxdb.GetDevicePropertyFromPropertyDesired(influxdb.InfluxClient, deviceId, property["Identifier"].(string))
+		ts, value, version, err := influxdb.GetDevicePropertyFromPropertyDesired(deviceId, property["Identifier"].(string))
 		if err == nil {
 			t, err := time.Parse(time.RFC3339, ts.(string))
 			if err != nil {
@@ -470,7 +470,7 @@ func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[
 
 
 func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceServiceInfoFromService(influxdb.InfluxClient, deviceId)
+	res := influxdb.GetDeviceServiceInfoFromService(deviceId)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))
@@ -491,7 +491,7 @@ func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}
 }
 
 func GetDeviceEventInfo(deviceId string) (eventInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceEventInfoFromEvent(influxdb.InfluxClient, deviceId)
+	res := influxdb.GetDeviceEventInfoFromEvent(deviceId)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))
@@ -506,6 +506,24 @@ func GetDeviceEventInfo(deviceId string) (eventInfo []map[string]interface{}) {
 				"OutputData":v[6],
 			}
 			eventInfo = append(eventInfo, event)
+		}
+	}
+	return
+}
+
+func GetPropertyHistory(deviceId, property string, Hour int) (propertyHistory []map[string]interface{}) {
+	res := influxdb.GetDevicePropertyHistoryFromPropertyReported(deviceId, property, Hour)
+	if res != nil {
+		for _,v := range res {
+			t, err := time.Parse(time.RFC3339, v[0].(string))
+			if err != nil {
+				fmt.Println(err)
+			}
+			property := map[string]interface{}{
+				"Time": t.Format("2006/01/02 15:04:05"),
+				"Value": v[1],
+			}
+			propertyHistory = append(propertyHistory, property)
 		}
 	}
 	return

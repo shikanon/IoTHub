@@ -45,7 +45,7 @@ func main() {
 	//now := time.Now().Unix()
 	currentTime := time.Now()
 	m, _ := time.ParseDuration("-1h")
-	result := strconv.FormatInt(currentTime.Add(m).UnixNano(),10)
+	result := strconv.FormatInt(currentTime.Add(m).UnixNano(), 10)
 	fmt.Println(result)
 	q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where time > %s order by time desc tz('Asia/Shanghai')", "test", result), MyDB, "")
 	if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
@@ -69,7 +69,7 @@ func NewInfluxdbClient() client.Client {
 	return c
 }
 
-func AddPointToPropertyReported(c client.Client, deviceId string, fields map[string]interface{}) {
+func AddPointToPropertyReported(deviceId string, fields map[string]interface{}) {
 	// Create a new point batch
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  MyDB,
@@ -87,17 +87,12 @@ func AddPointToPropertyReported(c client.Client, deviceId string, fields map[str
 	bp.AddPoint(pt)
 
 	// Write the batch
-	if err := c.Write(bp); err != nil {
-		log.Fatal(err)
-	}
-
-	// Close client resources
-	if err := c.Close(); err != nil {
+	if err := InfluxClient.Write(bp); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func AddPointToPropertyDesired(c client.Client, deviceId string, fields map[string]interface{}) {
+func AddPointToPropertyDesired(deviceId string, fields map[string]interface{}) {
 	// Create a new point batch
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  MyDB,
@@ -115,17 +110,12 @@ func AddPointToPropertyDesired(c client.Client, deviceId string, fields map[stri
 	bp.AddPoint(pt)
 
 	// Write the batch
-	if err := c.Write(bp); err != nil {
-		log.Fatal(err)
-	}
-
-	// Close client resources
-	if err := c.Close(); err != nil {
+	if err := InfluxClient.Write(bp); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func AddPointToService(c client.Client, deviceId string, fields map[string]interface{}) {
+func AddPointToService(deviceId string, fields map[string]interface{}) {
 	// Create a new point batch
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  MyDB,
@@ -143,17 +133,12 @@ func AddPointToService(c client.Client, deviceId string, fields map[string]inter
 	bp.AddPoint(pt)
 
 	// Write the batch
-	if err := c.Write(bp); err != nil {
-		log.Fatal(err)
-	}
-
-	// Close client resources
-	if err := c.Close(); err != nil {
+	if err := InfluxClient.Write(bp); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func AddPointToEvent(c client.Client, deviceId string, fields map[string]interface{}) {
+func AddPointToEvent(deviceId string, fields map[string]interface{}) {
 	// Create a new point batch
 	bp, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  MyDB,
@@ -171,19 +156,14 @@ func AddPointToEvent(c client.Client, deviceId string, fields map[string]interfa
 	bp.AddPoint(pt)
 
 	// Write the batch
-	if err := c.Write(bp); err != nil {
-		log.Fatal(err)
-	}
-
-	// Close client resources
-	if err := c.Close(); err != nil {
+	if err := InfluxClient.Write(bp); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func GetDeviceMsgIdFromService(c client.Client) (msgId int64) {
+func GetDeviceMsgIdFromService() (msgId int64) {
 	q := client.NewQuery(fmt.Sprintf("SELECT last(msg_id) FROM %s", "service"), MyDB, "")
-	if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 		msgId, err = response.Results[0].Series[0].Values[0][1].(json.Number).Int64()
 		if err != nil {
 			fmt.Println(err)
@@ -197,12 +177,12 @@ func GetDeviceMsgIdFromService(c client.Client) (msgId int64) {
 	}
 }
 
-func GetPropertyVersionFromPropertyDesired(c client.Client, deviceId, property string) (version int64) {
+func GetPropertyVersionFromPropertyDesired(deviceId, property string) (version int64) {
 	q := client.NewQuery(fmt.Sprintf("SELECT last(%s) FROM %s where %s='%s'", property, "property_desired", "device_id", deviceId), MyDB, "")
-	if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 		ts := response.Results[0].Series[0].Values[0][0]
 		q = client.NewQuery(fmt.Sprintf("SELECT last(version) FROM %s where %s='%s' and %s='%s'", "property_desired", "device_id", deviceId, "time", ts), MyDB, "")
-		if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			version, err = response.Results[0].Series[0].Values[0][1].(json.Number).Int64()
 			if err != nil {
 				fmt.Println(err)
@@ -219,9 +199,9 @@ func GetPropertyVersionFromPropertyDesired(c client.Client, deviceId, property s
 	}
 }
 
-func GetDevicePropertyFromPropertyReported(c client.Client, deviceId, property string) (ts, value interface{}, err error) {
+func GetDevicePropertyFromPropertyReported(deviceId, property string) (ts, value interface{}, err error) {
 	q := client.NewQuery(fmt.Sprintf("SELECT last(%s) FROM %s where %s='%s' tz('Asia/Shanghai')", property, "property_reported", "device_id", deviceId), MyDB, "")
-	if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 		ts = response.Results[0].Series[0].Values[0][0]
 		value = response.Results[0].Series[0].Values[0][1]
 		return ts, value, nil
@@ -231,13 +211,13 @@ func GetDevicePropertyFromPropertyReported(c client.Client, deviceId, property s
 	}
 }
 
-func GetDevicePropertyFromPropertyDesired(c client.Client, deviceId, property string) (ts, value, version interface{}, err error) {
+func GetDevicePropertyFromPropertyDesired(deviceId, property string) (ts, value, version interface{}, err error) {
 	q := client.NewQuery(fmt.Sprintf("SELECT last(%s) FROM %s where %s='%s'", property, "property_desired", "device_id", deviceId), MyDB, "")
-	if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 		t := response.Results[0].Series[0].Values[0][0]
 		value = response.Results[0].Series[0].Values[0][1]
 		q = client.NewQuery(fmt.Sprintf("SELECT last(version) FROM %s where %s='%s' and %s='%s' tz('Asia/Shanghai')", "property_desired", "device_id", deviceId, "time", t), MyDB, "")
-		if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			version = response.Results[0].Series[0].Values[0][1]
 			ts = response.Results[0].Series[0].Values[0][0]
 			return ts, value, version, nil
@@ -251,18 +231,27 @@ func GetDevicePropertyFromPropertyDesired(c client.Client, deviceId, property st
 	}
 }
 
-func GetDeviceServiceInfoFromService(c client.Client, deviceId string) (serviceInfo [][]interface{}) {
+func GetDeviceServiceInfoFromService(deviceId string) (serviceInfo [][]interface{}) {
 	q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time > now() - 1h order by time desc tz('Asia/Shanghai')", "service", "device_id", deviceId), MyDB, "")
-	if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 		return response.Results[0].Series[0].Values
 	} else {
 		return nil
 	}
 }
 
-func GetDeviceEventInfoFromEvent(c client.Client, deviceId string) (eventInfo [][]interface{}) {
+func GetDeviceEventInfoFromEvent(deviceId string) (eventInfo [][]interface{}) {
 	q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time > now() - 1h order by time desc tz('Asia/Shanghai')", "event", "device_id", deviceId), MyDB, "")
-	if response, err := c.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+		return response.Results[0].Series[0].Values
+	} else {
+		return nil
+	}
+}
+
+func GetDevicePropertyHistoryFromPropertyReported(deviceId, property string, Hour int) (propertyHistory [][]interface{}) {
+	q := client.NewQuery(fmt.Sprintf("SELECT %s FROM %s where %s='%s' and time > now() - %sh order by time desc tz('Asia/Shanghai')", property, "property_reported", "device_id", deviceId, strconv.Itoa(Hour)), MyDB, "")
+	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 		return response.Results[0].Series[0].Values
 	} else {
 		return nil

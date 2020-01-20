@@ -209,7 +209,7 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		}
 		if len(fields) != 0 {
 			fields["msg_id"] = id.Int()
-			influxdb.AddPointToPropertyReported(influxdb.InfluxClient, deviceId, fields)
+			influxdb.AddPointToPropertyReported(deviceId, fields)
 		}
 		replyMsg.Data = data
 		res, err := json.Marshal(replyMsg)
@@ -312,7 +312,7 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 						"outputData": string(dataStr),
 						"msg_id":     id.Int(),
 					}
-					influxdb.AddPointToEvent(influxdb.InfluxClient, deviceId, service)
+					influxdb.AddPointToEvent(deviceId, service)
 				} else {
 					logs.Error(err)
 				}
@@ -692,7 +692,7 @@ func (mq *Client) SetProperty(productKey, deviceName string, params string) (err
 		device := database.DeviceNameToDevice(productKey, deviceName)
 		deviceId := device.IotID
 		var deviceMsg DeviceMsg
-		deviceMsgId := influxdb.GetDeviceMsgIdFromService(influxdb.InfluxClient) //消息ID号，由物联网平台生成。
+		deviceMsgId := influxdb.GetDeviceMsgIdFromService() //消息ID号，由物联网平台生成。
 		deviceMsg.Id = strconv.FormatInt(deviceMsgId, 10)
 		deviceMsg.Version = constants.Version
 		deviceMsg.Method = constants.SetProperty
@@ -706,14 +706,14 @@ func (mq *Client) SetProperty(productKey, deviceName string, params string) (err
 		paramsStr, err := json.Marshal(fields)
 		if err == nil {
 			service := map[string]interface{}{"identifier": "set", "service_name": "set", "params": string(paramsStr), "msg_id": deviceMsgId}
-			influxdb.AddPointToService(influxdb.InfluxClient, deviceId, service)
+			influxdb.AddPointToService(deviceId, service)
 		} else {
 			fmt.Println(err)
 		}
 		for k, v := range fields {
-			version := influxdb.GetPropertyVersionFromPropertyDesired(influxdb.InfluxClient, deviceId, k)
+			version := influxdb.GetPropertyVersionFromPropertyDesired(deviceId, k)
 			param := map[string]interface{}{k: v, "version": version, "msg_id": deviceMsgId}
-			influxdb.AddPointToPropertyDesired(influxdb.InfluxClient, deviceId, param)
+			influxdb.AddPointToPropertyDesired(deviceId, param)
 		}
 	}
 	return errData
