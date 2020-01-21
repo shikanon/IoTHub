@@ -741,7 +741,7 @@ func (mq *Client) CallService(productKey, deviceName, service string, args strin
 		if !result.Exists() {
 			err := errors.New("tsl parse: params not exist")
 			errData[k] = err.Error()
-			continue
+			return
 		}
 		dataType := result.Get("dataType.type")
 		if value, err := util.DataVerification(k, dataType.String(), v, result); err != nil {
@@ -750,29 +750,27 @@ func (mq *Client) CallService(productKey, deviceName, service string, args strin
 			fields[k] = value
 		}
 	}
-	if len(fields) != 0 {
-		topic := fmt.Sprintf("/sys/%s/%s/thing/service/%s", productKey, deviceName, service)
-		device := database.DeviceNameToDevice(productKey, deviceName)
-		deviceId := device.IotID
-		var deviceMsg DeviceMsg
-		deviceMsgId := influxdb.GetDeviceMsgIdFromService() //消息ID号，由物联网平台生成。
-		deviceMsg.Id = strconv.FormatInt(deviceMsgId, 10)
-		deviceMsg.Version = constants.Version
-		deviceMsg.Method = fmt.Sprintf(constants.CallService, service)
-		deviceMsg.Params = fields
-		deviceMsgStr, err := json.Marshal(deviceMsg)
-		if err != nil {
-			logs.Error(err)
-		}
-		payLoad := deviceMsgStr
-		mq.Publish(topic, payLoad)
-		paramsStr, err := json.Marshal(fields)
-		if err == nil {
-			service := map[string]interface{}{"identifier": service, "service_name": service, "params": string(paramsStr), "msg_id": deviceMsgId}
-			influxdb.AddPointToService(deviceId, service)
-		} else {
-			fmt.Println(err)
-		}
+	topic := fmt.Sprintf("/sys/%s/%s/thing/service/%s", productKey, deviceName, service)
+	device := database.DeviceNameToDevice(productKey, deviceName)
+	deviceId := device.IotID
+	var deviceMsg DeviceMsg
+	deviceMsgId := influxdb.GetDeviceMsgIdFromService() //消息ID号，由物联网平台生成。
+	deviceMsg.Id = strconv.FormatInt(deviceMsgId, 10)
+	deviceMsg.Version = constants.Version
+	deviceMsg.Method = fmt.Sprintf(constants.CallService, service)
+	deviceMsg.Params = fields
+	deviceMsgStr, err := json.Marshal(deviceMsg)
+	if err != nil {
+		logs.Error(err)
+	}
+	payLoad := deviceMsgStr
+	mq.Publish(topic, payLoad)
+	paramsStr, err := json.Marshal(fields)
+	if err == nil {
+		service := map[string]interface{}{"identifier": service, "service_name": service, "params": string(paramsStr), "msg_id": deviceMsgId}
+		influxdb.AddPointToService(deviceId, service)
+	} else {
+		fmt.Println(err)
 	}
 	return
 }
