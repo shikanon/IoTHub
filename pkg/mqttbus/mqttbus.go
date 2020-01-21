@@ -146,9 +146,9 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		}
 		if connectionMsg.Online == true {
 			User := make(map[string]interface{})
-			logs.Info(fmt.Sprintf("设备上线:%s&%s", deviceName,productKey))
+			logs.Info(fmt.Sprintf("设备上线:%s&%s", deviceName, productKey))
 			ts := time.Now()
-			device := database.DeviceNameToDevice(productKey,deviceName)
+			device := database.DeviceNameToDevice(productKey, deviceName)
 			if tool.TimeDeal(device.ActivationTime) == "-" {
 				User["ActivationTime"] = ts
 			}
@@ -188,7 +188,7 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		device := database.DeviceNameToDevice(productKey, deviceName)
 		deviceId := device.IotID
 		model := database.GetIntactModel(productKey)
-		modelJson,err := json.Marshal(model)
+		modelJson, err := json.Marshal(model)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -277,7 +277,7 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		device := database.DeviceNameToDevice(productKey, deviceName)
 		deviceId := device.IotID
 		model := database.GetIntactModel(productKey)
-		modelJson,err := json.Marshal(model)
+		modelJson, err := json.Marshal(model)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -660,21 +660,20 @@ func (mq *Client) Subscribe(topic string) {
 	}
 }
 
-func (mq *Client) SetProperty(productKey, deviceName string, params string) (errData map[string]interface{}) {
+func (mq *Client) SetProperty(productKey, deviceName string, args string) (errData map[string]interface{}) {
 	// 设置设备属性
 	// TODO：设备是否在线
 	// 数据校验
 	errData = make(map[string]interface{})
 	fields := make(map[string]interface{})
 	model := database.GetIntactModel(productKey)
-	modelJson,err := json.Marshal(model)
+	modelJson, err := json.Marshal(model)
 	if err != nil {
 		fmt.Println(err)
 	}
-	res := gjson.Parse(params)
-	fmt.Println(res)
+	res := gjson.Parse(args)
 	for k, v := range res.Map() {
-		result := gjson.Get(string(modelJson), fmt.Sprintf("properties.#(identifier==%s)", k))
+		result := gjson.Get(string(modelJson), fmt.Sprintf("services.#(identifier==set).inputData.#(identifier==%s)", k))
 		if !result.Exists() {
 			err := errors.New("tsl parse: params not exist")
 			errData[k] = err.Error()
@@ -719,19 +718,66 @@ func (mq *Client) SetProperty(productKey, deviceName string, params string) (err
 	return errData
 }
 
-func (mq *Client) CallService(productKey, deviceName, service string, params map[string]interface{}) {
+func (mq *Client) CallService(productKey, deviceName, service string, args string) (errData map[string]interface{}) {
 	// 设备服务调用
-	topic := fmt.Sprintf("/sys/%s/%s/thing/service/%s", productKey, deviceName, service)
-	var deviceMsg DeviceMsg
-	deviceMsg.Id = "1"//TODO:消息ID号，由物联网平台生成。
-	deviceMsg.Version = constants.Version
-	deviceMsg.Method = fmt.Sprintf(constants.CallService, service)
-	deviceMsg.Params = params
-	deviceMsgStr, err := json.Marshal(deviceMsg)
+	// TODO：设备是否在线
+	// 数据校验
+	errData = make(map[string]interface{})
+	fields := make(map[string]interface{})
+	model := database.GetIntactModel(productKey)
+	modelJson, err := json.Marshal(model)
 	if err != nil {
-		logs.Error(err)
+		fmt.Println(err)
 	}
-	payLoad := deviceMsgStr
-	mq.Publish(topic, payLoad)
+	svc := gjson.Get(string(modelJson), fmt.Sprintf("services.#(identifier==%s)", service))
+	if !svc.Exists() {
+		err := errors.New("tsl parse: service not exist")
+		errData[service] = err.Error()
+		return
+	}
+	res := gjson.Parse(args)
+	for k, v := range res.Map() {
+		result := svc.Get(fmt.Sprintf("inputData.#(identifier==%s)", k))
+		if !result.Exists() {
+			err := errors.New("tsl parse: params not exist")
+			errData[k] = err.Error()
+			continue
+		}
+		dataType := result.Get("dataType.type")
+		if value, err := util.DataVerification(k, dataType.String(), v, result); err != nil {
+			errData[k] = err.Error()
+		} else {
+			fields[k] = value
+		}
+	}
+	if len(fields) != 0 {
+		topic := fmt.Sprintf("/sys/%s/%s/thing/service/%s", productKey, deviceName, service)
+		device := database.DeviceNameToDevice(productKey, deviceName)
+		deviceId := device.IotID
+		var deviceMsg DeviceMsg
+		deviceMsgId := influxdb.GetDeviceMsgIdFromService() //消息ID号，由物联网平台生成。
+		deviceMsg.Id = strconv.FormatInt(deviceMsgId, 10)
+		deviceMsg.Version = constants.Version
+		deviceMsg.Method = fmt.Sprintf(constants.CallService, service)
+		deviceMsg.Params = fields
+		deviceMsgStr, err := json.Marshal(deviceMsg)
+		if err != nil {
+			logs.Error(err)
+		}
+		payLoad := deviceMsgStr
+		mq.Publish(topic, payLoad)
+		paramsStr, err := json.Marshal(fields)
+		if err == nil {
+			service := map[string]interface{}{"identifier": service, "service_name": service, "params": string(paramsStr), "msg_id": deviceMsgId}
+			influxdb.AddPointToService(deviceId, service)
+		} else {
+			fmt.Println(err)
+		}
+	}
+	return
 }
 
+func (mq *Client) GetProperty(productKey, deviceName string, args string) {
+	//TODO:获取设备属性逻辑
+	// 如果设备在线,获取设备真实属性，如果设备不在线,返回时序数据库数据
+}
