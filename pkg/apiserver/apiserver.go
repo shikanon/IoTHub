@@ -40,9 +40,9 @@ func ApiRegister() {
 		v1.GET("/products", api.GetProducts)              // 产品首页
 		v1.POST("/product", api.AddProduct)               // 产品-创建产品
 		v1.GET("/product", api.GetProduct)                // 产品-查看
-		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称、描述、标签) / /TODO
+		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称、描述、标签) TODO 已自测、待联调;却标签
 		v1.GET("/ptopics", api.GetProductTopic)           // 产品-查看-topic类
-		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类 // TODO
+		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类 TODO 自测、待联调;
 		//v1.PUT("/ptopic", api.UpdateProductTopic)              // 产品-查看-topic类，自定义，编辑topic类
 		//v1.DELETE("/ptopic", api.DeleteProductTopic)           // 产品-查看-topic类，自定义，删除topic类
 		//v1.GET("/functions", Gapi.etProductFunction)           // 产品-查看-功能定义查看
@@ -66,6 +66,10 @@ func ApiRegister() {
 		v1.DELETE("/device", api.DeleteDevice)            // 设备-删除
 		v1.GET("/desstatus", api.GetDeviceDesireStatus)   // 获取设备期望状态
 		v1.GET("/prostatus", api.GetDevicePropertyStatus) // 获取设备实时状态
+		v1.GET("/hisstatus", api.GetDeviceHistoryStatus)  // 查看设备运行状态单个属性历史记录信息  TODO
+		v1.GET("/event", api.GetDeviceEvent)              // 查看设备事件管理 TODO
+		v1.GET("/server", api.GetDeviceServer)            // 查看设备服务调用 TODO
+		v1.GET("/modelfuncs", api.GetModelFunctions)      // 获取物模型标准功能定义
 
 		v1.GET("/", Cors(), api.Home)
 	}

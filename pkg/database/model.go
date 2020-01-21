@@ -76,6 +76,18 @@ type Model struct {
 	Scene       string         `json:"scene"`                                   // 所属场景
 	Territory   ModelTerritory `gorm:"foreignKey:TerritoryID" json:"territory"` //
 	TerritoryID int            `json:"territory_id"`                            // 所属领域id
+	Function    []ModelFunction
+}
+
+// 物模型标准功能定义
+type ModelFunction struct {
+	ID           int    `gorm:"primary_key" json:"id"` // id
+	ModelID      int    `json:"model_id"`              // 物模型id
+	FunctionType string `json:"function_type"`         // 功能类型
+	FunctionName string `json:"function_name"`         // 功能名称
+	Tag          string `json:"tag"`                   // 标示符
+	DataType     string `json:"data_type"`             // 数据类型
+	Required     bool   `json:"required"`              // 是否必选
 }
 
 // 物模型领域

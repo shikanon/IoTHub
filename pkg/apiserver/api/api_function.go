@@ -11,85 +11,6 @@ import (
 
 // *******************************************************************************************************
 func Home(c *gin.Context) {
-	//db_client := database.MongoDbClient()
-	//
-	//ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
-	//collection := db_client.Collection("base_model_concise")
-	//cur, _ := collection.Find(ctx, bson.D{})
-	//defer cur.Close(ctx)
-	//for cur.Next(ctx) {
-	//	var result bson.M
-	//	err := cur.Decode(&result)
-	//	if err != nil { log.Fatal(err) }
-	//	fmt.Println(result)
-	//	fmt.Printf("%T\n", result)
-	//}
-	//if err := cur.Err(); err != nil {
-	//	log.Fatal(err)
-	//}
-	//
-	//db := database.DbConn()
-	//defer db.Close()
-	//
-	//data := database.Model{
-	//	MongodbID:   2,
-	//	Name:        "路灯照明",
-	//	Scene:       "公共服务",
-	//	TerritoryID: 1,
-	//}
-	//db.Create(&data)
-
-	//
-	//var devices []Device
-	//db.Where("activation_time = ?", "0000-00-00 00:00:00").Find(&devices)
-	//fmt.Println(len(devices))
-
-	//
-	//var device Device
-	//db.First(&device, 1)
-	////time := TimeDeal(device.CreateTime)
-	//time := TimeDeal(device.ActivationTime)
-	//fmt.Println(time)
-	//fmt.Printf("%T\n", time)
-
-	//db.AutoMigrate(&Product{}, &Device{}, &Model{}, &ModelTerritory{}, &NodeType{},
-	//	&NetworkWay{}, &DataFormat{}, &AuthMethod{}, &DeviceStatus{}, &CustomTopic{},
-	//	&TopicPermission{}, &MongodbModel{})
-	//var device Device
-	//d
-	//db.First(&device, 1)
-
-	//data := GetIntactModel("01DYPKYMSGD4CSNK86Z8H09WBC") // 5e201036c39081ab3d77e230
-	//data := DeviceNameToDevice("01DYPJKERMSARPYM1ZM8ZJEV7A", "demo_01")
-
-	//db := config.MongodbConfig.BaseModelConcise
-	//filter := bson.M{"id": 1}
-	//data := database.MongoDbGetFilterData(db, filter)
-	//fmt.Println(data["_id"])
-	//fmt.Printf("%T", data["_id"])
-
-
-	//data := Model{
-	//	MongodbID:   1,
-	//	Name:        "车辆定位卡",
-	//	Scene:       "公共服务",
-	//	TerritoryID: 1,
-	//}
-	//db.Create(&data)
-
-	//
-	//data := &TopicPermission{
-	//	Name: "发布和订阅",
-	//}
-	//db.Create(data)
-
-	//db := config.MongodbConfig.Db
-	//port := config.MongodbConfig.Port
-	//host := config.MongodbConfig.Host
-	//base1 := config.MongodbConfig.BaseModelConcise
-	//base2 := config.MongodbConfig.BaseModelIntact
-	//product := config.MongodbConfig.ProductModel
-	//fmt.Println(db, port, host, base1, base2, product)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -354,9 +275,21 @@ func GetProduct(c *gin.Context) {
 }
 
 func UpdateProduct(c *gin.Context) {
-	name := c.PostForm("name")
-	desc := c.PostForm("desc")
-	product_id := c.PostForm("pid")
+
+	type Require struct {
+		Name     string `json:"name"`
+		Describe string `json:"desc"`
+		ProductID int `json:"pid"`
+	}
+
+	var require Require
+	if err := c.ShouldBind(&require); err != nil{
+		fmt.Println(err)
+	}
+
+	name := require.Name
+	desc := require.Describe
+	product_id := require.ProductID
 
 	db := database.DbConn()
 	defer db.Close()
@@ -390,24 +323,32 @@ func GetProductTopic(c *gin.Context) {
 }
 
 func AddProductTopic(c *gin.Context) {
-	product_str := c.PostForm("pid")
-	product_id, _ := strconv.Atoi(product_str)
-	permission_str := c.PostForm("permission_id")
-	permission_id, _ := strconv.Atoi(permission_str)
-	topic := c.PostForm("topic")
-	desc := c.PostForm("desc")
+	type Require struct {
+		ProductID int `json:"pid"`
+		Name string `json:"name"`
+		Operation int `json:"operation"`
+		Describe string `json:"desc"`
+	}
 
-	topic_detail := "/user/%s"
-	detail := "/%s/%s" + fmt.Sprintf(topic_detail, topic)
+	var require Require
+	if err := c.ShouldBind(&require); err != nil {
+		fmt.Println(err)
+	}
+
+	product_id := require.ProductID
+	name := require.Name
+	topic_name := "/%s/%s/user/" + name
+	operation := require.Operation
+	describe := require.Describe
 
 	data := database.CustomTopic{
 		ProductID:    product_id,
-		PermissionID: permission_id,
-		Detail:       detail,
-		Describe:     desc,
+		PermissionID: operation,
+		Detail:       topic_name,
+		Describe:     describe,
 	}
-
 	id := database.MysqlInsertOneData(&data)
+
 	resp := gin.H{
 		"status":  "Y",
 		"message": "自定义topic创建成功",
@@ -493,7 +434,7 @@ func DeleteProduct(c *gin.Context) {
 	var devices []database.Device
 	db.Where("product_id = ?", product_id).Find(&devices)
 
-	if (len(devices) > 0 ){
+	if len(devices) > 0 {
 		resp := gin.H{
 			"status":  "N",
 			"message": "产品下还存在设备",
@@ -856,7 +797,7 @@ func DeleteDevice(c *gin.Context) {
 	db := database.DbConn()
 	defer db.Close()
 
-	for index, _ := range device_id_list{
+	for index, _ := range device_id_list {
 		db.Where("id = ?", device_id_list[index]).Delete(&database.Device{})
 	}
 
@@ -910,16 +851,100 @@ func GetDevicePropertyStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDevicePropertyStatusInfo(product_key, device_iot)
-	fmt.Println(data)
-	fmt.Printf("%T\n", data)
-	fmt.Printf("**************************************")
 	result := tool.DealSequentialDatabaseData(data)
-
 
 	resp := gin.H{
 		"status":  "Y",
 		"message": "设备实时状态查询成功",
 		"data":    result,
+	}
+	c.JSON(200, resp)
+}
+
+func GetDeviceHistoryStatus(c *gin.Context) {
+	device_str := c.Query("did")
+	device_id, _ := strconv.Atoi(device_str)
+	property := c.Query("Identifier")
+	hour_str := c.Query("hour")
+	hour, _ := strconv.Atoi(hour_str)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device_iot := device.IotID
+
+	data := util.GetPropertyHistory(device_iot, property, hour)
+	result := tool.DealSequentialDatabaseData(data)
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备运行状态历史数据查询成功",
+		"data":    result,
+	}
+	c.JSON(200, resp)
+}
+
+func GetModelFunctions(c *gin.Context) {
+	model_id_str := c.Query("id")
+	model_id, _ := strconv.Atoi(model_id_str)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var data []database.ModelFunction
+	db.Where("model_id = ?", model_id).Find(&data)
+
+	for index, value := range data {
+		if value.DataType == "" {
+			data[index].DataType = "-"
+		}
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "标准功能定义态查询成功",
+		"data":    data,
+	}
+	c.JSON(200, resp)
+}
+
+func GetDeviceEvent(c *gin.Context) {
+	device_str := c.Query("did")
+	device_id, _ := strconv.Atoi(device_str)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device_iot := device.IotID
+	data := util.GetDeviceEventInfo(device_iot)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "标准功能定义态查询成功",
+		"data":    data,
+	}
+	c.JSON(200, resp)
+}
+
+func GetDeviceServer(c *gin.Context) {
+	device_str := c.Query("did")
+	device_id, _ := strconv.Atoi(device_str)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device_iot := device.IotID
+	data := util.GetDeviceServiceInfo(device_iot)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "标准功能定义态查询成功",
+		"data":    data,
 	}
 	c.JSON(200, resp)
 }
