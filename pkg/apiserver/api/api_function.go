@@ -277,13 +277,13 @@ func GetProduct(c *gin.Context) {
 func UpdateProduct(c *gin.Context) {
 
 	type Require struct {
-		Name     string `json:"name"`
-		Describe string `json:"desc"`
-		ProductID int `json:"pid"`
+		Name      string `json:"name"`
+		Describe  string `json:"desc"`
+		ProductID int    `json:"pid"`
 	}
 
 	var require Require
-	if err := c.ShouldBind(&require); err != nil{
+	if err := c.ShouldBind(&require); err != nil {
 		fmt.Println(err)
 	}
 
@@ -324,10 +324,10 @@ func GetProductTopic(c *gin.Context) {
 
 func AddProductTopic(c *gin.Context) {
 	type Require struct {
-		ProductID int `json:"pid"`
-		Name string `json:"name"`
-		Operation int `json:"operation"`
-		Describe string `json:"desc"`
+		ProductID int    `json:"pid"`
+		Name      string `json:"name"`
+		Operation int    `json:"operation"`
+		Describe  string `json:"desc"`
 	}
 
 	var require Require
@@ -358,40 +358,64 @@ func AddProductTopic(c *gin.Context) {
 }
 
 func UpdateProductTopic(c *gin.Context) {
-	permission_str := c.PostForm("permission_id")
-	permission_id, _ := strconv.Atoi(permission_str)
-	topic := c.PostForm("topic")
-	desc := c.DefaultPostForm("desc", "")
+	type Require struct {
+		TopicID   int    `json:"tid"`
+		Name      string `json:"name"`
+		Operation int    `json:"operation"`
+		Describe  string `json:"desc"`
+	}
 
-	topic_str := c.PostForm("pid")
-	topic_id, _ := strconv.Atoi(topic_str)
+	var require Require
+	if err := c.ShouldBind(&require); err != nil {
+		fmt.Println(err)
+	}
 
-	topic_detail := "/user/%s"
-	detail := "/%s/%s" + fmt.Sprintf(topic_detail, topic)
+	topic_id := require.TopicID
+	name := require.Name
+	operation := require.Operation
+	describe := require.Describe
 
+	var topic database.CustomTopic
 	db := database.DbConn()
 	defer db.Close()
-	var topic_model database.CustomTopic
-	db.Find(&topic_model, topic_id)
-	topic_model.PermissionID = permission_id
-	topic_model.Detail = detail
-	topic_model.Describe = desc
-	db.Save(&topic_model)
+
+	db.First(&topic, topic_id)
+	topic.PermissionID = operation
+	topic.Describe = describe
+	topic.Detail = "/%s/%s/user/" + name
+	db.Save(&topic)
 
 	resp := gin.H{
 		"status":  "Y",
-		"message": "数据更新成功",
+		"message": "Topic更新成功",
 		"data":    nil,
 	}
 	c.JSON(200, resp)
 }
 
-//// 产品-查看-topic类，自定义，删除topic类
-//func DeleteProductTopic(c *gin.Context) {
-//	topidid := 1
-//	accesskeyid := "aaa"
-//	signature := "bbb"
-//}
+func DeleteProductTopic(c *gin.Context) {
+	type Require struct {
+		TopicID int `json:"tid"`
+	}
+
+	var require Require
+	if err := c.ShouldBind(&require); err != nil {
+		fmt.Println(err)
+	}
+
+	db := database.DbConn()
+	defer db.Close()
+
+	topic_id := require.TopicID
+	db.Where("id = ?", topic_id).Delete(&database.CustomTopic{})
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "Topic删除成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
 
 //// 产品-查看-功能定义查看
 //// functions?pid=1&accesskeyid=aaaa&signature=bbb

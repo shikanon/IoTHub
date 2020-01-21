@@ -12,7 +12,7 @@ func Cors() gin.HandlerFunc {
 		method := c.Request.Method
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Headers", "Content-Type,AccessToken,X-CSRF-Token, Authorization, Token")
-		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE")
+		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT")
 		c.Header("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type")
 		c.Header("Access-Control-Allow-Credentials", "true")
 		//放行所有OPTIONS方法
@@ -40,11 +40,11 @@ func ApiRegister() {
 		v1.GET("/products", api.GetProducts)              // 产品首页
 		v1.POST("/product", api.AddProduct)               // 产品-创建产品
 		v1.GET("/product", api.GetProduct)                // 产品-查看
-		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称、描述、标签) TODO 已自测、待联调;却标签
+		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称、描述、标签) TODO 待联调;却标签
 		v1.GET("/ptopics", api.GetProductTopic)           // 产品-查看-topic类
-		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类 TODO 自测、待联调;
-		//v1.PUT("/ptopic", api.UpdateProductTopic)              // 产品-查看-topic类，自定义，编辑topic类
-		//v1.DELETE("/ptopic", api.DeleteProductTopic)           // 产品-查看-topic类，自定义，删除topic类
+		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类 TODO 待联调
+		v1.PUT("/ptopic", api.UpdateProductTopic)         // 产品-查看-topic类，自定义，编辑topic类 TODO 待联调
+		v1.DELETE("/ptopic", api.DeleteProductTopic)      // 产品-查看-topic类，自定义，删除topic类 TODO 待联调
 		//v1.GET("/functions", Gapi.etProductFunction)           // 产品-查看-功能定义查看
 		//v1.GET("/model", api.DownloadModelJS)                  // 产品-查看-查看物模型
 		//v1.GET("/code", api.DownloadEquipmentCode)             // 产品-查看-生成设备端代码
