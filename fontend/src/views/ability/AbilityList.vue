@@ -61,7 +61,7 @@
             </span>
       </el-dialog>
       <el-dialog title="查看物模型" :visible.sync="objectModeVisible" width="35%">
-          <ObjectMode ref="objectMode"  @close="objectModeVisible = false"></ObjectMode>
+          <ObjectMode ref="objectMode"  @close="objectModeVisible = false" :productId="productId"></ObjectMode>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="exportFile">导出模型文件</el-button>
             </span>
@@ -85,6 +85,10 @@ import JSZip from 'jszip'
         productKey:{
           type:String,
           default:''
+        },
+         productId:{
+          type:Number,
+          default:0
         }
      },
 
