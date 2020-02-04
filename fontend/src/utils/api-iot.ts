@@ -15,13 +15,14 @@ export const addProduct = (data) => {
 }
 
 //删除
-export const deleteProduct= (DeviceKey) => {
-  return deletes(`${baseUrl}/product?DeviceKey=${DeviceKey}`)
+export const deleteProduct= (productId) => {
+  
+  return deletes(`${baseUrl}/product?`,{"pid":productId})
 }
 
 //修改
-export const updateProduct= (productKey,data) => {
-  return   put(`${baseUrl}/product?productKey=${productKey}`, data)
+export const updateProduct= (data) => {
+  return   put(`${baseUrl}/product`, data)
 }
 
 //查询列表
@@ -42,6 +43,13 @@ export const getProductById= (productKey) => {
 export const getSimpleProductList= () => {
   return get(`${baseUrl}/simpleproducts`)
 }
+
+
+//查询产品物模型
+export const getProductMode= (productKey) => {
+  return get(`${baseUrl}/tsl?pid=${productKey}`)
+}
+
 /******************* 产品管理 end *******************/
 
 //查询节点类型
@@ -51,7 +59,7 @@ export const getNodeTypeList= () => {
 
 //查询联网方式
 export const getNetTypeList= () => {
-  return get(`/${baseUrl}/networkways`)
+  return get(`${baseUrl}/networkways`)
 }
 
 //查询认证方式
@@ -75,10 +83,43 @@ export const getTopicList= (type,key) => {
   }
 }
 
+
+//添加topic
+
+export const addTopic = (data) => {
+ 
+  return post(`${baseUrl}/ptopic`, data)
+}
+
+
+//删除
+export const deleteTopic= (topicId) => {
+  
+ 
+  return deletes(`${baseUrl}/ptopic`,{"tid":topicId})
+}
+
+
+
+export const updateTopic= (data) => {
+  // "tid":   23,       // Topic的id
+  // "name": "aaaaa",  // Topic类名
+  // "operation": 2,   // 操作权限id
+  // "desc":  ""       // 描述
+  return   put(`${baseUrl}/ptopic`, data)
+}
+
 //查询标准品类
 export const getCategoryList= (currentPage = 1,pageSize = 10,type = 1) => {
   return get(`${baseUrl}/models`)
 }
+
+
+//查询标准品类属性
+export const getModelfuncs= (id ) => {
+  return get(`${baseUrl}/modelfuncs?id=${id}`)
+}
+
 
 
 
@@ -90,14 +131,13 @@ export const addDevice = (data) => {
   return post(`${baseUrl}/device`, data)
 }
 
-//批量自动新增(productName,count)
-
+//批量自动新增
 export const addDeviceArr = (data) => {
-  return post(`${baseUrl}/product`, data)
+  return post(`${baseUrl}/adevice`, data)
 }
 //删除
-export const deleteDevice= (pid = []) => {
-  return deletes(`${baseUrl}/device?pid=${pid}`)
+export const deleteDevice= (dids = []) => {
+  return deletes(`${baseUrl}/device`,{"dids":dids})
 }
 
 //修改
@@ -131,6 +171,18 @@ export const getApplyListDtl= (currentPage = 1,pageSize = 10,ApplyId,ProductKey)
 //更新设备状态(禁用/启用)
 export const updateDeviceStatu= (deviceKeyArr,statu) => {
   return   put(`${baseUrl}device?deviceKey=${deviceKeyArr}&statu=${statu}`, )
+}
+
+//查询设备详情
+export const getRunState= ( deviceId = 0,type ='pro') => {
+ if(type === 'pro'){
+  return get(`${baseUrl}/prostatus?&did=${deviceId}`)
+ }else{
+  return get(`${baseUrl}/desstatus?&did=${deviceId}`)
+ }
+//   /iot/api/v1/desstatus?did=1    获取期望状态 get请求
+// /iot/api/v1/prostatus?did=1   获取实时状态  get请求
+ // return get(`${baseUrl}/desstatus?&did=${deviceId}`)
 }
 
 

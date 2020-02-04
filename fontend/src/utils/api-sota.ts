@@ -11,7 +11,17 @@ export const getIndexList= () => {
 
 //单个栏目详情列表
 export const getIndexDtlList= (index) => {
-  return get(`${baseUrl}/index/${index}`)
+  return get(`${baseUrl}/category/${index}`)
+}
+
+
+export const getApiList= (apiClass) => {
+  return get(`${baseUrl}/api-list?APIClass=${apiClass}`)
+}
+
+
+export const getApiGroup= (APIGroup='',SDKName='') => {
+  return get(`${baseUrl}/api-group?APIGroup=${APIGroup}&SDKName=${SDKName}`)
 }
 
 
