@@ -6,18 +6,18 @@
             第三个user用来标识产品的自定义Topic类。简单来说，Topic类：/a15T****dhK/${deviceName}/user/update 
             是具体Topic：/a15T****dhK/mydevice1/user/update和/a15T****dhK/mydevice2/user/update等的集合。
         </p>
-        <el-form label-position="top" ref="form" label-width="80px" :model="form"  :rules="rules">
+        <el-form label-position="top" ref="ruleForm" label-width="80px" :model="ruleForm"  :rules="rules">
             <el-form-item label="设备操作权限：" prop="operation">
-                <el-select v-model="form.operation" placeholder="设备操作权限">
+                <el-select v-model="ruleForm.operation" placeholder="设备操作权限">
                     <el-option v-for="(item,key) in operationArr" :label="item.label" :value="item.value" :key="key"></el-option>                          
                 </el-select>            
             </el-form-item>
             <el-form-item label="Topic类：" prop="name">
                 <span>{{topic_pre}}</span>
-                <el-input v-model="name" placeholder="请输入您的Topic类名"></el-input>
+                <el-input v-model="ruleForm.name" placeholder="请输入您的Topic类名"></el-input>
             </el-form-item>
             <el-form-item label="描述:">
-                 <el-input type="textarea" v-model="form.desc"></el-input>
+                 <el-input type="textarea" v-model="ruleForm.desc"></el-input>
             </el-form-item>
         </el-form>        
     </div>
@@ -35,11 +35,14 @@
     watch:{
         form:{  
             handler:function(val,oldval){ 
-                if(val.id &&  val.id != oldval.id){
+                console.log(val)
+                console.log(oldval)
+
+               // if( (val.id &&  val.id != oldval.id) || val.pid ){
                     this.$nextTick(()=>{
                         this.init()
                     })
-                }
+                //}
             },  
             immediate:true,//关键
             deep:true
@@ -47,12 +50,11 @@
     },
     data() {
       return {  
-         name:"",   
          topic_pre:"", 
          operationArr:[{label:'发布',value:1},
          {label:'订阅',value:2},
-         {label:'发布和订阅',value:3}],
-     
+         {label:'发布和订阅',value:3}], 
+         ruleForm:{},   
          rules: {      
           operation: [
             { required: true, message: '请选择设备操作权限', trigger: 'change' }
@@ -65,6 +67,7 @@
     },
 
     created(){
+       
        if(this.form.topic_name){
            this.init()
        }
@@ -72,23 +75,47 @@
     },
     methods:{
         init(){   
-            if(this.form.topic_name){
-                let index = this.form.topic_name.indexOf("/user/") + 6;
-                let length = this.form.topic_name.length;
-                this.topic_pre = this.form.topic_name.substring(0,index);
-                this.name  = this.form.topic_name.substring(index,length);
-            }
-            
+            let index = this.form.topic_name.indexOf("/user/") + 6
+            let length = this.form.topic_name.length
+            this.topic_pre = this.form.topic_name.substring(0,index)
+            //传了pid，代表新增topic 
+            if(this.form.pid){
+                this.ruleForm ={pid:this.form.pid,operation:1,name:"",desc:""}
+            }else{
+                this.ruleForm.name  = this.form.topic_name.substring(index,length)            
+                this.ruleForm = {tid:this.form.id,operation:this.form.operation,name:this.ruleForm.name,desc:this.form.desc}
+            }         
         },
         submit(){
-            this.$refs['form'].validate((valid) => {
-            if (valid) {
-                this.form.topic_name = `${this.topic_pre}${this.name}`
-                this.form.topic_name = `${this.topic_pre}${this.name}`
-            } else {
-                console.log('error submit!!');
-                return false;
-            }
+            this.$refs['ruleForm'].validate((valid) => {
+                if (valid) {                   
+                    console.log(this.ruleForm)
+                    if(this.ruleForm.pid){ //新增
+                        this.$API_IOT.addTopic(this.ruleForm).then((res) => {
+
+                  
+                            if(res.data.status === "Y"){
+                                this.$message.success('新增topic成功')    
+                                this.$emit('refresh')
+                            }else{
+                                this.$message.error(res.message);
+                            }
+                        }) 
+                    }else{ //修改
+                        this.$API_IOT.updateTopic(this.ruleForm).then((res) => {
+                            if(res.data.status === "Y"){
+                                this.$message.success('修改topic成功')    
+                                this.$emit('refresh')
+                            }else{
+                                this.$message.error(res.message);
+                            }
+                        }) 
+                    }
+                    
+                } else {
+                    console.log('error submit!!');
+                    return false;
+                }
             });
         }
     }
