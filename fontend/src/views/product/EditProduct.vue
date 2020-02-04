@@ -33,7 +33,7 @@
       },
     data() {
       return {
-        ruleForm: {},
+        ruleForm: {name:''},
         rules: {
           name: [
             { required: true, message: '请输入产品名称', trigger: 'blur' },
@@ -47,14 +47,24 @@
     },
     methods: {
       init(){   
-          this.ruleForm = this.product
+          this.ruleForm = JSON.parse(JSON.stringify(this.product))
       },
 
-      //编辑产品提交
+      //编辑产品提交s
       submitForm() {
         this.$refs['ruleForm'].validate((valid) => {
           if (valid) {
-            console.log(this.ruleForm)
+            
+            let params ={pid:this.ruleForm.id,name:this.ruleForm.name,desc:this.ruleForm.desc}
+            this.$API_IOT.updateProduct(params).then((res) => {
+              if (res.data.status === 'Y') {
+                  this.$message.success('更新产品成功')
+                  this.$emit('success')
+              } else {
+                  this.$message.error(res.message);
+              }       
+            })
+      
           } else {
             console.log('error submit!!');
             return false;

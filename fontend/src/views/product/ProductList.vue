@@ -58,7 +58,7 @@
               <el-divider direction="vertical"></el-divider>
               <el-button type="text" size="small" @click="gotoDeviceList(scope.row.id)">管理设备</el-button>
               <el-divider direction="vertical"></el-divider>
-              <el-button type="text" size="small" @click="deleteProduct(scope.$index, scope.row.id)">删除</el-button>
+              <el-button type="text" size="small" @click="deleteProduct(scope.row.id)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -118,8 +118,11 @@
         }  
       },
       created(){
-        this.openRouter = false                  
-        this.getProductList(this.currentPage) 
+        this.openRouter = false   
+          
+        this.getProductList(this.currentPage)  
+            
+       
       },
       methods:{
         //获取产品列表
@@ -157,13 +160,22 @@
           },
 
           //删除产品
-          deleteProduct(index,row){               
+          deleteProduct(id){               
             this.$confirm('此操作将永久删除该纪录, 是否继续?', '提示', {
               confirmButtonText: '确定',
               cancelButtonText: '取消',
               type: 'warning'
             }).then(() => {
-              this.tableData =  this.tableData.filter(item => item.name !== row.name);
+              //this.tableData =  this.tableData.filter(item => item.name !== row.name);
+
+                  this.$API_IOT.deleteProduct(id).then((res) => {
+                    if(res.data.status === 'Y'){
+                      this.$message.success('删除成功')    
+                      this.getProductList()              
+                    }else{
+                      this.$message.error(res.message);
+                    } 
+                  })
             }).catch(() => {
               this.$message({
                 type: 'info',

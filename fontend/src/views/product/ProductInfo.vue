@@ -77,7 +77,7 @@
          <el-dialog title="编辑产品信息" :visible.sync="editProductVisible" width="26%">
             <EditProduct ref="editProduct" :product="productTemp" @close="editProductVisible = false"></EditProduct>
             <span slot="footer" class="dialog-footer">
-                <el-button type="primary" @click="editProductSubmit">确 定</el-button>
+                <el-button type="primary" @click="editProductSubmit" @success="updateSuccess($event)">确 定</el-button>
                 <el-button @click=" editProductCancel">取 消</el-button>
             </span>
         </el-dialog>
@@ -106,8 +106,8 @@
         return { 
           editProductVisible:false, 
           addLabelVisible:false,
-          labelArr:[],
           productTemp:{},
+          labelArr:[],
           value:false
             
         }
@@ -134,6 +134,11 @@
           editProductCancel(){
               this.editProductVisible = false
               this.productTemp = this.product
+          },
+
+          updateSuccess(event){
+            this.editProductVisible = false
+            this.product.name = event.name
           },
 
           //添加标签提交
