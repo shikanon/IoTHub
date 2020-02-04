@@ -149,7 +149,7 @@ export default new Router({
           name: 'knowledge-base',
           component: () => import( '@/views/knowledge-base/Base.vue'),
           meta: {
-            title: '知识库',
+            title: 'SOTA模型库',
             icon:'el-icon-document',
             leftMenu:true
           },
