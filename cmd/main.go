@@ -1,14 +1,27 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/apiserver"
+	"github.com/shikanon/IoTOrbHub/pkg/influxdb"
+	mqttBus "github.com/shikanon/IoTOrbHub/pkg/mqttbus"
 )
 
+func init() {
+	// 初始化配置
+	config.ConfigInit()
+
+	hub := &mqttBus.Client{
+		MQTTUrl: mqttBus.MQTTUrl,
+	}
+	mqttBus.MQTTHub = hub
+	hub.InitSubClient()
+	hub.InitPubClient()
+	c := influxdb.NewInfluxdbClient()
+	influxdb.InfluxClient = c
+}
+
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-	router := gin.Default()
-	router.Use(gin.Recovery())
-	router.POST("/api/v1/login", apiserver.DeviceManager)
-	router.Run("0.0.0.0:9898")
+	apiserver.ApiRegister()
+	defer influxdb.InfluxClient.Close()
 }
