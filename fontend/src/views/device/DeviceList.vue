@@ -357,7 +357,9 @@
           
           let arr = this.multipleSelection.map((item) => {
             return item.id
-          }).join(",")
+          })
+
+          //.join(",")
        
           if(type === '1'){//删除
             this.deleteDevices(arr)
@@ -375,7 +377,7 @@
         deleteDevices(arr){
           this.$API_IOT.deleteDevice(arr).then((res) => {
                 if(res.data.status  === 'Y'){
-                  this.$message.sucess('删除成功',function(){
+                  this.$message.success('删除成功',function(){
                     this.getDeviceList()
                   })
                   
@@ -388,7 +390,7 @@
         disabledDevices(arr){
           this.$API_IOT.disabledDevice(arr).then((res) => {
                 if(res.data.status  === 'Y'){
-                  this.$message.sucess('禁用成功',function(){
+                  this.$message.success('禁用成功',function(){
                     this.getDeviceList()
                   })
                   
@@ -457,6 +459,7 @@
               }
           ]
           this.loadBtn = true
+          this.getDeviceList()
         },
 
         //查询产品信息

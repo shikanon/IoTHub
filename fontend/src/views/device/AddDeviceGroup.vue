@@ -16,15 +16,15 @@
 
   
         <el-form-item label="添加方式" prop="type">
-              <el-radio v-model="ruleForm.type" label="1"  border size="medium">自动生成</el-radio>
-              <el-radio v-model="ruleForm.type" label="2"  border size="medium">批量上传</el-radio>
+              <el-radio v-model="type" label="1"  border size="medium">自动生成</el-radio>
+              <el-radio v-model="type" label="2"  border size="medium">批量上传</el-radio>
         </el-form-item>
     
-        <el-form-item  v-if="ruleForm.type === '1'" label="设备数量" prop="count">
-            <el-input-number v-model="ruleForm.count" controls-position="right"  :min="1"  label="请输入设备数量"></el-input-number>
+        <el-form-item  v-if="type === '1'" label="设备数量" prop="num">
+            <el-input-number v-model="ruleForm.num" controls-position="right"  :min="1"  label="请输入设备数量"></el-input-number>
         </el-form-item>  
          
-          <el-form-item v-if="ruleForm.type === '2'" label="批量上传文件" prop="fileList">      
+          <el-form-item v-if="type === '2'" label="批量上传文件" prop="fileList">      
             <el-upload
                 action="https://jsonplaceholder.typicode.com/posts/"
                 :on-success="success"
@@ -76,6 +76,7 @@
       return {
         productName:"",
         ruleForm: {},
+        type:"1",
         productArrTemp:[],
         rules: {
           pid: [
@@ -103,14 +104,12 @@
                this.productName =  this.productArr.filter(item => item.id === this.productId)[0].name
                 this.ruleForm =  {
                   pid: this.productId,
-                  type: '1',
-                  count: 1 ,     
+                  num: 1 ,     
                 }
           }else{
             this.ruleForm= {    
-              product: null,
-              type: '1',
-              count: 1 ,
+              pid: null,
+              num: 1 ,
             }
           }
 
@@ -118,7 +117,7 @@
         },    
     
       submit(){
-        if(this.ruleForm.type === "1"){
+        if(this.type === "1"){
           this.submitForm()
         }else{
             this.submitUpload()
@@ -127,15 +126,23 @@
       submitForm() {
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
-            alert('submit!');
-            //回调父组件方法
-            this.$emit('close')
-            //回调父组件方法显示结果
-             this.$emit('showAddResult');
+             //回调父组件方法显示结果
+            this.$emit('showAddResult')
+            this.$API_IOT.addDeviceArr(this.ruleForm).then((res) => {
+                if(res.data.status  === 'Y'){
+                   //回调父组件方法
+                  this.$emit('close')
+                  //回调，添加结果
+                  this.$emit('addSuccess',this.ruleForm.num)
+
+                }else{
+                    this.$message.error(res.message);
+                }
+               
+            })
+
+           
             
-            setTimeout(()=>{
-                this.$emit('addSuccess',this.ruleForm.count)
-             },3*1000)
              
           } else {
             console.log('error submit!!');
