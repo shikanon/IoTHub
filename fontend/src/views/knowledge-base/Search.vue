@@ -11,38 +11,38 @@
        <el-divider v-if="!result.knowledge"></el-divider>
        <div class="search_body"  v-if="!result.knowledge">
             <div class="knowledge">
-                <p>知识</p>
+                <p>官方模型</p>
                 <div class="card-list">   
                     <el-card class="box-card" v-for="(item,key) in data.knowledge" :key="key" > 
-                        <div @click="clickTab('knowledge',key)">
+                        <div @click="clickTab('knowledge',item.id,data.knowledge)">
                             <div class="card-title">
-                                    <img src="https://pro.jiqizhixin.com/assets/packs/sites/dashboard/images/wiki_icons/icon-concept-1f5a8b1f2ada42c3a02dfb94f39d1e32.svg" alt="">
-                                    <span>{{item.type}}</span>
+                                <img src="https://pro.jiqizhixin.com/assets/packs/sites/dashboard/images/wiki_icons/icon-concept-1f5a8b1f2ada42c3a02dfb94f39d1e32.svg" alt="">
+                                <span>{{item.name}}</span>
                             </div>
                             <div class="card-boby">
-                                    <span>共记录<span class="number">{{item.total_count}}</span>条</span>
-                                    <div>
-                                        <div>{{item.data.name}}</div>
-                                        <span>最新纪录</span>
-                                    </div>
+                                <span>共记录<span class="number">{{item.id}}</span>条</span>
+                                <div>
+                                    <div>{{item.Image}}</div>
+                                    <span>最新纪录</span>
+                                </div>
                             </div> 
                         </div>      
                     </el-card>   
                 </div>
             </div>
             <div class="resource">
-                <p>资源</p>
+                <p>行业解决方案</p>
                 <div class="card-list">
                     <el-card class="box-card" v-for="(item,key) in data.resource" :key="key"  >
-                        <div @click="clickTab('resource',key)">
+                        <div @click="clickTab('resource',item.id,data.resource)">
                             <div class="card-title" >
                                 <img src="https://pro.jiqizhixin.com/assets/packs/sites/dashboard/images/wiki_icons/icon-concept-1f5a8b1f2ada42c3a02dfb94f39d1e32.svg" alt="">
-                                <span>{{item.type}}</span>
+                                <span>{{item.name}}</span>
                             </div>
                             <div class="card-boby" >
-                                <span>共记录<span class="number">{{item.total_count}}</span>条</span>
+                                <span>共记录<span class="number">{{item.id}}</span>条</span>
                                 <div>
-                                    <div>{{item.data.name}}</div>
+                                    <div>{{item.Image}}</div>
                                     <span>最新纪录</span>
                                 </div>
                             </div>   
@@ -52,19 +52,19 @@
                 </div>
             </div>
             <div class="people">
-                <p>人物</p>
+                <p>数据集</p>
                 <div class="card-list" >
                     <el-card class="box-card"  v-for="(item,key) in data.people" :key="key" >
-                         <div @click="clickTab('people',key)">
+                         <div @click="clickTab('people',item.id,data.people)">
 
                             <div class="card-title">
                                     <img src="https://pro.jiqizhixin.com/assets/packs/sites/dashboard/images/wiki_icons/icon-concept-1f5a8b1f2ada42c3a02dfb94f39d1e32.svg" alt="">
-                                    <span>{{item.type}}</span>
+                                    <span>{{item.name}}</span>
                             </div>
                             <div class="card-boby">
-                                <span>共记录<span class="number">{{item.total_count}}</span>条</span>
+                                <span>共记录<span class="number">{{item.id}}</span>条</span>
                                 <div>
-                                    <div>{{item.data.name}}</div>
+                                    <div>{{item.Image}}</div>
                                     <span>最新纪录</span>
                                 </div>
                             </div>   
@@ -86,7 +86,7 @@ export default {
     data() {
     return {
         search_input:'',
-        data:{},
+        data:{knowledge:{},resource:{},people:{}},
         result:{},
     }
     },
@@ -98,59 +98,36 @@ export default {
         init(){
 
             this.$API_SOTA.getIndexList().then((res) => {
-                console.log(res.data)          
-                this.data = res.data
+                this.data['knowledge'] = res.data[0]
+                this.data['resource'] = res.data[1]
+                this.data['people'] = res.data[2]
+
             })
 
-            // [
-            //     {
-            //         "id": 1,
-            //         "name": "基础模型",
-            //         "APIType": 0,
-            //         "Image": "icon-concept.svg"
-            //     },
-            //     {
-            //         "id": 2,
-            //         "name": "SOTA模型",
-            //         "APIType": 0,
-            //         "Image": "icon-concept.svg"
-            //     },
-            //     {
-            //         "id": 3,
-            //         "name": "行业解决方案",
-            //         "APIType": 1,
-            //         "Image": "icon-concept.svg"
-            //     },
-            //     {
-            //         "id": 4,
-            //         "name": "数据集",
-            //         "APIType": 2,
-            //         "Image": "icon-concept.svg"
-            //     }
-            // ]
-            this.data = 
-            {"knowledge":[
-                {"total_count":694,"type_en":"concept","type":"基础概念","icon":"icon-concept.svg","data":{"id":"ce06fe06-610e-4a82-8af3-a7e1c0d5d351","name":"用户画像"}},
-                {"total_count":4202,"type_en":"tech_method","type":"技术方法","icon":"icon-method.svg","data":{"id":"c4a5d672-d51e-451f-83cf-dc86b3ea2adb","name":"Γ-model"}},
-                {"total_count":516,"type_en":"tech_task","type":"技术任务","icon":"icon-task.svg","data":{"id":"d43c21c2-131f-4166-abe9-ec02e2efeb21","name":"图像聚类"}}
-                ],
+            
+            // this.data = 
+            // {"knowledge":[
+            //     {"total_count":694,"type_en":"concept","type":"基础概念","icon":"icon-concept.svg","data":{"id":"ce06fe06-610e-4a82-8af3-a7e1c0d5d351","name":"用户画像"}},
+            //     {"total_count":4202,"type_en":"tech_method","type":"技术方法","icon":"icon-method.svg","data":{"id":"c4a5d672-d51e-451f-83cf-dc86b3ea2adb","name":"Γ-model"}},
+            //     {"total_count":516,"type_en":"tech_task","type":"技术任务","icon":"icon-task.svg","data":{"id":"d43c21c2-131f-4166-abe9-ec02e2efeb21","name":"图像聚类"}}
+            //     ],
                 
-            "resource":[
-                    {"total_count":1423,"type_en":"data_set","type":"数据集","icon":"icon-dataset.svg","data":{"id":"32796975-9890-4966-af95-5f5309f78336","name":"SQuAD"}},
-                    {"total_count":956,"type_en":"tool","type":"开发工具","icon":"icon-tool.svg","data":{"id":"3feca874-32fb-4694-9ca1-82c37e4fcec6","name":"nullabor"}},
-                    {"total_count":778,"type_en":"tutorial","type":"教程","icon":"icon-tutorial.svg","data":{"id":"778e86c6-c5f2-4928-b7f0-9b2f6f6f3112","name":"图神经网络相关资料"}},
-                    {"total_count":344,"type_en":"event","type":"活动及会议","icon":"icon-event.svg","data":{"id":"955766d6-8a05-41e6-91e8-e3ecab344739","name":"SEKE  International Conference on Software Engineering \u0026 Knowledge Engineering"}},
-                    {"total_count":366,"type_en":"publication","type":"书籍期刊","icon":"icon-publication.svg","data":{"id":"fb957a10-70fe-4ba2-b854-9ad9d7ab0bb4","name":"IEEE transactions of industrial informatics"}}
-                    ],
-            "people":[
-                    {"total_count":2087,"type_en":"expert","type":"专家","icon":"icon-expert.svg","data":{"id":"454ea7d2-f5d2-4e1f-bac6-dd2d74400490","name":"陈文亚"}}
-                    ]
-            }
+            // "resource":[
+            //         {"total_count":1423,"type_en":"data_set","type":"数据集","icon":"icon-dataset.svg","data":{"id":"32796975-9890-4966-af95-5f5309f78336","name":"SQuAD"}},
+            //         {"total_count":956,"type_en":"tool","type":"开发工具","icon":"icon-tool.svg","data":{"id":"3feca874-32fb-4694-9ca1-82c37e4fcec6","name":"nullabor"}},
+            //         {"total_count":778,"type_en":"tutorial","type":"教程","icon":"icon-tutorial.svg","data":{"id":"778e86c6-c5f2-4928-b7f0-9b2f6f6f3112","name":"图神经网络相关资料"}},
+            //         {"total_count":344,"type_en":"event","type":"活动及会议","icon":"icon-event.svg","data":{"id":"955766d6-8a05-41e6-91e8-e3ecab344739","name":"SEKE  International Conference on Software Engineering \u0026 Knowledge Engineering"}},
+            //         {"total_count":366,"type_en":"publication","type":"书籍期刊","icon":"icon-publication.svg","data":{"id":"fb957a10-70fe-4ba2-b854-9ad9d7ab0bb4","name":"IEEE transactions of industrial informatics"}}
+            //         ],
+            // "people":[
+            //         {"total_count":2087,"type_en":"expert","type":"专家","icon":"icon-expert.svg","data":{"id":"454ea7d2-f5d2-4e1f-bac6-dd2d74400490","name":"陈文亚"}}
+            //         ]
+            // }
             
             
         },      
-        clickTab(name,index){
-            this.$emit('click',{name:name,index:index})
+        clickTab(name,index,data){
+            this.$emit('click',{name:name,index:index,arrData:data})
         },
 
         search(){
@@ -333,7 +310,7 @@ export default {
     }
 
     .card-boby{
-            display: flex;
+            display: none;
             align-items: flex-end;
             justify-content: space-between;
             text-align: right;

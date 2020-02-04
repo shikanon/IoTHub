@@ -5,14 +5,16 @@
                         <el-tab-pane label="搜索" name="serach">
                                 <Search @click="clickTab($event)"></Search>
                         </el-tab-pane>
-                        <el-tab-pane label="知识" name="knowledge" lazy>
-                                <Knowledge :index="index" @click="gotoApiInfo($event)"></Knowledge>        
+                        <el-tab-pane label="官方模型" name="knowledge" lazy>
+                                <Knowledge :index="index" :arrData ="arrData" @click="gotoApiInfo($event)"></Knowledge>        
                         </el-tab-pane>
-                        <el-tab-pane label="资源" name="resource" lazy>
-                                <Resource :index="index" @click="gotoApiInfo($event)"></Resource>
+                        <el-tab-pane label="行业解决方案" name="resource" lazy>
+                                <Knowledge :index="index" :arrData ="arrData" @click="gotoApiInfo($event)"></Knowledge>        
+                                <!-- <Resource :index="index" @click="gotoApiInfo($event)"></Resource> -->
                         </el-tab-pane>
-                        <el-tab-pane label="人物" name="people"  lazy>
-                                <People :index="index"></People>
+                        <el-tab-pane label="数据集" name="people"  lazy>
+                                <!-- <People :index="index"></People> -->
+                                <Knowledge :index="index" :arrData ="arrData" @click="gotoApiInfo($event)"></Knowledge>        
                         </el-tab-pane>
                 </el-tabs>
         </div>
@@ -31,8 +33,9 @@ export default {
         data() {
                 return {
                         activeName: 'serach',
-                        index:'0',
-                        openRouter:false
+                        index:0,
+                        openRouter:false,
+                        arrData:[]
                 }
         },
         watch: {
@@ -47,10 +50,14 @@ export default {
                 },
                 clickTab(event){
                    this.activeName = event.name 
-                   this.index = event.index.toString()
+                   this.index = event.index
+                   this.arrData = event.arrData
                 },
-                gotoApiInfo(groupId){
-                     this.$router.push({name:'api-info',params: {groupId:groupId}})      
+                // gotoApiInfo(groupId){
+                //      this.$router.push({name:'api-info',params: {APIGroup:groupId})      
+                // }
+                gotoApiInfo(APIGroup){
+                     this.$router.push({name:'api-info',params: {APIGroup:APIGroup}})      
                 }
         }
   
