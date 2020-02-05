@@ -490,8 +490,8 @@ func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}
 	return
 }
 
-func GetDeviceEventInfo(deviceId, event_type string, start, end int64, page int) (eventInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceEventInfoFromEvent(deviceId, event_type, start, end, page)
+func GetDeviceEventInfo(deviceId, event_type, identifier string, start, end int64, page int) (eventInfo []map[string]interface{}) {
+	res := influxdb.GetDeviceEventInfoFromEvent(deviceId, event_type, identifier, start, end, page)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))

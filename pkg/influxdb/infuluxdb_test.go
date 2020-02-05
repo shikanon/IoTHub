@@ -76,10 +76,10 @@ func Test_AddEvent(t *testing.T) {
 	end := time.Now().Unix()
 	m, _ := time.ParseDuration("-10m")
 	start := time.Now().Add(m).Unix()
-	eventInfo := GetDeviceEventInfoFromEvent(deviceId, "alert", start, end, 1)
+	eventInfo := GetDeviceEventInfoFromEvent(deviceId, "all", "all", start, end, 1)
 	if eventInfo == nil { //try a unit test on function
-		t.Error("时许数据库写入设备事件测试不通过", eventInfo) // 如果不是如预期的那么就报错
+		t.Error("时许数据库写入设备事件测试不通过") // 如果不是如预期的那么就报错
 	} else {
-		t.Log("时许数据库写入设备事件测试通过:", eventInfo) //记录一些你期望记录的信息
+		t.Log("时许数据库写入设备事件测试通过") //记录一些你期望记录的信息
 	}
 }
