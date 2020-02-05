@@ -836,6 +836,19 @@ func GetModelFunctions(c *gin.Context) {
 
 func GetDeviceEvent(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	page := tool.StringNumberToInTNumber(c.Query("page"))
+	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+	event_type := c.Query("type")
+	identifier := c.Query("identifier")
+
+	if (event_type == "") {
+		event_type = "all"
+	}
+
+	if (identifier == "") {
+		identifier = "all"
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -843,7 +856,10 @@ func GetDeviceEvent(c *gin.Context) {
 	var device database.Device
 	db.First(&device, device_id)
 	device_iot := device.IotID
-	data := util.GetDeviceEventInfo(device_iot)
+
+	fmt.Println(device_iot, event_type, identifier, start, end, page)
+
+	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end, page)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -854,23 +870,31 @@ func GetDeviceEvent(c *gin.Context) {
 }
 
 func GetDeviceServer(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
-
-	db := database.DbConn()
-	defer db.Close()
-
-	var device database.Device
-	db.First(&device, device_id)
-	device_iot := device.IotID
-	data := util.GetDeviceServiceInfo(device_iot)
-
-	resp := gin.H{
-		"status":  "Y",
-		"message": "设备服务调用查询成功",
-		"data":    data,
-	}
-	c.JSON(200, resp)
+	//device_str := c.Query("did")
+	//device_id, _ := strconv.Atoi(device_str)
+	//page := tool.StringNumberToInTNumber(c.Query("page"))
+	//start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	//end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+	//identifier := c.Query("identifier")
+	//
+	//if (identifier == "") {
+	//	identifier = "all"
+	//}
+	//
+	//db := database.DbConn()
+	//defer db.Close()
+	//
+	//var device database.Device
+	//db.First(&device, device_id)
+	//device_iot := device.IotID
+	//data := util.GetDeviceServiceInfo(device_iot)
+	//
+	//resp := gin.H{
+	//	"status":  "Y",
+	//	"message": "设备服务调用查询成功",
+	//	"data":    data,
+	//}
+	//c.JSON(200, resp)
 }
 
 func GetModelTSL(c *gin.Context) {
@@ -971,10 +995,22 @@ func GetBatchDevices(c *gin.Context) {
 		response = append(response, data)
 	}
 
+	type RespData struct {
+		NumResults int        `json:"num_results"`
+		DataList   []Response `json:"data_list"`
+	}
+
+	total := len(result)
+
+	var resp_data = RespData{
+		NumResults: total,
+		DataList:   response,
+	}
+
 	resp := gin.H{
 		"status":  "Y",
 		"message": "批次管理设备查询成功",
-		"data":    response,
+		"data":    resp_data,
 	}
 	c.JSON(200, resp)
 }
@@ -994,7 +1030,11 @@ func GetBatchDevice(c *gin.Context) {
 	prodyct_key := product.ProductKey
 
 	var result []database.Device
-	db.Limit(item).Offset((page-1)*item).Order("id desc").Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
+	if (page == 0 && item == 0) {
+		db.Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
+	} else {
+		db.Limit(item).Offset((page-1)*item).Order("id desc").Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
+	}
 
 	type Response struct {
 		ProductKey     string `json:"product_key"`
