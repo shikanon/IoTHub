@@ -158,13 +158,13 @@ export const getDeviceDtl= ( deviceId = 0) => {
 
 //批次列表
 export const getApplyList= (currentPage = 1,pageSize = 10) => {
-  return get(`${baseUrl}/apply?page=${currentPage}&results_per_page=${pageSize}`)
+  return get(`${baseUrl}/batchdevices?page=${currentPage}&item=${pageSize}`)
 }
 
 
 //查询批次详情
-export const getApplyListDtl= (currentPage = 1,pageSize = 10,ApplyId,ProductKey) => {
-  return get(`${baseUrl}/applyDtl?page=${currentPage}&results_per_page=${pageSize}&ApplyId=${ApplyId}`)
+export const getApplyListDtl= (productId,createTime,currentPage = 1,pageSize = 10) => {
+  return get(`${baseUrl}/batchdevice?&pid=${productId}&time=${createTime}&page=${currentPage}&item=${pageSize}`)
 }
 
 
@@ -185,6 +185,19 @@ export const getRunState= ( deviceId = 0,type ='pro') => {
  // return get(`${baseUrl}/desstatus?&did=${deviceId}`)
 }
 
+
+//事件列表
+export const getEventList= (deviceId,currentPage = 1,start = 0,end = 0,type = '',identifier='') => {
+  return get(`${baseUrl}/event?did=${deviceId}&page=${currentPage}&start=${start}&end=${end}&type=${type}&identifier=${identifier}`)
+
+  //did=5&page=1&start=111111&end=222222&hour=0&type=alert&identifier=alarmEvent
+ // return get(`${baseUrl}/event?did=${deviceId}page=${currentPage}&item=${pageSize}`)
+}
+
+export const getServiceList= (deviceId,currentPage = 1,start = 0,end =0,identifier='') => {
+  return get(`${baseUrl}/server?did=${deviceId}&page=${currentPage}&start=${start}&end=${end}&identifier=${identifier}`)
+ // return get(`${baseUrl}/server?did=${deviceId}page=${currentPage}&item=${pageSize}`)
+}
 
 
 /******************* 设备管理 end *******************/
