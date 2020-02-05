@@ -5,26 +5,24 @@
           highlight-current-row
           style="width: 100%">
           <el-table-column
-            prop="ProductName"
+            prop="name"
             label="产品名称"
             width="280">
           </el-table-column>
           <el-table-column
-            prop="ProductKey"
+            prop="product_key"
             label="ProductKey"
-            width="180">
-          </el-table-column>
-        
+            width="380">
+          </el-table-column>    
           <el-table-column
-            label="添加时间">
+            label="添加时间"
+            width="180">
             <template slot-scope="scope">
-              <span
-                class="name-span"           
-              >{{ scope.row.UtcCreate ?  scope.row.UtcCreate:'' }}</span>
+              <span>{{ scope.row.create_time ?  scope.row.create_time:'' }}</span>
             </template>
           </el-table-column>
          <el-table-column
-            prop="Count"
+            prop="total"
             label="添加数量"
             width="180">
           </el-table-column>
@@ -34,12 +32,12 @@
             >
             <template slot-scope="scope" >
               <div class="flex-center">
-                <el-button type="text" size="small" @click="showBatchDlt(scope.row.ApplyId)">详情</el-button><el-divider direction="vertical"></el-divider>
+                <el-button type="text" size="small" @click="showBatchDlt(scope.row)">详情</el-button><el-divider direction="vertical"></el-divider>
                 <download-excel
                 :data = "json_data"
                 :fields = "json_fields"
                 name = "Triad.xls">
-                <el-button type="text" size="small" @click="download(scope.$index, scope.row)">下载CSV</el-button>
+                <el-button type="text" size="small" @click="download(scope.row)">下载CSV</el-button>
               </download-excel> 
               </div>
             </template>
@@ -52,9 +50,9 @@
         <el-drawer
             title="批次详情"
             :visible.sync="drawer"
-            size='40%'
+            size='50%'
             >
-            <ApplyDtlList :applyId="applyId"></ApplyDtlList>
+            <ApplyDtlList :productInf="productInf" ></ApplyDtlList>
         </el-drawer>
     </div>
   </template>
@@ -78,11 +76,11 @@
           pageSize:10,
           total:0,
           drawer:false,
-          applyId:'',
-           json_fields: {
-          "DeviceName": "DeviceName",    //常规字段
-          "DeviceSecret": "DeviceSecret", //支持嵌套属性
-          "ProductKey": "ProductKey"       
+          productInf:{},
+          json_fields: {
+          "DeviceName": "device_name",    //常规字段
+          "DeviceSecret": "device_secret", //支持嵌套属性
+          "ProductKey": "product_key"       
           },
           json_data:[]
         }
@@ -108,34 +106,12 @@
       methods:{
      
          getApplyList(){
-            // this.$API_IOT.getApplyList(this.currentPage,this.pageSize,this.productId).then((res) => {
-            //     this.tableData = res.data.objects
-            //     this.total = res.data.num_results
-            // })
+            this.$API_IOT.getApplyList(this.currentPage,this.pageSize,this.productId).then((res) => {
+                this.tableData = res.data.data.data_list
+                this.total = res.data.data.num_results
+            })
 
-            this.tableData = [
-                {
-                    "Status": "CREATE_SUCCESS",
-                    "ProductAuthType": "secret",
-                    "ProductName": "123123123",
-                    "UtcCreate": "2019-12-20T07:08:38.000Z",
-                    "ApplyId": 1232165,
-                    "Count": 10,
-                    "SuccessCount": 10,
-                    "ProductKey": "a1qfUCxdfqg"
-                },
-                {
-                    "Status": "CREATE_SUCCESS",
-                    "ProductAuthType": "secret",
-                    "ProductName": "4444444",
-                    "UtcCreate": "2019-12-19T06:00:09.000Z",
-                    "ApplyId": 1221612,
-                    "Count": 2,
-                    "SuccessCount": 2,
-                    "ProductKey": "a1ELejzj0h9"
-                }
-            ]
-            this.total = this.tableData.length
+            
          },
 
          handleSizeChange(val) {
@@ -153,14 +129,18 @@
 
         
          
-           download(index,row){               
-            
-             this.json_data = [{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"1aTVy5xU40rPijlmzjGxrKNmYO1MdSxG","ProductKey":"a1Ibli2tqC2","DeviceName":"0iV7vxaUCOdHu57Cz61h"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"leiqy5nm5dBd0BzzsIayEv6FTXEmKhbi","ProductKey":"a1Ibli2tqC2","DeviceName":"1Cwbu6U4TJkZis7iiwZ1"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"HVi2e9hLKw9vsRkd1hoLq3rH6qzD05Cc","ProductKey":"a1Ibli2tqC2","DeviceName":"2D87VhVL3Pn0G8v9qE2K"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"cmB5fRPwbvq6Opu37KsKkqjyA9jsFOZr","ProductKey":"a1Ibli2tqC2","DeviceName":"2QDnYGpFwDNEioJYRcIw"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"LZalQwxQ2RDAUrSNDHyZUU17R3W7R5FW","ProductKey":"a1Ibli2tqC2","DeviceName":"4cUq41BU58m2QmoNN0zr"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"UvMnfHtWQ1bvI4jXuj4f3v6T6EqO5Az7","ProductKey":"a1Ibli2tqC2","DeviceName":"6Q0IphH37mIoN30lXNdf"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"FEIIbM5jzfSagEUFRqdLLF8htXYs9HyR","ProductKey":"a1Ibli2tqC2","DeviceName":"6XOocf0TTacaOG7IZ2Ww"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"JoJoHi857P8MWKrLpPom2l7GeniDnBKh","ProductKey":"a1Ibli2tqC2","DeviceName":"6c8mUv27FdrvUAeAXor6"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"5wGWMTJGfEHZSHsyOfTyuiV4SuKPnMut","ProductKey":"a1Ibli2tqC2","DeviceName":"7Qm4NdoezXiYeS5WtmwW"},{"Status":"UNACTIVE","UtcActive":"","DeviceSecret":"Bblk3v7NS6JQXzIzua8hlD5mt6dsOxNK","ProductKey":"a1Ibli2tqC2","DeviceName":"7elX8EQw6egJZxmeDW74"}]
-
+           download(row){  
+              let createTime = new Date (row.create_time).getTime().toString().substr(0,10)
+              this.$API_IOT.getApplyListDtl(row.product_id,createTime,0,0).then((res) => {
+                  console.log( res.data.data.data_list)
+                  this.json_data = res.data.data.data_list
+              })
           },
-          showBatchDlt(applyId){
-            this.drawer = true
-            this.applyId =  applyId
+
+          showBatchDlt(row){
+            this.drawer = true 
+            this.productInf = row
+          
           }
         
 
