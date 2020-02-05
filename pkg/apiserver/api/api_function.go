@@ -6,7 +6,9 @@ import (
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"github.com/shikanon/IoTOrbHub/pkg/util"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"strconv"
+	"time"
 )
 
 // *******************************************************************************************************
@@ -14,9 +16,9 @@ func Home(c *gin.Context) {
 
 	resp := gin.H{
 		"status":  "Y",
-		"message": "数据格式查询成功",
+		"message": "批次管理设备查询成功",
 		"data":    ".............",
-		//"data":    data,
+		//"data": response,
 	}
 	c.JSON(200, resp)
 
@@ -417,27 +419,6 @@ func DeleteProductTopic(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-//// 产品-查看-功能定义查看
-//// functions?pid=1&accesskeyid=aaaa&signature=bbb
-//func GetProductFunction(c *gin.Context) {}
-//
-//// 产品-查看-导入物模型 TODO
-//// 产品-查看-查看物模型
-//// model?pid=1&accesskeyid=aaaa&signature=bbb
-//func DownloadModelJS(c *gin.Context) {
-//	// 返回两个模型。完整模型和简单模型
-//}
-//
-//// 产品-查看-生成设备端代码
-//// code?pid=1&accesskeyid=aaaa&signature=bbb
-//func DownloadEquipmentCode(c *gin.Context) {}
-//
-//// 产品-查看-标准功能，添加 TODO
-//// 产品-查看-标准功能，编辑 TODO
-//// 产品-查看-自定义功能，添加 TODO
-//// 产品-查看-自定义功能，编辑 TODO
-//// 产品-查看-自定义功能，删除 TODO
-
 func DeleteProduct(c *gin.Context) {
 	type Data struct {
 		ProductID int `json:"pid"`
@@ -618,6 +599,7 @@ func AddDevice(c *gin.Context) {
 		Name:        name,
 		Remark:      remark,
 		BatchCreate: false,
+		CreateTime:  time.Now(),
 	}
 
 	id := device.SaveDevice()
@@ -644,42 +626,6 @@ func AddDevice(c *gin.Context) {
 	}
 	c.JSON(200, resp)
 }
-
-//// 设备-批量添加，自动生成
-//func BatchAutomaticAddProduct(c *gin.Context) {
-//	productid := 1
-//	number := 10
-//	accesskeyid := "aaa"
-//	signature := "bbb"
-//}
-//
-//// 设备-批量添加，批量上传，上传文件 TODO
-//// 设备-批量添加，批量上传 TODO
-//
-//// 设备-批次管理
-//// batchdevices?page=1&item=10&accesskeyid=aaaa&signature=bbb
-//func GetBatchDevices(c *gin.Context) {}
-
-// 设备-批次管理-详情
-// batchdevice?pid=1&accesskeyid=aaaa&signature=bbb
-//func GetBatchDevice(c *gin.Context) {}
-//
-//// 设备-批次管理-下载CSV
-//func DownloadBatchDeviceCSV(c *gin.Context) {
-//	productid := 1
-//	accesskeyid := "aaa"
-//	signature := "bbb"
-//	// 过滤出批量生成的设备
-//}
-//
-//// 设备-修改信息
-//func UpdateDevice(c *gin.Context) {
-//	statusid := 0
-//	remark := "备注名称"
-//	productid := 1
-//	accesskeyid := "aaa"
-//	signature := "bbb"
-//}
 
 func GetDevice(c *gin.Context) {
 	device_str := c.Query("did")
@@ -758,53 +704,6 @@ func GetDeviceTopic(c *gin.Context) {
 	}
 	c.JSON(200, resp)
 }
-
-//// 设备-查看-topic类，自定义，发布消息(限订阅)
-//func CustomTopicSendMessage(c *gin.Context) {
-//	topicid := 1
-//	message := "hello world"
-//	accesskeyid := "aaa"
-//	signature := "bbb"
-//}
-//
-//// 设备-查看-运行状态，图
-//// mapstatus?did=1&accesskeyid=aaaa&signature=bbb
-//func GetRunningStatusMap(c *gin.Context) {}
-//
-//// 设备-查看-运行状态，表
-//// tablestatus??did=1&accesskeyid=aaaa&signature=bbb
-//func GetRunningStatusTable(c *gin.Context) {}
-//
-//// 设备-查看-运行状态，实时刷新 TODO 待商讨
-//// 设备-查看-运新状态，查看数据 TODO
-//// 设备-查看-事件管理 TODO 暂缓
-//// 设备-查看-服务调用 TODO 暂缓
-//
-//// 设备-查看-影子设备，查看
-//// shadowdevice?did=1&accesskeyid=aaaa&signature=bbb
-//func GetShadowDeviceInfo(c *gin.Context) {}
-//
-//// 设备-查看-影子设备，更新影子
-//func UpdateShadowDevice(c *gin.Context) {
-//	device := 1
-//	message := `{
-// "state": {
-//   "reported": {},
-//   "desired": {}
-// },
-// "metadata": {
-//   "reported": {},
-//   "desired": {}
-// },
-// "timestamp": 0,
-// "version": 0
-//}`
-//	accesskeyid := "aaa"
-//	signature := "bbb"
-//}
-//
-//// 设备-查看-文件管理 TODO 暂缓
-//// 设备-查看-日志服务 TODO 暂缓
 
 func DeleteDevice(c *gin.Context) {
 	type Data struct {
@@ -886,27 +785,29 @@ func GetDevicePropertyStatus(c *gin.Context) {
 }
 
 func GetDeviceHistoryStatus(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
-	property := c.Query("Identifier")
-	hour_str := c.Query("hour")
-	hour, _ := strconv.Atoi(hour_str)
-
-	db := database.DbConn()
-	defer db.Close()
-
-	var device database.Device
-	db.First(&device, device_id)
-	device_iot := device.IotID
-
-	data := util.GetPropertyHistory(device_iot, property, hour)
-	result := tool.DealSequentialDatabaseData(data)
-	resp := gin.H{
-		"status":  "Y",
-		"message": "设备运行状态历史数据查询成功",
-		"data":    result,
-	}
-	c.JSON(200, resp)
+	//device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	//property := c.Query("Identifier")
+	//time := tool.StringNumberToInTNumber(c.Query("time"))
+	//
+	//
+	//
+	//
+	//
+	//db := database.DbConn()
+	//defer db.Close()
+	//
+	//var device database.Device
+	//db.First(&device, device_id)
+	//device_iot := device.IotID
+	//
+	//data := util.GetPropertyHistory(device_iot, property, hour)
+	//result := tool.DealSequentialDatabaseData(data)
+	//resp := gin.H{
+	//	"status":  "Y",
+	//	"message": "设备运行状态单个属性历史记录信息查询成功",
+	//	"data":    result,
+	//}
+	//c.JSON(200, resp)
 }
 
 func GetModelFunctions(c *gin.Context) {
@@ -934,8 +835,20 @@ func GetModelFunctions(c *gin.Context) {
 }
 
 func GetDeviceEvent(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	page := tool.StringNumberToInTNumber(c.Query("page"))
+	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+	event_type := c.Query("type")
+	identifier := c.Query("identifier")
+
+	if (event_type == "") {
+		event_type = "all"
+	}
+
+	if (identifier == "") {
+		identifier = "all"
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -943,32 +856,209 @@ func GetDeviceEvent(c *gin.Context) {
 	var device database.Device
 	db.First(&device, device_id)
 	device_iot := device.IotID
-	data := util.GetDeviceEventInfo(device_iot)
+
+	fmt.Println(device_iot, event_type, identifier, start, end, page)
+
+	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end, page)
 
 	resp := gin.H{
 		"status":  "Y",
-		"message": "标准功能定义态查询成功",
+		"message": "设备事件管理查询成功",
 		"data":    data,
 	}
 	c.JSON(200, resp)
 }
 
 func GetDeviceServer(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	//device_str := c.Query("did")
+	//device_id, _ := strconv.Atoi(device_str)
+	//page := tool.StringNumberToInTNumber(c.Query("page"))
+	//start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	//end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+	//identifier := c.Query("identifier")
+	//
+	//if (identifier == "") {
+	//	identifier = "all"
+	//}
+	//
+	//db := database.DbConn()
+	//defer db.Close()
+	//
+	//var device database.Device
+	//db.First(&device, device_id)
+	//device_iot := device.IotID
+	//data := util.GetDeviceServiceInfo(device_iot)
+	//
+	//resp := gin.H{
+	//	"status":  "Y",
+	//	"message": "设备服务调用查询成功",
+	//	"data":    data,
+	//}
+	//c.JSON(200, resp)
+}
+
+func GetModelTSL(c *gin.Context) {
+	product_str := c.Query("pid")
+	product_id, _ := strconv.Atoi(product_str)
+
+	intact_mode, concise_model := database.GetProductModelInfo(product_id)
+
+	data := map[string]primitive.M{
+		"intact_model":  intact_mode,
+		"concise_model": concise_model,
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "物模型TSL查询成功",
+		"data":    data,
+	}
+	c.JSON(200, resp)
+}
+
+func AutoAddDevice(c *gin.Context) {
+	type Data struct {
+		ProductID int `form:"pid" json:"pid" binding:"required"`
+		Number    int `form:"num" json:"num" binging:"required"`
+	}
+
+	data := Data{}
+	if err := c.ShouldBind(&data); err != nil {
+		fmt.Println(err)
+	}
+
+	product_id := data.ProductID
+	number := data.Number
+
+	time := time.Now()
+	for i := 0; i < number; i++ {
+		device_name := tool.GenerateAutoDeviceName()
+		device := database.Device{
+			ProductID:   product_id,
+			StatusID:    1,
+			Name:        device_name,
+			Remark:      "",
+			BatchCreate: true,
+			CreateTime:  time,
+		}
+		device.SaveDevice()
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "批量创建成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+func GetBatchDevices(c *gin.Context) {
+	page := tool.StringNumberToInTNumber(c.Query("page"))
+	item := tool.StringNumberToInTNumber(c.Query("item"))
 
 	db := database.DbConn()
 	defer db.Close()
 
-	var device database.Device
-	db.First(&device, device_id)
-	device_iot := device.IotID
-	data := util.GetDeviceServiceInfo(device_iot)
+	type Result struct {
+		ProductID  int       `json:"product_id"`
+		CreateTime time.Time `json:"create_time"`
+		Total      int       `json:"total"`
+	}
+
+	type Response struct {
+		ProductID  int    `json:"product_id"`
+		Name       string `json:"name"`
+		ProductKey string `json:"product_key"`
+		CreateTime string `json:"create_time"`
+		Total      int    `json:"total"`
+	}
+
+	var response []Response
+	var result []Result
+
+	sql := fmt.Sprintf("select product_id, create_time, COUNT(product_id) as total from device where batch_create = TRUE group by `create_time`, `product_id` ORDER BY `create_time` DESC LIMIT %d, %d;", (page-1)*item, item)
+	db.Raw(sql).Scan(&result)
+
+	for _, value := range result {
+		var data Response
+		data.CreateTime = tool.TimeDeal(value.CreateTime)
+		data.Total = value.Total
+		product_id := value.ProductID
+		data.ProductID = product_id
+
+		var product database.Product
+		db.First(&product, product_id)
+
+		data.Name = product.Name
+		data.ProductKey = product.ProductKey
+
+		response = append(response, data)
+	}
+
+	type RespData struct {
+		NumResults int        `json:"num_results"`
+		DataList   []Response `json:"data_list"`
+	}
+
+	total := len(result)
+
+	var resp_data = RespData{
+		NumResults: total,
+		DataList:   response,
+	}
 
 	resp := gin.H{
 		"status":  "Y",
-		"message": "标准功能定义态查询成功",
-		"data":    data,
+		"message": "批次管理设备查询成功",
+		"data":    resp_data,
+	}
+	c.JSON(200, resp)
+}
+
+func GetBatchDevice(c *gin.Context) {
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+	create_time := tool.StringNumberToInTNumber(c.Query("time"))
+	time := time.Unix(int64(create_time), 0)
+	page := tool.StringNumberToInTNumber(c.Query("page"))
+	item := tool.StringNumberToInTNumber(c.Query("item"))
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var product database.Product
+	db.First(&product, product_id)
+	prodyct_key := product.ProductKey
+
+	var result []database.Device
+	if (page == 0 && item == 0) {
+		db.Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
+	} else {
+		db.Limit(item).Offset((page-1)*item).Order("id desc").Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
+	}
+
+	type Response struct {
+		ProductKey     string `json:"product_key"`
+		DeviceName     string `json:"device_name"`
+		DeviceSecret   string `json:"device_secret"`
+		StatusID       int    `json:"status_id"`
+		ActivationTime string `json:"activation_time"`
+	}
+
+	var response []Response
+	for _, value := range result {
+		var data Response
+		data.DeviceName = value.Name
+		data.DeviceSecret = value.DeviceSecret
+		data.StatusID = value.StatusID
+		data.ActivationTime = tool.TimeDeal(value.ActivationTime)
+		data.ProductKey = prodyct_key
+		response = append(response, data)
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "批次管理设备查询成功",
+		"data":    response,
 	}
 	c.JSON(200, resp)
 }

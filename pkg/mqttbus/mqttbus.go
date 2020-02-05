@@ -34,7 +34,7 @@ import (
 var (
 	MQTTHub *Client
 	// TODO 用户认证，允许订阅SYS主题消息
-	MQTTUrl = "10.10.6.53:1883"
+	MQTTUrl = "139.199.89.93:1883"
 	// TODO: 从数据库查询所有产品对应topic
 	SubTopics = []string{
 		// 设备上下线

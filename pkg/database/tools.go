@@ -373,3 +373,34 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 
 	return data
 }
+
+func GetProductModelInfo(pid int) (intact, concise primitive.M) {
+	db := DbConn()
+	defer db.Close()
+
+	var product Product
+	db.First(&product, pid)
+	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
+
+	product_key := product.ProductKey
+
+	intact_model_id_str := product.MongodbModel.IntactModelID
+	intact_model_id, _ := primitive.ObjectIDFromHex(intact_model_id_str)
+	intact_filter := bson.M{"_id": intact_model_id}
+
+	concise_model_id_str := product.MongodbModel.ConciseModelID
+	concise_model_id, _ := primitive.ObjectIDFromHex(concise_model_id_str)
+	concise_filter := bson.M{"_id": concise_model_id}
+
+	intact_collection_name := config.MongodbConfig.IntactProductModel
+	intact_data := MongoDbGetFilterData(intact_collection_name, intact_filter)
+	delete(intact_data, "_id")
+	profile := map[string]string{"productKey": product_key}
+	intact_data["profile"] = profile
+
+	concise_collection_name := config.MongodbConfig.ConciseProductModel
+	concise_data := MongoDbGetFilterData(concise_collection_name, concise_filter)
+	delete(concise_data, "_id")
+
+	return intact_data, concise_data
+}

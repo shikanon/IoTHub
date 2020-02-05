@@ -469,8 +469,8 @@ func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[
 }
 
 
-func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceServiceInfoFromService(deviceId)
+func GetDeviceServiceInfo(deviceId, identifier string, start, end int64, page int) (serviceInfo []map[string]interface{}) {
+	res := influxdb.GetDeviceServiceInfoFromService(deviceId, identifier, start, end, page)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))
@@ -478,11 +478,11 @@ func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}
 				fmt.Println(err)
 			}
 			service := map[string]interface{}{
-				"Time": t.Format("2006/01/02 15:04:05"),
-				"Identifier": v[2],
-				"Name": v[5],
-				"InputData": v[4],
-				"OutputData":fmt.Sprintf(`{"code":200,"data":{},"id":"%s","message":"success","version":"1.0"}`, v[3]),
+				"time": t.Format("2006/01/02 15:04:05"),
+				"identifier": v[2],
+				"name": v[5],
+				"input_data": v[4],
+				"output_data":fmt.Sprintf(`{"code":200,"data":{},"id":"%s","message":"success","version":"1.0"}`, v[3]),
 			}
 			serviceInfo = append(serviceInfo, service)
 		}
@@ -490,8 +490,8 @@ func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}
 	return
 }
 
-func GetDeviceEventInfo(deviceId string) (eventInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceEventInfoFromEvent(deviceId)
+func GetDeviceEventInfo(deviceId, event_type, identifier string, start, end int64, page int) (eventInfo []map[string]interface{}) {
+	res := influxdb.GetDeviceEventInfoFromEvent(deviceId, event_type, identifier, start, end, page)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))
@@ -499,11 +499,11 @@ func GetDeviceEventInfo(deviceId string) (eventInfo []map[string]interface{}) {
 				fmt.Println(err)
 			}
 			event := map[string]interface{}{
-				"Time": t.Format("2006/01/02 15:04:05"),
-				"Identifier": v[4],
-				"Name": v[2],
-				"EventType": v[3],
-				"OutputData":v[6],
+				"time": t.Format("2006/01/02 15:04:05"),
+				"identifier": v[4],
+				"name": v[2],
+				"event_type": v[3],
+				"output_data":v[6],
 			}
 			eventInfo = append(eventInfo, event)
 		}
