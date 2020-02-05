@@ -26,13 +26,19 @@
                   label="数据类型"
                   width="200">
                 </el-table-column>
+                 <el-table-column
+                  property="Time"
+                  width="200">
+                </el-table-column>
                 <el-table-column
-                  property="address"
                   label="最新值">
                 </el-table-column>
                   <el-table-column
                   property="address"
                   label="期望值">
+                    <template slot-scope="scope">
+                      <span>{{scope.Value}}</span>
+                    </template>
                 </el-table-column>
                 <el-table-column
                   fixed="right"
@@ -48,19 +54,30 @@
             <el-card  shadow="hover" class="card  ">
                   <div style="display: flex;justify-content: space-between;">
                      {{card.Name}}
-                   <el-button type="text" size="small" @click="queryDataByName" >查看数据</el-button>
+                     <el-button type="text" size="small" @click="queryDataByName" >查看数据</el-button>
                   </div>
                   <p style="font-size: 18px;color: rgb(51, 51, 51);height:21px;" >{{ card.val | cardValFilter(card.Unit) }}  </p>
-                  <p style="color: #999">--</p>
+                    <!-- <el-tooltip class="item" effect="dark" :content="card.Value" placement="top-start">
+                        <p style="color: #999">{{card.Value ? card.Value : '--' }}</p>
+                    </el-tooltip>            -->
+                     <p style="color: #999">{{card.Value ? card.Value : '--' }}</p>
             </el-card>
           </el-col>
-         <el-dialog title="查看数据" :visible.sync="dialogTableVisible" width="25%">
-                详细数据
+         <el-dialog title="查看数据" :visible.sync="dialogTableVisible" width="40%">
+                <StateDetailsl></StateDetailsl>
           </el-dialog>     
     </div>  
  </template>  
 <script>
+import StateDetailsl from './StateDetailsl'
   export default {
+    components:{StateDetailsl},
+      props:{
+        deviceId:{
+          type:Number,
+          default:0
+        }
+      },
       data() {
         return {
           cards:[],
@@ -69,23 +86,23 @@
           tableData:[],
           dialogTableVisible:false,
           intervalId:null,
+        
         }
       },
-      watch:{
-         
-          autoRefresh:function(){         
-      
-            if(this.autoRefresh){
-              this.intervalId =  setInterval(() => {
-                  this.getCardData()
-              }, 1*1000);  
-            }else{
-               clearInterval(this.intervalId)
-            }
+      watch:{    
+          autoRefresh:function(){             
+              if(this.autoRefresh){
+                this.intervalId =  setInterval(() => {
+                    this.getCardData()
+                }, 1*1000);  
+              }else{
+                clearInterval(this.intervalId)
+              }
                       
-            }
+          }
+         
       },
-      created(){     
+      created(){  
         this.getCardData()        
       },
       destoryed() {
@@ -101,41 +118,20 @@
         
     
         getCardData(){
-            this.cards =[
-              {"Identifier":"LightStatus","DataType":"bool","Unit":"","Name":"工作状态"},
-              {"Identifier":"LightAdjustLevel","DataType":"int","Unit":"%","Name":"调光等级"},
-              {"Identifier":"LightVolt","DataType":"float","Unit":"V","Name":"工作电压"},
-              {"Identifier":"LightCurrent","DataType":"float","Unit":"A","Name":"工作电流"},
-              {"Identifier":"ActivePower","DataType":"float","Unit":"W","Name":"有功功率值"},
-              {"Identifier":"PowerRatio","DataType":"float","Unit":"pF","Name":"功率因数"},
-              {"Identifier":"PowerConsumption","DataType":"float","Unit":"kW·h","Name":"用电量"},
-              {"Identifier":"DrainVoltage","DataType":"float","Unit":"V","Name":"漏电压"},
-              {"Identifier":"TiltValue","DataType":"int","Unit":"°","Name":"倾斜角度值"},
-              {"Identifier":"ErrorPowerThreshold","DataType":"int","Unit":"W","Name":"故障功率门限"},
-              {"Identifier":"ErrorCurrentThreshold","DataType":"float","Unit":"A","Name":"故障电流门限"},
-              {"Identifier":"TiltThreshold","DataType":"int","Unit":"°","Name":"倾斜阈值"},
-              {"Identifier":"UnderVoltThreshold","DataType":"int","Unit":"V","Name":"欠压阈值"},
-              {"Identifier":"OverCurrentThreshold","DataType":"int","Unit":"A","Name":"过流阈值"},
-              {"Identifier":"OverVoltThreshold","DataType":"int","Unit":"V","Name":"过压阈值"},
-              {"Identifier":"LightErrorEnable","DataType":"bool","Unit":"","Name":"灯具故障使能"},
-              {"Identifier":"OverCurrentEnable","DataType":"bool","Unit":"","Name":"过流告警使能"},
-              {"Identifier":"OverVoltEnable","DataType":"bool","Unit":"","Name":"过压告警使能"},
-              {"Identifier":"UnderVoltEnable","DataType":"bool","Unit":"","Name":"欠压告警使能"},
-              {"Identifier":"LeakageEnable","DataType":"bool","Unit":"","Name":"漏电告警使能"},
-              {"Identifier":"OverTiltEnable","DataType":"bool","Unit":"","Name":"倾斜告警使能"},
-              {"Identifier":"LampError","DataType":"bool","Unit":"","Name":"灯具故障告警"},
-              {"Identifier":"OverCurrentError","DataType":"bool","Unit":"","Name":"过流告警"},
-              {"Identifier":"OverVoltError","DataType":"bool","Unit":"","Name":"过压告警"},
-              {"Identifier":"UnderVoltError","DataType":"bool","Unit":"","Name":"欠压告警"},
-              {"Identifier":"OverTiltError","DataType":"bool","Unit":"","Name":"倾斜告警"},
-              {"Identifier":"LeakageError","DataType":"bool","Unit":"","Name":"漏电告警"},
-              {"Identifier":"GeoLocation","DataType":"struct","Unit":"","Name":"地理位置"}
-
-            ]
+            this.$API_IOT.getRunState(this.deviceId).then((res) => {
+                console.log(res.data)
+                if(res.data.status  === 'Y'){
+                  this.cards = res.data.data    
+                }else{
+                  this.$message.error(res.message);
+                }              
+             })
         },
         queryDataByName(){
           this.dialogTableVisible = true 
-        }
+        },
+
+       
          
          
       }
@@ -152,7 +148,8 @@
     .state-type{
       padding-bottom: 20px;
     }
-   
+
+    
  
 
   </style>
