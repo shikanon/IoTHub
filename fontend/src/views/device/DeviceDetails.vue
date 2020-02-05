@@ -17,13 +17,13 @@
               <Topic type="device" :queryKey="deviceId"></Topic>
         </el-tab-pane>
         <el-tab-pane label="运行状态" name="runState" lazy>     
-            <runState></runState>
+            <runState :deviceId="deviceId"></runState>
         </el-tab-pane>
         <el-tab-pane label="事件管理" name="EventList" lazy>
-          <EventList></EventList>
+          <EventList :deviceId="deviceId"  type="event"></EventList>
         </el-tab-pane>
-        <el-tab-pane label="服务调用" name="service" lazy>
-            
+        <el-tab-pane label="服务调用" name="serviceList" lazy>
+            <EventList :deviceId="deviceId" type="service"></EventList>
         </el-tab-pane>   
         <el-tab-pane label="设备影子" name="DeviceShadow" lazy> 
              <DeviceShadow :status="deviceInfo.status_id"></DeviceShadow>
