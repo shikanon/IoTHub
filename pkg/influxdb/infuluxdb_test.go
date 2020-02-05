@@ -51,11 +51,14 @@ func Test_AddService(t *testing.T) {
 	paramsStr, _ := json.Marshal(params)
 	service := map[string]interface{}{"identifier": "set", "service_name": "set", "params": string(paramsStr), "msg_id": 1}
 	AddPointToService(deviceId, service)
-	serviceInfo := GetDeviceServiceInfoFromService(deviceId)
+	end := time.Now().Unix()
+	m, _ := time.ParseDuration("-10m")
+	start := time.Now().Add(m).Unix()
+	serviceInfo := GetDeviceServiceInfoFromService(deviceId, "set", start, end, 1)
 	if serviceInfo == nil { //try a unit test on function
 		t.Error("时许数据库写入设备服务测试不通过") // 如果不是如预期的那么就报错
 	} else {
-		t.Log("时许数据库写入设备服务测试通过:") //记录一些你期望记录的信息
+		t.Log("时许数据库写入设备服务测试通过") //记录一些你期望记录的信息
 	}
 }
 
@@ -83,3 +86,5 @@ func Test_AddEvent(t *testing.T) {
 		t.Log("时许数据库写入设备事件测试通过") //记录一些你期望记录的信息
 	}
 }
+
+

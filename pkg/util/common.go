@@ -469,8 +469,8 @@ func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[
 }
 
 
-func GetDeviceServiceInfo(deviceId string) (serviceInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceServiceInfoFromService(deviceId)
+func GetDeviceServiceInfo(deviceId, identifier string, start, end int64, page int) (serviceInfo []map[string]interface{}) {
+	res := influxdb.GetDeviceServiceInfoFromService(deviceId, identifier, start, end, page)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))

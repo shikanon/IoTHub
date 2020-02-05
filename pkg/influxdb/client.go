@@ -222,7 +222,6 @@ func GetDevicePropertyFromPropertyDesired(deviceId, property string) (ts, value,
 			ts = response.Results[0].Series[0].Values[0][0]
 			return ts, value, version, nil
 		} else {
-			fmt.Print(err, "*", response.Error())
 			err = errors.New(fmt.Sprintf("Property %s does not exist or is nil", property))
 			return nil, nil, nil, err
 		}
@@ -232,12 +231,24 @@ func GetDevicePropertyFromPropertyDesired(deviceId, property string) (ts, value,
 	}
 }
 
-func GetDeviceServiceInfoFromService(deviceId string) (serviceInfo [][]interface{}) {
-	q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time > now() - 1h order by time desc tz('Asia/Shanghai')", "service", "device_id", deviceId), MyDB, "")
-	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
-		return response.Results[0].Series[0].Values
+func GetDeviceServiceInfoFromService(deviceId, identifier string, start, end int64, page int) (serviceInfo [][]interface{}) {
+	t1 := time.Unix(start, 0).Format(time.RFC3339)
+	t2 := time.Unix(end, 0).Format(time.RFC3339)
+	offset := (page - 1) * 9
+	if identifier == "all" {
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "service", "device_id", deviceId, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+			return response.Results[0].Series[0].Values
+		} else {
+			return nil
+		}
 	} else {
-		return nil
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "service", "device_id", deviceId, "identifier", identifier, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
+			return response.Results[0].Series[0].Values
+		} else {
+			return nil
+		}
 	}
 }
 
@@ -245,7 +256,7 @@ func GetDeviceEventInfoFromEvent(deviceId, event_type, identifier string, start,
 	t1 := time.Unix(start, 0).Format(time.RFC3339)
 	t2 := time.Unix(end, 0).Format(time.RFC3339)
 	offset := (page - 1) * 9
-	if event_type == "all" && identifier == "all"{
+	if event_type == "all" && identifier == "all" {
 		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "event", "device_id", deviceId, t1, t2, strconv.Itoa(offset)), MyDB, "")
 		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			return response.Results[0].Series[0].Values
@@ -274,7 +285,6 @@ func GetDeviceEventInfoFromEvent(deviceId, event_type, identifier string, start,
 			return nil
 		}
 	}
-
 }
 
 func GetDevicePropertyHistoryFromPropertyReported(deviceId, property string, Hour int) (propertyHistory [][]interface{}) {
