@@ -56,10 +56,10 @@ type Device struct {
 	//ShadowDeviceID int          `json:"shadow_device_id"`                     // 影子设备id
 }
 
-func (p *Device) BeforeCreate(scope *gorm.Scope) error {
-	scope.SetColumn("create_time", time.Now())
-	return nil
-}
+//func (p *Device) BeforeCreate(scope *gorm.Scope) error {
+//	scope.SetColumn("create_time", time.Now())
+//	return nil
+//}
 
 // 影子设备
 //type ShadowDevice struct {

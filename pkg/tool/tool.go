@@ -10,6 +10,7 @@ import (
 	"github.com/shikanon/IoTOrbHub/config"
 	"math/rand"
 	"regexp"
+	"strconv"
 	"time"
 )
 
@@ -35,14 +36,24 @@ func GenerateIotId() (IotId string) {
 	return ksuid.New().String()
 }
 
-// TODO 生成随机唯一的产品名称-批量生成
+func GenerateAutoDeviceName() (name string) {
+	decret := GenerateDeviceSecret()
+	iotid := GenerateIotId()
+
+	return decret[0:10] + iotid[0:10]
+}
+
+func StringNumberToInTNumber(num_str string) (num_int int) {
+	result, _ := strconv.Atoi(num_str)
+	return result
+}
 
 func DealSequentialDatabaseData(arg []map[string]interface{}) (result []map[string]interface{}) {
 	for index, value := range arg {
 		var dat map[string]interface{}
 		var json_str string
 		json_str = value["Value"].(string)
-		if (json_str != ""){
+		if json_str != "" {
 			json.Unmarshal([]byte(json_str), &dat)
 			arg[index]["Value"] = dat
 		}
@@ -59,3 +70,5 @@ func TimeDeal(time time.Time) (result string) {
 		return time_str
 	}
 }
+
+

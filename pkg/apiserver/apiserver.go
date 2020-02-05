@@ -40,35 +40,31 @@ func ApiRegister() {
 		v1.GET("/products", api.GetProducts)              // 产品首页
 		v1.POST("/product", api.AddProduct)               // 产品-创建产品
 		v1.GET("/product", api.GetProduct)                // 产品-查看
-		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称、描述、标签) TODO 待联调;却标签
+		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称、描述、标签)
 		v1.GET("/ptopics", api.GetProductTopic)           // 产品-查看-topic类
-		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类 TODO 待联调
-		v1.PUT("/ptopic", api.UpdateProductTopic)         // 产品-查看-topic类，自定义，编辑topic类 TODO 待联调
-		v1.DELETE("/ptopic", api.DeleteProductTopic)      // 产品-查看-topic类，自定义，删除topic类 TODO 待联调
+		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类
+		v1.PUT("/ptopic", api.UpdateProductTopic)         // 产品-查看-topic类，自定义，编辑topic类
+		v1.DELETE("/ptopic", api.DeleteProductTopic)      // 产品-查看-topic类，自定义，删除topic类
+		v1.GET("/tsl", api.GetModelTSL)                   // 产品-查看-功能定义-物模型TSL
 		//v1.GET("/functions", Gapi.etProductFunction)           // 产品-查看-功能定义查看
-		//v1.GET("/model", api.DownloadModelJS)                  // 产品-查看-查看物模型
 		//v1.GET("/code", api.DownloadEquipmentCode)             // 产品-查看-生成设备端代码
-		v1.DELETE("/product", api.DeleteProduct) // 产品-删除
-		v1.GET("/devices", api.GetDevices)       // 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理)
-		v1.POST("/device", api.AddDevice)        // 设备-创建设备
-		//v1.POST("/adevice", api.BatchAutomaticAddProduct)      // 设备-批量添加-自动生成
-		//v1.GET("/batchdevices", api.GetBatchDevices)           // 设备-批次管理
-		//v1.GET("/batchdevice", api.GetBatchDevice)             // 设备-批次管理-详情
+		v1.DELETE("/product", api.DeleteProduct)     // 产品-删除
+		v1.GET("/devices", api.GetDevices)           // 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理)
+		v1.POST("/device", api.AddDevice)            // 设备-创建设备
+		v1.POST("/adevice", api.AutoAddDevice)       // 批量添加设备-自动生成
+		v1.GET("/batchdevices", api.GetBatchDevices) // 设备-批次管理 TODO 待联调
+		v1.GET("/batchdevice", api.GetBatchDevice)   // 设备-批次管理-详情 TODO 待联调
 		//v1.POST("/csv", api.DownloadBatchDeviceCSV)            // 设备-批次管理-下载csv
 		//v1.PUT("/device", api.UpdateDevice)                    // 设备-修改信息(状态或备注名称)
 		v1.GET("/device", api.GetDevice)       // 设备-查看
 		v1.GET("/dtopics", api.GetDeviceTopic) // 设备-查看-查看topic类
 		//v1.POST("/customtopicmsg", api.CustomTopicSendMessage) // 设备-查看-topic类，自定义，发布消息(限订阅)
-		//v1.GET("/mapstatus", api.GetRunningStatusMap)          // 设备-查看-运新状态，图
-		//v1.GET("/tablestatus", api.GetRunningStatusTable)      // 设备-查看-运新状态，表
-		//v1.GET("/shadowdevice", api.GetShadowDeviceInfo)       // 设备-查看-影子设备，查看
-		//v1.PUT("/shadowdevice", Uapi.pdateShadowDevice)        // 设备-查看-影子设备，更新影子
 		v1.DELETE("/device", api.DeleteDevice)            // 设备-删除
 		v1.GET("/desstatus", api.GetDeviceDesireStatus)   // 获取设备期望状态
 		v1.GET("/prostatus", api.GetDevicePropertyStatus) // 获取设备实时状态
 		v1.GET("/hisstatus", api.GetDeviceHistoryStatus)  // 查看设备运行状态单个属性历史记录信息  TODO
-		v1.GET("/event", api.GetDeviceEvent)              // 查看设备事件管理 TODO
-		v1.GET("/server", api.GetDeviceServer)            // 查看设备服务调用 TODO
+		v1.GET("/event", api.GetDeviceEvent)              // 查看设备事件管理 TODO 待联调
+		v1.GET("/server", api.GetDeviceServer)            // 查看设备服务调用 TODO 待联调
 		v1.GET("/modelfuncs", api.GetModelFunctions)      // 获取物模型标准功能定义
 
 		v1.GET("/", Cors(), api.Home)
