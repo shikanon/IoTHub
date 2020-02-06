@@ -135,7 +135,7 @@
             @showDeviceCertificate="showDeviceCertificate"></AddDevice>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="addDeviceSubmit">确 定</el-button>
-                <el-button @click="addDeviceVisible = false">取 消</el-button>
+                <el-button @click="addDeviceCancel">取 消</el-button>
             </span>
         </el-dialog>
         <el-dialog title="查看设备证书" :visible.sync="deviceCertificateVisible" width="25%">
@@ -153,7 +153,7 @@
             </AddDeviceGroup>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="addDeviceGroupSubmit">确 定</el-button>
-                <el-button @click="addDeviceGroupVisible = false">取 消</el-button>
+                <el-button @click="addDeviceGroupCancel">取 消</el-button>
             </span>
         </el-dialog>
         <el-dialog :title="addResultTitle" :visible.sync="addResultVisible" width="25%">
@@ -301,6 +301,12 @@
             this.$refs['addDevice'].submitForm()
         },
 
+        //取消添加设备
+        addDeviceCancel(){
+          this.addDeviceVisible = false
+           this.$refs['addDevice'].init()
+        },
+
         //跳转到设备详情页面
         goToDeviceDetails(deviceId){  
           this.$router.push({name :'device-details',params: {deviceId:deviceId}}) 
@@ -424,6 +430,12 @@
         addDeviceGroupSubmit(){
               this.$refs['addDeviceGroup'].submitForm()
         },
+
+        //添加分组取消
+        addDeviceGroupCancel(){
+           this.addDeviceGroupVisible = false
+           this.$refs['addDeviceGroup'].init()
+        },      
 
         //批量添加设备-结果过渡
         showAddResult(){
