@@ -61,6 +61,7 @@ func ApiRegister() {
 		v1.GET("/event", api.GetDeviceEvent)              // 查看设备事件管理 TODO 待联调
 		v1.GET("/server", api.GetDeviceServer)            // 查看设备服务调用 TODO 待联调
 		v1.GET("/modelfuncs", api.GetModelFunctions)      // 获取物模型标准功能定义
+		v1.PUT("/device", api.UpdateDevice)               // 设备-编辑 TODO 待联调
 
 		v1.GET("/", Cors(), api.Home)
 	}

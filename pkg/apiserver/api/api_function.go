@@ -1091,3 +1091,34 @@ func GetBatchDevice(c *gin.Context) {
 	}
 	c.JSON(200, resp)
 }
+
+func UpdateDevice(c *gin.Context) {
+	type Args struct {
+		Remark string `json:"remark"`
+		DeviceId int `json:"did"`
+	}
+
+	var args Args
+	if err := c.ShouldBind(&args); err != nil {
+		fmt.Println(err)
+	}
+
+	remark := args.Remark
+	device_id := args.DeviceId
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device.Remark = remark
+	db.Save(&device)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备信息更新成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+
+}
