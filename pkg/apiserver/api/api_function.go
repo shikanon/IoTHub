@@ -431,8 +431,6 @@ func DeleteProduct(c *gin.Context) {
 
 	product_id := data.ProductID
 
-	fmt.Println(product_id)
-
 	db := database.DbConn()
 	defer db.Close()
 
@@ -759,8 +757,7 @@ func GetDeviceDesireStatus(c *gin.Context) {
 }
 
 func GetDevicePropertyStatus(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
 
 	db := database.DbConn()
 	defer db.Close()
@@ -774,6 +771,7 @@ func GetDevicePropertyStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDevicePropertyStatusInfo(product_key, device_iot)
+
 	result := tool.DealSequentialDatabaseData(data)
 
 	resp := gin.H{
@@ -785,29 +783,36 @@ func GetDevicePropertyStatus(c *gin.Context) {
 }
 
 func GetDeviceHistoryStatus(c *gin.Context) {
-	//device_id := tool.StringNumberToInTNumber(c.Query("did"))
-	//property := c.Query("Identifier")
-	//time := tool.StringNumberToInTNumber(c.Query("time"))
-	//
-	//
-	//
-	//
-	//
-	//db := database.DbConn()
-	//defer db.Close()
-	//
-	//var device database.Device
-	//db.First(&device, device_id)
-	//device_iot := device.IotID
-	//
-	//data := util.GetPropertyHistory(device_iot, property, hour)
-	//result := tool.DealSequentialDatabaseData(data)
-	//resp := gin.H{
-	//	"status":  "Y",
-	//	"message": "设备运行状态单个属性历史记录信息查询成功",
-	//	"data":    result,
-	//}
-	//c.JSON(200, resp)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	property := c.Query("identifier")
+	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device_iot := device.IotID
+
+	data := util.GetPropertyHistory(device_iot, property, start, end)
+
+	next_time := util.GetNextPropertyHistory(device_iot, property, start, end)
+	if next_time == -1 {
+		next_time = 0
+	}
+
+	response := map[string]interface{}{
+		"next_time": next_time,
+		"data_list": data,
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备运行状态单个属性历史记录信息查询成功",
+		"data":    response,
+	}
+	c.JSON(200, resp)
 }
 
 func GetModelFunctions(c *gin.Context) {
@@ -836,17 +841,16 @@ func GetModelFunctions(c *gin.Context) {
 
 func GetDeviceEvent(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
-	page := tool.StringNumberToInTNumber(c.Query("page"))
 	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
 	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
 	event_type := c.Query("type")
 	identifier := c.Query("identifier")
 
-	if (event_type == "") {
+	if event_type == "" {
 		event_type = "all"
 	}
 
-	if (identifier == "") {
+	if identifier == "" {
 		identifier = "all"
 	}
 
@@ -857,44 +861,59 @@ func GetDeviceEvent(c *gin.Context) {
 	db.First(&device, device_id)
 	device_iot := device.IotID
 
-	fmt.Println(device_iot, event_type, identifier, start, end, page)
+	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end)
+	next_time := util.GetNextDeviceEventInfo(device_iot, event_type, identifier, start, end)
 
-	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end, page)
+	if next_time == -1 {
+		next_time = 0
+	}
+
+	response := map[string]interface{}{
+		"next_time": next_time,
+		"data_list": data,
+	}
 
 	resp := gin.H{
 		"status":  "Y",
 		"message": "设备事件管理查询成功",
-		"data":    data,
+		"data":    response,
 	}
 	c.JSON(200, resp)
 }
 
 func GetDeviceServer(c *gin.Context) {
-	//device_str := c.Query("did")
-	//device_id, _ := strconv.Atoi(device_str)
-	//page := tool.StringNumberToInTNumber(c.Query("page"))
-	//start := int64(tool.StringNumberToInTNumber(c.Query("start")))
-	//end := int64(tool.StringNumberToInTNumber(c.Query("end")))
-	//identifier := c.Query("identifier")
-	//
-	//if (identifier == "") {
-	//	identifier = "all"
-	//}
-	//
-	//db := database.DbConn()
-	//defer db.Close()
-	//
-	//var device database.Device
-	//db.First(&device, device_id)
-	//device_iot := device.IotID
-	//data := util.GetDeviceServiceInfo(device_iot)
-	//
-	//resp := gin.H{
-	//	"status":  "Y",
-	//	"message": "设备服务调用查询成功",
-	//	"data":    data,
-	//}
-	//c.JSON(200, resp)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+	identifier := c.Query("identifier")
+
+	if identifier == "" {
+		identifier = "all"
+	}
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device_iot := device.IotID
+	data := util.GetDeviceServiceInfo(device_iot, identifier, start, end)
+	next_time := util.GetNextDeviceServiceInfo(device_iot, identifier, start, end)
+	if next_time == -1 {
+		next_time = 0
+	}
+
+	response := map[string]interface{}{
+		"next_time": next_time,
+		"data_list": data,
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备服务调用查询成功",
+		"data":    response,
+	}
+	c.JSON(200, resp)
 }
 
 func GetModelTSL(c *gin.Context) {
@@ -1030,9 +1049,9 @@ func GetBatchDevice(c *gin.Context) {
 	prodyct_key := product.ProductKey
 
 	var result []database.Device
-	if (page == 0 && item == 0) {
-		db.Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
-	} else {
+	db.Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
+	total := len(result)
+	if page != 0 && item != 0 {
 		db.Limit(item).Offset((page-1)*item).Order("id desc").Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
 	}
 
@@ -1055,10 +1074,20 @@ func GetBatchDevice(c *gin.Context) {
 		response = append(response, data)
 	}
 
+	type RespData struct {
+		NumResults int        `json:"num_results"`
+		DataList   []Response `json:"data_list"`
+	}
+
+	var resp_data = RespData{
+		NumResults: total,
+		DataList:   response,
+	}
+
 	resp := gin.H{
 		"status":  "Y",
 		"message": "批次管理设备查询成功",
-		"data":    response,
+		"data":    resp_data,
 	}
 	c.JSON(200, resp)
 }
