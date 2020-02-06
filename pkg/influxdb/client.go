@@ -231,19 +231,24 @@ func GetDevicePropertyFromPropertyDesired(deviceId, property string) (ts, value,
 	}
 }
 
-func GetDeviceServiceInfoFromService(deviceId, identifier string, start, end int64, page int) (serviceInfo [][]interface{}) {
+func GetDeviceServiceInfoFromService(deviceId, identifier string, start, end int64, isGetNext bool) (serviceInfo [][]interface{}) {
+	var limit string
+	if isGetNext {
+		limit = "LIMIT 1 OFFSET 9"
+	} else {
+		limit = "LIMIT 9"
+	}
 	t1 := time.Unix(start, 0).Format(time.RFC3339)
 	t2 := time.Unix(end, 0).Format(time.RFC3339)
-	offset := (page - 1) * 9
 	if identifier == "all" {
-		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "service", "device_id", deviceId, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time >= '%s' and time <= '%s' order by time desc %s tz('Asia/Shanghai')", "service", "device_id", deviceId, t1, t2, limit), MyDB, "")
 		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			return response.Results[0].Series[0].Values
 		} else {
 			return nil
 		}
 	} else {
-		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "service", "device_id", deviceId, "identifier", identifier, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc %s tz('Asia/Shanghai')", "service", "device_id", deviceId, "identifier", identifier, t1, t2, limit), MyDB, "")
 		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			return response.Results[0].Series[0].Values
 		} else {
@@ -252,33 +257,38 @@ func GetDeviceServiceInfoFromService(deviceId, identifier string, start, end int
 	}
 }
 
-func GetDeviceEventInfoFromEvent(deviceId, event_type, identifier string, start, end int64, page int) (eventInfo [][]interface{}) {
+func GetDeviceEventInfoFromEvent(deviceId, event_type, identifier string, start, end int64, isGetNext bool) (eventInfo [][]interface{}) {
+	var limit string
+	if isGetNext {
+		limit = "LIMIT 1 OFFSET 9"
+	} else {
+		limit = "LIMIT 9"
+	}
 	t1 := time.Unix(start, 0).Format(time.RFC3339)
 	t2 := time.Unix(end, 0).Format(time.RFC3339)
-	offset := (page - 1) * 9
 	if event_type == "all" && identifier == "all" {
-		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "event", "device_id", deviceId, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and time >= '%s' and time <= '%s' order by time desc %s tz('Asia/Shanghai')", "event", "device_id", deviceId, t1, t2, limit), MyDB, "")
 		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			return response.Results[0].Series[0].Values
 		} else {
 			return nil
 		}
 	} else if event_type == "all" {
-		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "event", "device_id", deviceId, "identifier", identifier, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc %s tz('Asia/Shanghai')", "event", "device_id", deviceId, "identifier", identifier, t1, t2, limit), MyDB, "")
 		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			return response.Results[0].Series[0].Values
 		} else {
 			return nil
 		}
 	} else if identifier == "all" {
-		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "event", "device_id", deviceId, "event_type", event_type, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc %s tz('Asia/Shanghai')", "event", "device_id", deviceId, "event_type", event_type, t1, t2, limit), MyDB, "")
 		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			return response.Results[0].Series[0].Values
 		} else {
 			return nil
 		}
 	} else {
-		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc LIMIT 9 OFFSET %s tz('Asia/Shanghai')", "event", "device_id", deviceId, "event_type", event_type, "identifier", identifier, t1, t2, strconv.Itoa(offset)), MyDB, "")
+		q := client.NewQuery(fmt.Sprintf("SELECT * FROM %s where %s='%s' and %s='%s' and %s='%s' and time >= '%s' and time <= '%s' order by time desc %s tz('Asia/Shanghai')", "event", "device_id", deviceId, "event_type", event_type, "identifier", identifier, t1, t2, limit), MyDB, "")
 		if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 			return response.Results[0].Series[0].Values
 		} else {
@@ -287,8 +297,16 @@ func GetDeviceEventInfoFromEvent(deviceId, event_type, identifier string, start,
 	}
 }
 
-func GetDevicePropertyHistoryFromPropertyReported(deviceId, property string, Hour int) (propertyHistory [][]interface{}) {
-	q := client.NewQuery(fmt.Sprintf("SELECT %s FROM %s where %s='%s' and time > now() - %sh order by time desc tz('Asia/Shanghai')", property, "property_reported", "device_id", deviceId, strconv.Itoa(Hour)), MyDB, "")
+func GetDevicePropertyHistoryFromPropertyReported(deviceId, property string, start, end int64, isGetNext bool) (propertyHistory [][]interface{}) {
+	var limit string
+	if isGetNext {
+		limit = "LIMIT 1 OFFSET 19"
+	} else {
+		limit = "LIMIT 19"
+	}
+	t1 := time.Unix(start, 0).Format(time.RFC3339)
+	t2 := time.Unix(end, 0).Format(time.RFC3339)
+	q := client.NewQuery(fmt.Sprintf("SELECT %s FROM %s where %s='%s' and time >= '%s' and time <= '%s' order by time desc %s tz('Asia/Shanghai')", property, "property_reported", "device_id", deviceId, t1, t2, limit), MyDB, "")
 	if response, err := InfluxClient.Query(q); err == nil && response.Error() == nil && len(response.Results[0].Series) != 0 {
 		return response.Results[0].Series[0].Values
 	} else {

@@ -469,8 +469,8 @@ func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[
 }
 
 
-func GetDeviceServiceInfo(deviceId, identifier string, start, end int64, page int) (serviceInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceServiceInfoFromService(deviceId, identifier, start, end, page)
+func GetDeviceServiceInfo(deviceId, identifier string, start, end int64) (serviceInfo []map[string]interface{}) {
+	res := influxdb.GetDeviceServiceInfoFromService(deviceId, identifier, start, end, false)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))
@@ -490,8 +490,8 @@ func GetDeviceServiceInfo(deviceId, identifier string, start, end int64, page in
 	return
 }
 
-func GetDeviceEventInfo(deviceId, event_type, identifier string, start, end int64, page int) (eventInfo []map[string]interface{}) {
-	res := influxdb.GetDeviceEventInfoFromEvent(deviceId, event_type, identifier, start, end, page)
+func GetDeviceEventInfo(deviceId, event_type, identifier string, start, end int64) (eventInfo []map[string]interface{}) {
+	res := influxdb.GetDeviceEventInfoFromEvent(deviceId, event_type, identifier, start, end, false)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))
@@ -511,8 +511,8 @@ func GetDeviceEventInfo(deviceId, event_type, identifier string, start, end int6
 	return
 }
 
-func GetPropertyHistory(deviceId, property string, Hour int) (propertyHistory []map[string]interface{}) {
-	res := influxdb.GetDevicePropertyHistoryFromPropertyReported(deviceId, property, Hour)
+func GetPropertyHistory(deviceId, property string, start, end int64) (propertyHistory []map[string]interface{}) {
+	res := influxdb.GetDevicePropertyHistoryFromPropertyReported(deviceId, property, start, end, false)
 	if res != nil {
 		for _,v := range res {
 			t, err := time.Parse(time.RFC3339, v[0].(string))
@@ -525,6 +525,57 @@ func GetPropertyHistory(deviceId, property string, Hour int) (propertyHistory []
 			}
 			propertyHistory = append(propertyHistory, property)
 		}
+	}
+	return
+}
+
+func GetNextDeviceServiceInfo(deviceId, identifier string, start, end int64) (ts int64) {
+	// 有下一个返回对应int64时间戳,否则返回-1
+	res := influxdb.GetDeviceServiceInfoFromService(deviceId, identifier, start, end, true)
+	if res != nil {
+		for _,v := range res {
+			t, err := time.Parse(time.RFC3339, v[0].(string))
+			if err != nil {
+				fmt.Println(err)
+			}
+			ts = t.Unix()
+		}
+	} else {
+		return -1
+	}
+	return
+}
+
+func GetNextDeviceEventInfo(deviceId, event_type, identifier string, start, end int64) (ts int64) {
+	// 有下一个返回对应int64时间戳,否则返回-1
+	res := influxdb.GetDeviceEventInfoFromEvent(deviceId, event_type, identifier, start, end, true)
+	if res != nil {
+		for _,v := range res {
+			t, err := time.Parse(time.RFC3339, v[0].(string))
+			if err != nil {
+				fmt.Println(err)
+			}
+			ts = t.Unix()
+		}
+	} else {
+		return -1
+	}
+	return
+}
+
+func GetNextPropertyHistory(deviceId, property string, start, end int64) (ts int64) {
+	// 有下一个返回对应int64时间戳,否则返回-1
+	res := influxdb.GetDevicePropertyHistoryFromPropertyReported(deviceId, property, start, end, true)
+	if res != nil {
+		for _,v := range res {
+			t, err := time.Parse(time.RFC3339, v[0].(string))
+			if err != nil {
+				fmt.Println(err)
+			}
+			ts = t.Unix()
+		}
+	} else {
+		return -1
 	}
 	return
 }
