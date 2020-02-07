@@ -414,16 +414,12 @@ func DeatLabelQueryFilter(key, value string) (filter string) {
 	label_filter := ""
 
 	if len(key) == 0 && len(value) == 0 {
-		fmt.Println(1)
 		label_filter = ""
 	} else if len(key) != 0 && len(value) == 0 {
-		fmt.Println(2)
 		label_filter = "%" + fmt.Sprintf(key_filter_model, key) + "%"
 	} else if len(key) == 0 && len(value) != 0 {
-		fmt.Println(3)
 		label_filter = "%" + fmt.Sprintf(value_filter_model, value) + "%"
 	} else if len(key) != 0 && len(value) != 0 {
-		fmt.Println(4)
 		label_filter = "%" + fmt.Sprintf(filter_model, key, value) + "%"
 	}
 
