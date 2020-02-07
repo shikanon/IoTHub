@@ -425,3 +425,12 @@ func DeatLabelQueryFilter(key, value string) (filter string) {
 
 	return label_filter
 }
+
+func DealLabelArgs(args []map[string]string)(label_str string){
+	result := make(map[string]string)
+	for _, value := range args {
+		result[value["key"]] = value["value"]
+	}
+	result_str := tool.MapToJsonStr(result)
+	return result_str
+}

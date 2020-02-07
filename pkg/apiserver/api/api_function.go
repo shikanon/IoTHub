@@ -243,7 +243,11 @@ func GetProduct(c *gin.Context) {
 	label_spl := []map[string]string{}
 
 	for key, value := range label_map {
-		label_spl = append(label_spl, map[string]string{key: value})
+		data := map[string]string{
+			"key":   key,
+			"value": value,
+		}
+		label_spl = append(label_spl, data)
 	}
 
 	response := map[string]interface{}{
@@ -735,7 +739,11 @@ func GetDevice(c *gin.Context) {
 	label_spl := []map[string]string{}
 
 	for key, value := range label_map {
-		label_spl = append(label_spl, map[string]string{key: value})
+		data := map[string]string{
+			"key":   key,
+			"value": value,
+		}
+		label_spl = append(label_spl, data)
 	}
 
 	var product database.Product
@@ -743,23 +751,23 @@ func GetDevice(c *gin.Context) {
 	db.Model(&product).Related(&product.NodeType, "NodeType")
 
 	response := map[string]interface{}{
-		"id": device.ID,
-		"product_id": device.ProductID,
-		"product_key": product.ProductKey,
-		"product_name": product.Name,
-		"node_type_id": product.NetworkWayID,
-		"node_type": product.NodeType.Name,
-		"status_id": device.StatusID,
-		"name": device.Name,
-		"remark": device.Remark,
-		"device_secret": device.DeviceSecret,
-		"ip": device.IP,
-		"create_time": tool.TimeDeal(device.CreateTime),
-		"activate_time": tool.TimeDeal(device.ActivationTime),
+		"id":               device.ID,
+		"product_id":       device.ProductID,
+		"product_key":      product.ProductKey,
+		"product_name":     product.Name,
+		"node_type_id":     product.NetworkWayID,
+		"node_type":        product.NodeType.Name,
+		"status_id":        device.StatusID,
+		"name":             device.Name,
+		"remark":           device.Remark,
+		"device_secret":    device.DeviceSecret,
+		"ip":               device.IP,
+		"create_time":      tool.TimeDeal(device.CreateTime),
+		"activate_time":    tool.TimeDeal(device.ActivationTime),
 		"last_online_time": tool.TimeDeal(device.LastOnLineTime),
-		"iot_id": device.IotID,
-		"label": label_spl,
-		"batch_create": device.BatchCreate,
+		"iot_id":           device.IotID,
+		"label":            label_spl,
+		"batch_create":     device.BatchCreate,
 	}
 
 	resp := gin.H{
@@ -1215,8 +1223,8 @@ func UpdateDevice(c *gin.Context) {
 
 func AddProductLabel(c *gin.Context) {
 	type Args struct {
-		ProductID int    `json:"pid"`
-		Label     string `json:"label"`
+		ProductID int                 `json:"pid"`
+		Label     []map[string]string `json:"label"`
 	}
 
 	var args Args
@@ -1226,7 +1234,7 @@ func AddProductLabel(c *gin.Context) {
 
 	product_id := args.ProductID
 	label := args.Label
-	data_label := tool.JsonStrToMap(label)
+	data := database.DealLabelArgs(label)
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1234,20 +1242,7 @@ func AddProductLabel(c *gin.Context) {
 	var product database.Product
 	db.First(&product, product_id)
 
-	label_str := product.Label
-	label_map := make(map[string]string)
-
-	if len(label_str) != 0 {
-		label_map = tool.JsonStrToMap(label_str)
-	}
-
-	for key, value := range data_label {
-		label_map[key] = value
-	}
-
-	label_str = tool.MapToJsonStr(label_map)
-
-	product.Label = label_str
+	product.Label = data
 	db.Save(&product)
 
 	resp := gin.H{
@@ -1260,8 +1255,8 @@ func AddProductLabel(c *gin.Context) {
 
 func AddDeviceLabel(c *gin.Context) {
 	type Args struct {
-		DeviceID int    `json:"did"`
-		Label    string `json:"label"`
+		DeviceID int                 `json:"did"`
+		Label    []map[string]string `json:"label"`
 	}
 
 	var args Args
@@ -1271,7 +1266,7 @@ func AddDeviceLabel(c *gin.Context) {
 
 	device_id := args.DeviceID
 	label := args.Label
-	data_label := tool.JsonStrToMap(label)
+	data := database.DealLabelArgs(label)
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1279,20 +1274,7 @@ func AddDeviceLabel(c *gin.Context) {
 	var device database.Device
 	db.First(&device, device_id)
 
-	label_str := device.Label
-	label_map := make(map[string]string)
-
-	if len(label_str) != 0 {
-		label_map = tool.JsonStrToMap(label_str)
-	}
-
-	for key, value := range data_label {
-		label_map[key] = value
-	}
-
-	label_str = tool.MapToJsonStr(label_map)
-
-	device.Label = label_str
+	device.Label = data
 	db.Save(&device)
 
 	resp := gin.H{
