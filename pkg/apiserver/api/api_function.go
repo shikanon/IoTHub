@@ -104,17 +104,37 @@ func GetProductAuthMethods(c *gin.Context) {
 }
 
 func GetProducts(c *gin.Context) {
-	// 获取参数
-	page_str := c.Query("page")
-	page, _ := strconv.Atoi(page_str)
-	item_str := c.Query("item")
-	item, _ := strconv.Atoi(item_str)
+	//获取参数
+	page := tool.StringNumberToInTNumber(c.Query("page"))
+	item := tool.StringNumberToInTNumber(c.Query("item"))
+	name := c.Query("name")
+	key := c.Query("key")
+	value := c.Query("value")
+
+	label_filter := database.DeatLabelQueryFilter(key, value)
+
+	fmt.Println(label_filter)
+
+	var total = 0
 
 	// 查询数据
 	db := database.DbConn()
 	defer db.Close()
 	var products []database.Product
-	db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	if len(name) == 0 && len(label_filter) == 0 {
+		db.Model(&database.Product{}).Count(&total)
+		db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	} else if len(name) == 0 && len(label_filter) != 0 {
+		db.Model(&database.Product{}).Where("label LIKE ?", label_filter).Count(&total)
+		db.Where("label LIKE ?", label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	} else if len(name) != 0 && len(label_filter) == 0 {
+		db.Model(&database.Product{}).Where("name = ?", name).Count(&total)
+		db.Where("name = ?", name).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	} else if len(name) !=0 && len(label_filter) != 0 {
+		db.Model(&database.Product{}).Where("name = ? AND label LIKE ?", name, label_filter).Count(&total)
+		db.Where("name = ? AND label LIKE ?", name, label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	}
+
 	// 构建响应数据结构
 	type info struct {
 		ID         int    `json:"id"`
@@ -134,9 +154,6 @@ func GetProducts(c *gin.Context) {
 		}
 		result = append(result, data)
 	}
-
-	var total = 0
-	db.Model(&database.Product{}).Count(&total)
 
 	type RespData struct {
 		NumResults int    `json:"num_results"`
@@ -234,6 +251,7 @@ func GetProduct(c *gin.Context) {
 		ProductKey      string `json:"product_key"`
 		ProductSecret   string `json:"product_secret"`
 		DeviceCount     int    `json:"device_count"` // TODO
+		Label           string `json:"label"`
 	}
 
 	var product database.Product
@@ -266,6 +284,7 @@ func GetProduct(c *gin.Context) {
 		ProductKey:      product.ProductKey,
 		ProductSecret:   product.ProductSecret,
 		DeviceCount:     len(product.Device),
+		Label:           product.Label,
 	}
 
 	resp := gin.H{
@@ -861,6 +880,8 @@ func GetDeviceEvent(c *gin.Context) {
 	db.First(&device, device_id)
 	device_iot := device.IotID
 
+	fmt.Println(device_iot, event_type, identifier, start, end)
+
 	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end)
 	next_time := util.GetNextDeviceEventInfo(device_iot, event_type, identifier, start, end)
 
@@ -1094,8 +1115,8 @@ func GetBatchDevice(c *gin.Context) {
 
 func UpdateDevice(c *gin.Context) {
 	type Args struct {
-		Remark string `json:"remark"`
-		DeviceId int `json:"did"`
+		Remark   string `json:"remark"`
+		DeviceId int    `json:"did"`
 	}
 
 	var args Args
@@ -1121,4 +1142,94 @@ func UpdateDevice(c *gin.Context) {
 	}
 	c.JSON(200, resp)
 
+}
+
+func AddProductLabel(c *gin.Context) {
+	type Args struct {
+		ProductID int    `json:"pid"`
+		Label     string `json:"label"`
+	}
+
+	var args Args
+	if err := c.ShouldBind(&args); err != nil {
+		fmt.Println(err)
+	}
+
+	product_id := args.ProductID
+	label := args.Label
+	data_label := tool.JsonStrToMap(label)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var product database.Product
+	db.First(&product, product_id)
+
+	label_str := product.Label
+	label_map := make(map[string]string)
+
+	if len(label_str) != 0 {
+		label_map = tool.JsonStrToMap(label_str)
+	}
+
+	for key, value := range data_label {
+		label_map[key] = value
+	}
+
+	label_str = tool.MapToJsonStr(label_map)
+
+	product.Label = label_str
+	db.Save(&product)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品添加标签成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+func AddDeviceLabel(c *gin.Context) {
+	type Args struct {
+		DeviceID int    `json:"did"`
+		Label    string `json:"label"`
+	}
+
+	var args Args
+	if err := c.ShouldBind(&args); err != nil {
+		fmt.Println(err)
+	}
+
+	device_id := args.DeviceID
+	label := args.Label
+	data_label := tool.JsonStrToMap(label)
+
+	db := database.DbConn()
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+
+	label_str := device.Label
+	label_map := make(map[string]string)
+
+	if len(label_str) != 0 {
+		label_map = tool.JsonStrToMap(label_str)
+	}
+
+	for key, value := range data_label {
+		label_map[key] = value
+	}
+
+	label_str = tool.MapToJsonStr(label_map)
+
+	device.Label = label_str
+	db.Save(&device)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备添加标签成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
 }

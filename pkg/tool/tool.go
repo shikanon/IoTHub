@@ -71,4 +71,14 @@ func TimeDeal(time time.Time) (result string) {
 	}
 }
 
+func JsonStrToMap(data_str string) (data_map map[string]string) {
+	map_data := make(map[string]string)
+	json.Unmarshal([]byte(data_str), &map_data)
+	return map_data
+}
 
+func MapToJsonStr(map_data map[string]string) (data_str string) {
+	data, _ := json.Marshal(map_data)
+	result := string(data)
+	return result
+}
