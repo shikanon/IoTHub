@@ -14,11 +14,12 @@ import (
 // *******************************************************************************************************
 func Home(c *gin.Context) {
 
+
 	resp := gin.H{
 		"status":  "Y",
 		"message": "批次管理设备查询成功",
 		"data":    ".............",
-		//"data": response,
+		//"data": devices,
 	}
 	c.JSON(200, resp)
 
@@ -497,14 +498,14 @@ func GetDevices(c *gin.Context) {
 			if len(label_filter) == 0 {
 				db.Where("activation_time != ?", "0000-00-00 00:00:00").Find(&devices)
 				activate_num = len(devices)
-				db.Where("last_on_line_time != ?", "0000-00-00 00:00:00").Find(&devices)
+				db.Where("online = ?", 1).Find(&devices)
 				online_num = len(devices)
 				db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 				db.Model(&database.Device{}).Count(&total)
 			} else {
 				db.Where("activation_time != ? AND label LIKE ?", "0000-00-00 00:00:00", label_filter).Find(&devices)
 				activate_num = len(devices)
-				db.Where("last_on_line_time != ? AND label LIKE ?", "0000-00-00 00:00:00", label_filter).Find(&devices)
+				db.Where("online = ? AND label LIKE ?", 1, label_filter).Find(&devices)
 				online_num = len(devices)
 				db.Model(&database.Device{}).Where("label LIKE ?", label_filter).Count(&total)
 				db.Where("label LIKE ?", label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
@@ -514,14 +515,14 @@ func GetDevices(c *gin.Context) {
 				if len(label_filter) == 0 {
 					db.Where("activation_time != ? AND name = ?", "0000-00-00 00:00:00", name).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND name = ?", "0000-00-00 00:00:00", name).Find(&devices)
+					db.Where("online = ? AND name = ?", 1, name).Find(&devices)
 					online_num = len(devices)
 					db.Model(&database.Device{}).Where("name = ?", name).Count(&total)
 					db.Where("name = ?", name).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 				} else {
 					db.Where("activation_time != ? AND label LIKE ? AND name = ?", "0000-00-00 00:00:00", label_filter, name).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND label LIKE ? AND name = ?", "0000-00-00 00:00:00", label_filter, name).Find(&devices)
+					db.Where("online = ? AND label LIKE ? AND name = ?", 1, label_filter, name).Find(&devices)
 					online_num = len(devices)
 					db.Where("label LIKE ? AND name = ?", label_filter, name).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 					db.Model(&database.Device{}).Where("label LIKE ? AND name = ?", label_filter, name).Count(&total)
@@ -530,14 +531,14 @@ func GetDevices(c *gin.Context) {
 				if len(label_filter) == 0 {
 					db.Where("activation_time != ? AND remark = ?", "0000-00-00 00:00:00", remark).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND remark = ?", "0000-00-00 00:00:00", remark).Find(&devices)
+					db.Where("online = ? AND remark = ?", 1, remark).Find(&devices)
 					online_num = len(devices)
 					db.Where("remark = ?", remark).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 					db.Model(&database.Device{}).Where("remark = ?", remark).Count(&total)
 				} else {
 					db.Where("activation_time != ? AND label LIKE ? AND remark = ?", "0000-00-00 00:00:00", label_filter, remark).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND label LIKE ? AND remark = ?", "0000-00-00 00:00:00", label_filter, remark).Find(&devices)
+					db.Where("online = ? AND label LIKE ? AND remark = ?", 1, label_filter, remark).Find(&devices)
 					online_num = len(devices)
 					db.Where("label LIKE ? AND remark = ?", label_filter, remark).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 					db.Model(&database.Device{}).Where("label LIKE ? AND remark = ?", label_filter, remark).Count(&total)
@@ -549,14 +550,14 @@ func GetDevices(c *gin.Context) {
 			if len(label_filter) == 0 {
 				db.Where("activation_time != ? AND product_id = ?", "0000-00-00 00:00:00", product_id).Find(&devices)
 				activate_num = len(devices)
-				db.Where("last_on_line_time != ? AND product_id = ?", "0000-00-00 00:00:00", product_id).Find(&devices)
+				db.Where("online = ? AND product_id = ?", 1, product_id).Find(&devices)
 				online_num = len(devices)
 				db.Where("product_id = ?", product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 				db.Model(&database.Device{}).Where("product_id = ?", product_id).Count(&total)
 			} else {
 				db.Where("activation_time != ? AND label LIKE ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, product_id).Find(&devices)
 				activate_num = len(devices)
-				db.Where("last_on_line_time != ? AND label LIKE ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, product_id).Find(&devices)
+				db.Where("online = ? AND label LIKE ? AND product_id = ?", 1, label_filter, product_id).Find(&devices)
 				online_num = len(devices)
 				db.Where("label LIKE ? AND product_id = ?", label_filter, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 				db.Model(&database.Device{}).Where("label LIKE ? AND product_id = ?", label_filter, product_id).Count(&total)
@@ -566,14 +567,14 @@ func GetDevices(c *gin.Context) {
 				if len(label_filter) == 0 {
 					db.Where("activation_time != ? AND name = ? AND product_id = ?", "0000-00-00 00:00:00", name, product_id).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND name = ? AND product_id = ?", "0000-00-00 00:00:00", name, product_id).Find(&devices)
+					db.Where("online = ? AND name = ? AND product_id = ?", 1, name, product_id).Find(&devices)
 					online_num = len(devices)
 					db.Where("name = ? AND product_id = ?", name, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 					db.Model(&database.Device{}).Where("name = ? AND product_id = ?", name, product_id).Count(&total)
 				} else {
 					db.Where("activation_time != ? AND label LIKE ? AND name = ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, name, product_id).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND label LIKE ? AND name = ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, name, product_id).Find(&devices)
+					db.Where("online = ? AND label LIKE ? AND name = ? AND product_id = ?", 1, label_filter, name, product_id).Find(&devices)
 					online_num = len(devices)
 					db.Where("label LIKE ? AND name = ? AND product_id = ?", label_filter, name, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 					db.Model(&database.Device{}).Where("label LIKE ? AND name = ? AND product_id = ?", label_filter, name, product_id).Count(&total)
@@ -582,14 +583,14 @@ func GetDevices(c *gin.Context) {
 				if len(label_filter) == 0 {
 					db.Where("activation_time != ? AND remark = ? AND product_id = ?", "0000-00-00 00:00:00", remark, product_id).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND remark = ? AND product_id = ?", "0000-00-00 00:00:00", remark, product_id).Find(&devices)
+					db.Where("online = ? AND remark = ? AND product_id = ?", 1, remark, product_id).Find(&devices)
 					online_num = len(devices)
 					db.Where("remark = ? AND product_id = ?", remark, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 					db.Model(&database.Device{}).Where("remark = ? AND product_id = ?", remark, product_id).Count(&total)
 				} else {
 					db.Where("activation_time != ? AND label LIKE ? AND remark = ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, remark, product_id).Find(&devices)
 					activate_num = len(devices)
-					db.Where("last_on_line_time != ? AND label LIKE ? AND remark = ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, remark, product_id).Find(&devices)
+					db.Where("online = ? AND label LIKE ? AND remark = ? AND product_id = ?", 1, label_filter, remark, product_id).Find(&devices)
 					online_num = len(devices)
 					db.Where("label LIKE ? AND remark = ? AND product_id = ?", label_filter, remark, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
 					db.Model(&database.Device{}).Where("label LIKE ? AND remark = ? AND product_id = ?", label_filter, remark, product_id).Count(&total)
@@ -700,6 +701,7 @@ func AddDevice(c *gin.Context) {
 		Remark:      remark,
 		BatchCreate: false,
 		CreateTime:  time.Now(),
+		Online:false,
 	}
 
 	id := device.SaveDevice()

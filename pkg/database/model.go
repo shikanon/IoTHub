@@ -52,6 +52,7 @@ type Device struct {
 	IotID          string       `gorm:"unique;not null" json:"iot_id"`        // 设备唯一id
 	Label          string       `json:"label"`                                // 设备标签
 	BatchCreate    bool         `json:"batch_create"`                         // 是否批量创建
+	Online         bool         `json:"online"`                               // 是否在线
 	//ShadowDevice   ShadowDevice `gorm:"foreignKey:ShadowDeviceID"`            //
 	//ShadowDeviceID int          `json:"shadow_device_id"`                     // 影子设备id
 }

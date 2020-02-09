@@ -6,6 +6,7 @@ import (
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type TopicModel struct {
@@ -433,4 +434,25 @@ func DealLabelArgs(args []map[string]string)(label_str string){
 	}
 	result_str := tool.MapToJsonStr(result)
 	return result_str
+}
+
+func DeviceOnline(iot_id string){
+	db := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iot_id).First(&device)
+	device.Online = true
+	db.Save(&device)
+}
+
+func DeviceOutline(iot_id string){
+	db := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iot_id).First(&device)
+	device.Online = false
+	device.LastOnLineTime = time.Now()
+	db.Save(&device)
 }
