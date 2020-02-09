@@ -1,6 +1,8 @@
 package api
 
 import (
+	"bufio"
+	"encoding/csv"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
@@ -13,7 +15,6 @@ import (
 
 // *******************************************************************************************************
 func Home(c *gin.Context) {
-
 
 	resp := gin.H{
 		"status":  "Y",
@@ -701,7 +702,7 @@ func AddDevice(c *gin.Context) {
 		Remark:      remark,
 		BatchCreate: false,
 		CreateTime:  time.Now(),
-		Online:false,
+		Online:      false,
 	}
 
 	id := device.SaveDevice()
@@ -1059,6 +1060,7 @@ func AutoAddDevice(c *gin.Context) {
 			Remark:      "",
 			BatchCreate: true,
 			CreateTime:  time,
+			Online:      false,
 		}
 		device.SaveDevice()
 	}
@@ -1285,4 +1287,79 @@ func AddDeviceLabel(c *gin.Context) {
 		"data":    nil,
 	}
 	c.JSON(200, resp)
+}
+
+func AnalysisUploadCSVFile(c *gin.Context) {
+	rFile, err := c.FormFile("file")
+	if err != nil {
+		c.String(400, "文件格式错误")
+		return
+	}
+
+	file, err := rFile.Open()
+	if err != nil {
+		c.String(400, "文件格式错误")
+		return
+	}
+	defer file.Close()
+	reader := csv.NewReader(bufio.NewReader(file))
+
+	data, _ := reader.ReadAll()
+
+	response_data := map[string]interface{}{
+		"number_count": len(data[1:]),
+		"file_name":    rFile.Filename,
+		"file_size":    fmt.Sprintf("%.2f", float64(rFile.Size)/float64(1024)),
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "文件识别成功",
+		"data":    response_data,
+	}
+	c.JSON(200, resp)
+}
+
+func FileAddDevice(c *gin.Context) {
+	rFile, _ := c.FormFile("file")
+	product_id := tool.StringNumberToInTNumber(c.PostForm("pid"))
+
+	file, err := rFile.Open()
+	if err != nil {
+		c.String(400, "文件格式错误")
+		return
+	}
+	defer file.Close()
+	reader := csv.NewReader(bufio.NewReader(file))
+
+	data, _ := reader.ReadAll()
+	device_list := data[1:]
+
+	time := time.Now()
+	for _, value := range device_list {
+		device_name := value[0]
+		device := database.Device{
+			ProductID:   product_id,
+			StatusID:    1,
+			Name:        device_name,
+			Remark:      "",
+			BatchCreate: true,
+			CreateTime:  time,
+			Online:      false,
+		}
+		device.SaveDevice()
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备批量添加成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+func GetProductFunction(c *gin.Context) {
+	//product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+
+
 }
