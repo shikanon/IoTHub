@@ -144,20 +144,22 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		if err != nil {
 			logs.Error(err)
 		}
+		device := database.DeviceNameToDevice(productKey, deviceName)
 		if connectionMsg.Online == true {
 			User := make(map[string]interface{})
-			logs.Info(fmt.Sprintf("设备上线:%s&%s", deviceName, productKey))
+			logs.Info(fmt.Sprintf("设备上线:%s", connectionMsg.ClientID))
 			ts := time.Now()
-			device := database.DeviceNameToDevice(productKey, deviceName)
 			if tool.TimeDeal(device.ActivationTime) == "-" {
 				User["ActivationTime"] = ts
 			}
 			User["LastOnLineTime"] = ts
 			db := database.DbConn()
 			db.Model(&device).Updates(User)
+			database.DeviceOnline(device.IotID)
 			defer db.Close()
 		} else {
 			logs.Info(fmt.Sprintf("设备下线:%s", connectionMsg.ClientID))
+			database.DeviceOutline(device.IotID)
 		}
 		// 消息传递给controller
 		//event := deviceController.Event{Operate: 1, Topic:message.Topic(), Message:message.Payload()}
