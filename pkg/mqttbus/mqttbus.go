@@ -455,7 +455,6 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 	} else if reg, err := regexp.MatchString("/sys/(?P<productKey>.+)/(?P<deviceName>.+)/thing/deviceinfo/update", message.Topic()); reg == true && err == nil {
 		// 设备标签信息上报
 		logs.Info("设备标签信息上报处理逻辑")
-
 		var replyMsg ReplyMsg
 		replyMsg.Code = constants.Success
 		replyMsg.Message = constants.SuccessMsg
@@ -478,12 +477,14 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 			replyMsg.Code = constants.RequestParameterError
 			replyMsg.Message = constants.RequestParameterErrorMsg
 		}
+		device := database.DeviceNameToDevice(productKey, deviceName)
+		label := database.GetDeviceLabel(device.IotID)
 		for _, v := range params.Array() {
 			attrKey := v.Get("attrKey")
 			attrValue := v.Get("attrValue")
-			// TODO:保存标签到数据库
-			fmt.Println(attrKey, attrValue)
+			label[attrKey.String()] = attrValue.String()
 		}
+		database.UpdateDeviceLabel(device.IotID, label)
 		res, err := json.Marshal(replyMsg)
 		if err != nil {
 			logs.Error(err)
@@ -517,11 +518,13 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 			replyMsg.Code = constants.RequestParameterError
 			replyMsg.Message = constants.RequestParameterErrorMsg
 		}
+		device := database.DeviceNameToDevice(productKey, deviceName)
+		label := database.GetDeviceLabel(device.IotID)
 		for _, v := range params.Array() {
 			attrKey := v.Get("attrKey")
-			// TODO:删除标签
-			fmt.Println(attrKey)
+			delete(label, attrKey.String())
 		}
+		database.UpdateDeviceLabel(device.IotID, label)
 		res, err := json.Marshal(replyMsg)
 		if err != nil {
 			logs.Error(err)
