@@ -1361,8 +1361,14 @@ func FileAddDevice(c *gin.Context) {
 func GetProductFunction(c *gin.Context) {
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 
+	property := database.ProductGetPropertyFunction(product_id)
+	services := []map[string]interface{}{}
+	events := []map[string]interface{}{}
+
 	response := map[string]interface{}{
-		"property": database.ProductGetPropertyFunction(product_id),
+		"property": property,
+		"services": services,
+		"events":   events,
 	}
 
 	resp := gin.H{
