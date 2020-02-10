@@ -46,7 +46,7 @@ func ApiRegister() {
 		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类
 		v1.PUT("/ptopic", api.UpdateProductTopic)         // 产品-查看-topic类，自定义，编辑topic类
 		v1.DELETE("/ptopic", api.DeleteProductTopic)      // 产品-查看-topic类，自定义，删除topic类
-		v1.GET("/function", api.GetProductFunction)       // 产品-产看-功能定义
+		v1.GET("/functions", api.GetProductFunction)      // 产品-产看-功能定义
 		v1.GET("/tsl", api.GetModelTSL)                   // 产品-查看-功能定义-物模型TSL
 		v1.DELETE("/product", api.DeleteProduct)          // 产品-删除
 		v1.GET("/devices", api.GetDevices)                // 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理)

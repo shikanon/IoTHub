@@ -1359,7 +1359,16 @@ func FileAddDevice(c *gin.Context) {
 }
 
 func GetProductFunction(c *gin.Context) {
-	//product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 
+	response := map[string]interface{}{
+		"property": database.ProductGetPropertyFunction(product_id),
+	}
 
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品功能定义查询成功",
+		"data":    response,
+	}
+	c.JSON(200, resp)
 }

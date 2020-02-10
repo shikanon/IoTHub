@@ -1,9 +1,11 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
+	"github.com/tidwall/gjson"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -367,6 +369,7 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
 	intact_model_id := product.MongodbModel.IntactModelID
 	intact_collection_name := config.MongodbConfig.IntactProductModel
+
 	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
 	filter := bson.M{"_id": model_id}
 	data := MongoDbGetFilterData(intact_collection_name, filter)
@@ -427,7 +430,7 @@ func DeatLabelQueryFilter(key, value string) (filter string) {
 	return label_filter
 }
 
-func DealLabelArgs(args []map[string]string)(label_str string){
+func DealLabelArgs(args []map[string]string) (label_str string) {
 	result := make(map[string]string)
 	for _, value := range args {
 		result[value["key"]] = value["value"]
@@ -436,7 +439,7 @@ func DealLabelArgs(args []map[string]string)(label_str string){
 	return result_str
 }
 
-func DeviceOnline(iot_id string){
+func DeviceOnline(iot_id string) {
 	db := DbConn()
 	defer db.Close()
 
@@ -446,7 +449,7 @@ func DeviceOnline(iot_id string){
 	db.Save(&device)
 }
 
-func DeviceOutline(iot_id string){
+func DeviceOutline(iot_id string) {
 	db := DbConn()
 	defer db.Close()
 
@@ -455,4 +458,52 @@ func DeviceOutline(iot_id string){
 	device.Online = false
 	device.LastOnLineTime = time.Now()
 	db.Save(&device)
+}
+
+func ProductGetPropertyFunction(productID int) (properties []map[string]interface{}) {
+
+	db := DbConn()
+	defer db.Close()
+
+	var product Product
+	db.First(&product, productID)
+	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
+	intact_model_id := product.MongodbModel.IntactModelID
+	intact_collection_name := config.MongodbConfig.IntactProductModel
+
+	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
+	filter := bson.M{"_id": model_id}
+	data := MongoDbGetFilterData(intact_collection_name, filter)
+	delete(data, "_id")
+
+	modelJson, _ := json.Marshal(data)
+	result := gjson.Get(string(modelJson), "properties")
+
+	for _, v := range result.Array() {
+		property := make(map[string]interface{})
+		property["identifier"] = v.Map()["identifier"].String()
+		property["name"] = v.Map()["name"].String()
+		property["accessMode"] = v.Map()["accessMode"].String()
+		property["desc"] = v.Map()["desc"].String()
+		property["required"] = v.Map()["required"].String()
+		property["data_type"] = v.Map()["dataType"].Map()["type"].String()
+
+		condition := v.Map()["dataType"].Map()["specs"].Array()
+		if condition == nil {
+			property["data_condition"] = tool.JsonStrToMap(v.Map()["dataType"].Map()["specs"].Raw)
+		} else {
+			var need_data []map[string]interface{}
+			for _, value := range condition {
+				resolve_data := make(map[string]interface{})
+				resolve_data["identifier"] = value.Map()["identifier"].String()
+				resolve_data["name"] = value.Map()["name"].String()
+				resolve_data["data_type"] = value.Map()["dataType"].Map()["type"].String()
+				resolve_data["data_condition"] = tool.JsonStrToMap(value.Map()["dataType"].Map()["specs"].Raw)
+				need_data =append(need_data, resolve_data)
+			}
+		property["data_condition"] = need_data
+		}
+		properties = append(properties, property)
+	}
+	return properties
 }
