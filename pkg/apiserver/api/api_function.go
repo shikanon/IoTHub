@@ -20,7 +20,7 @@ func Home(c *gin.Context) {
 		"status":  "Y",
 		"message": "批次管理设备查询成功",
 		"data":    ".............",
-		//"data": devices,
+		//"data": tool.JsonStrToMap(productLabel),
 	}
 	c.JSON(200, resp)
 
@@ -113,6 +113,19 @@ func GetProducts(c *gin.Context) {
 	key := c.Query("key")
 	value := c.Query("value")
 
+	if len(key) != 0 {
+		if key_res, msg := CheckProductLabelKeyQualify(key); key_res != true {
+			ErrResponse(msg, c)
+			return
+		}
+	}
+	if len(value) != 0 {
+		if value_res, msg := CheckProductLabelValueQualify(value); value_res != true {
+			ErrResponse(msg, c)
+			return
+		}
+	}
+
 	label_filter := database.DeatLabelQueryFilter(key, value)
 
 	var total = 0
@@ -188,7 +201,8 @@ func AddProduct(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	name := data.Name
@@ -199,6 +213,39 @@ func AddProduct(c *gin.Context) {
 	data_format_id := data.DataFormatID
 	auth_method_id := data.AuthMethodID
 	desc := data.Describe
+
+	if nameRes, msg := CheckProductNameQualify(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if categoryRes, msg := CheckProductCategoryQualify(category); categoryRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if modelRes, msg := CheckModelIDQualify(model_id); modelRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if nodeTypeRes, msg := CheckNodeTypeIDQualify(node_type_id); nodeTypeRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if netWorkRes, msg := CheckNetworkIDQualify(network_id); netWorkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if dataFormatRes, msg := CheckDataFormatIDQualify(data_format_id); dataFormatRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if authMethodRes, msg := CheckAuthMethodIDQualify(auth_method_id); authMethodRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if descRes, msg := CheckProductDescQualify(desc); descRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	// 构建实例
 	product := &database.Product{
@@ -227,9 +274,14 @@ func AddProduct(c *gin.Context) {
 }
 
 func GetProduct(c *gin.Context) {
-	product_id := c.Query("pid")
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	db := database.DbConn()
 	defer db.Close()
+
+	if productRes, msg := CheckProductIDQualify(product_id); productRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	var product database.Product
 	db.First(&product, product_id)
@@ -293,12 +345,26 @@ func UpdateProduct(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	name := require.Name
 	desc := require.Describe
 	product_id := require.ProductID
+
+	if nameRes, msg := CheckProductNameQualify(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if descRes, msg := CheckProductDescQualify(desc); descRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()

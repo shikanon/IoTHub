@@ -41,7 +41,7 @@ func ApiRegister() {
 		v1.POST("/product", api.AddProduct)               // 产品-创建产品
 		v1.GET("/product", api.GetProduct)                // 产品-查看
 		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称)
-		v1.POST("/plabel", api.AddProductLabel)           // 产品-添加标签
+		v1.POST("/plabel", api.AddProductLabel)           // 产品-添加标签 TODO
 		v1.GET("/ptopics", api.GetProductTopic)           // 产品-查看-topic类
 		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类
 		v1.PUT("/ptopic", api.UpdateProductTopic)         // 产品-查看-topic类，自定义，编辑topic类

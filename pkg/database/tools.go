@@ -499,11 +499,65 @@ func ProductGetPropertyFunction(productID int) (properties []map[string]interfac
 				resolve_data["name"] = value.Map()["name"].String()
 				resolve_data["data_type"] = value.Map()["dataType"].Map()["type"].String()
 				resolve_data["data_condition"] = tool.JsonStrToMap(value.Map()["dataType"].Map()["specs"].Raw)
-				need_data =append(need_data, resolve_data)
+				need_data = append(need_data, resolve_data)
 			}
-		property["data_condition"] = need_data
+			property["data_condition"] = need_data
 		}
 		properties = append(properties, property)
 	}
 	return properties
+}
+
+func GetAllProductID() (result []int) {
+	db := DbConn()
+	defer db.Close()
+
+	var ids []int
+	db.Model(Product{}).Pluck("id", &ids)
+
+	return ids
+}
+
+func GetProductLabel(productKey string) (label map[string]string) {
+	db := DbConn()
+	defer db.Close()
+
+	var product Product
+	db.Where("product_key = ?", productKey).First(&product)
+
+	productLabel := product.Label
+	return tool.JsonStrToMap(productLabel)
+}
+
+func UpdateProductLabel(productKey string, newLabel map[string]string) {
+	db := DbConn()
+	defer db.Close()
+
+	var product Product
+	db.Where("product_key = ?", productKey).First(&product)
+	label := tool.MapToJsonStr(newLabel)
+	product.Label = label
+	db.Save(&product)
+}
+
+func GetDeviceLabel(iotID string)(label map[string]string){
+	db := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iotID).First(&device)
+
+	deviceLabel := device.Label
+	return tool.JsonStrToMap(deviceLabel)
+}
+
+func UpdateDeviceLabel(iotID string, newLabel map[string]string) {
+	db := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iotID).First(&device)
+	label := tool.MapToJsonStr(newLabel)
+	device.Label = label
+	db.Save(&device)
 }
