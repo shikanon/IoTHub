@@ -43,10 +43,10 @@
             </el-row>
             <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
                 <el-tab-pane label="设备列表" name="device">
-                    <DeviceList :productArr="productArr" :productId="productId" @setAcount="setDeviceAcount($event)"></DeviceList>
+                    <DeviceList  ref="deviceList" :productArr="productArr" :productId="productId" @setAcount="setDeviceAcount($event)"></DeviceList>
                 </el-tab-pane>
                 <el-tab-pane label="批次管理" name="batch">
-                    <ApplyList :productId="productId"></ApplyList>
+                    <ApplyList  ref="applyList" :productId="productId"></ApplyList>
                 </el-tab-pane>     
             </el-tabs>
         </div>
@@ -100,6 +100,9 @@ export default {
         },
       handleClick(tab, event) {
         //console.log(tab, event);
+        if(tab.name === "batch"){
+            this.$refs.applyList.getApplyList()
+        }
       },
 
       changeProductId(val){

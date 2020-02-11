@@ -40,6 +40,7 @@
                 <div class="table-row-label">备注名称</div> 
                 <div class="table-row-info">
                     <span>{{device.remark}}</span>
+                    <el-button type="text" @click="editRemark">编辑</el-button>
                 </div>        
                 <div class="table-row-label">IP地址</div>
                 <div class="table-row-info">
@@ -104,13 +105,21 @@
           <el-button type="text" @click="addLabelVisible = true ">编辑</el-button>
         </p>
         <p>设备标签
-             <span v-for="(item,index) in labelArr" :key = "index" class="label-span">{{item['key']}}:{{item['value']}}</span>
+             <span v-for="(item,index) in device.label" :key = "index" class="label-span">{{item['key']}}:{{item['value']}}</span>
         </p>
         <el-dialog title="添加标签" :visible.sync="addLabelVisible" width="26%">
-            <AddLabel  ref="addLabel" :labelArr="labelArr" type="device" @close="addLabelVisible = false"></AddLabel>
+            <AddLabel  ref="addLabel" :labelArr="JSON.parse(JSON.stringify(device.label))" type="device" @close="addLabelVisible = false"></AddLabel>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="addLabelSubmit">确 定</el-button>
                 <el-button @click="addLabelVisible = false">取 消</el-button>
+            </span>
+        </el-dialog>
+
+          <el-dialog title="编辑设备备注名称" :visible.sync="editRemarkVisible" width="26%">
+             <el-input v-model="remark" ></el-input>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="editRemarkSubmit">确 定</el-button>
+                <el-button @click="editRemarkCancel">取 消</el-button>
             </span>
         </el-dialog>
     </div>
@@ -127,7 +136,8 @@
       data() {
         return {      
             addLabelVisible:false,
-            labelArr:[]
+            remark:'',
+            editRemarkVisible:false 
         }
       },
       computed:{
@@ -138,9 +148,18 @@
       methods:{
           
         addLabelSubmit(){
-           this.labelArr =  this.$refs.addLabel.label
-           this.addLabelVisible = false
-           console.log(`编辑label信息提交${this.labelArr }`)
+            let params = {did:this.device.id, label:this.$refs.addLabel.label} 
+            console.log(params)
+            this.$API_IOT.editDeviceLabel(params).then((res) => {
+               if (res.data.status === 'Y') {
+                  this.$message.success('编辑标签成功')
+                   this.addLabelVisible = false
+                   this.device.label = this.$refs.addLabel.label
+              } else {
+                  this.$message.error(res.message);
+              } 
+               
+            }) 
 
         },
         test(){
@@ -159,6 +178,28 @@
                         message: '已取消测试'
                     });          
             });
+        },
+
+        editRemark(){
+            this.editRemarkVisible = true
+            this.remark = this.device.remark
+        },
+        editRemarkCancel(){
+            this.editRemarkVisible = false
+            this.remark = this.device.remark
+        },
+        editRemarkSubmit(){
+            let params = {did:this.device.id, remark:this.remark } 
+            this.$API_IOT.updateDevice(params).then((res) => {
+               if (res.data.status === 'Y') {
+                  this.$message.success('更新设备注成功')
+                  this.editRemarkVisible = false
+                  this.device.remark = this.remark
+              } else {
+                  this.$message.error(res.message);
+              } 
+               
+            }) 
         }
       }
     }

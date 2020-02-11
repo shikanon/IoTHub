@@ -25,19 +25,19 @@
         </el-form-item>  
          
           <el-form-item v-if="type === '2'" label="批量上传文件" prop="fileList">      
-            <el-upload
-                action="https://jsonplaceholder.typicode.com/posts/"
-                :on-success="success"
+            <!-- :on-success="success"
                 :before-uoload="beforeUpload"
                 :on-preview="handlePreview"
-                :on-remove="handleRemove"
-                :file-list="fileList"
+                :on-remove="handleRemove" -->
+            <el-upload
+                action=""
+                :on-change="(file) => fileChange(file)"
                 :auto-upload="false"
-                :limit="1"
+                :multiple="false"
                >
                <el-button size="small" type="primary">上传文件</el-button>
                
-                <download-excel :fields = "json_fields"  :data="json_data" name="Template.xls"> 
+                <download-excel :fields = "json_fields"  name="Template.xls"> 
                   <el-button size="small" type="text">下载.csv模板</el-button>
                 </download-excel> 
                  <div slot="tip" class="el-upload__tip">只能上传excel文件，单次最多添加 1000 台</div>
@@ -89,7 +89,9 @@
           //   { required: true,type:'number',message: '请输入设备数量', trigger: 'blur' }
           // ]
               
-        }
+        },
+        file:File,
+        json_fields:{'DeviceName':'' }
       };
     },
     created(){
@@ -117,10 +119,11 @@
         },    
     
       submit(){
+
         if(this.type === "1"){
           this.submitForm()
         }else{
-            this.submitUpload()
+            this.uploadFie()
         }
       },
       submitForm() {
@@ -139,10 +142,7 @@
                     this.$message.error(res.message);
                 }
                
-            })
-
-           
-            
+            })        
              
           } else {
             console.log('error submit!!');
@@ -150,10 +150,42 @@
           }
         });
       },  
-      submitUpload() {
-          this.$refs.upload.submit();
-          this.$emit('close')
+
+      fileChange(file){
+        this.file = file
+      },
+      uploadFie() {
+            let param = new FormData()
+            param.append('file', this.file.raw)
+           this.$API_IOT.uploadFile(param).then((res) => {
+               //文件上传成功
+                if(res.data.status  === 'Y'){   
+                    this.$emit('showAddResult')
+                    param.append('pid', this.ruleForm.pid)
+                    this.submitFile(param,res.data.data.number_count)
+
+                    
+                }else{
+                    this.$message.error(res.message);
+                }
+               
+            })
+        
       }, 
+
+
+      submitFile(param,number){
+            this.$API_IOT.addDeviceFile(param).then((res) => {
+                if(res.data.status  === 'Y'){
+                   //回调父组件方法
+                  this.$emit('close')
+                  this.$emit('addSuccess',number)
+                }else{
+                    this.$message.error(res.message);
+                }
+               
+            })
+      },
 
       downCsvTemplate(){
 
@@ -163,7 +195,7 @@
 </script>
 <style scoped >
   .el-select{
-      width: 440px;
+      width: 360px;
   }
   .el-upload{
     display: flex !important;

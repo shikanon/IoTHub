@@ -23,7 +23,7 @@
               @focus="addLabelVisible = true"
               class="search-input"
               size="medium"
-              value="">
+              v-module="label">
             </el-input>
         </el-row>  
         <el-row v-if="type === 'group'">
@@ -204,6 +204,7 @@
             handler:function(val,oldval){ 
                 if(val!=oldval){
                     this.$nextTick(()=>{
+                        this.currentPage = 1
                         this.getDeviceList()
                     })
                 }
@@ -234,6 +235,7 @@
         searchKey:"DeviceName",
         searchVal:'',
         searchLabel:[],
+        label:'',
         addLabelVisible:false
 
       }
@@ -257,9 +259,9 @@
           if(currentPage){
             this.currentPage = currentPage
           }
-          let params = {};
-          params[this.searchKey] = this.searchVal
-          this.$API_IOT.getDeviceList(this.currentPage,this.pageSize,this.productId).then((res) => {
+         // let params = {};
+        //  params[this.searchKey] = this.searchVal
+          this.$API_IOT.getDeviceList(this.currentPage,this.pageSize,this.productId,this.searchVal).then((res) => {
                 this.tableData = res.data.data.data_list
                 this.total = res.data.data.num_results
                 let params = {}
@@ -304,7 +306,7 @@
         //取消添加设备
         addDeviceCancel(){
           this.addDeviceVisible = false
-           this.$refs['addDevice'].init()
+          this.$refs['addDevice'].init()
         },
 
         //跳转到设备详情页面
@@ -345,18 +347,7 @@
             });  
         },
 
-        //变更单个设备状态
-        changeDeviceStatus(deviceInf){
-          console.log(deviceInf.id)
-          let array = new Array();
-          array.push(deviceInf.id)
-          if(deviceInf.status_id === 1){ //未激活 -> 激活
-            this.activeDevices(array)
-          }else { //禁用
-            this.disabledDevices(array)
-          }
-         // this.tableData.filter(item => item.id ===  deviceInf.id).status = device_status
-        },
+       
 
         //多选操作，1-删除，2-禁用，3-启用,4-从分组中删除
         handleSelection(type){
@@ -383,14 +374,24 @@
         deleteDevices(arr){
           this.$API_IOT.deleteDevice(arr).then((res) => {
                 if(res.data.status  === 'Y'){
-                  this.$message.success('删除成功',function(){
-                    this.getDeviceList()
-                  })
-                  
+                  this.$message.success('删除成功')
+                  this.getDeviceList()
                 }else{
                   this.$message.error(res.message);
                 }              
             })
+        },
+
+         //变更单个设备状态
+        changeDeviceStatus(deviceInf){
+          console.log(deviceInf.id)
+          let array = new Array();
+          array.push(deviceInf.id)
+          if(deviceInf.status_id === 1){ //未激活 -> 激活
+            this.activeDevices(array)
+          }else { //禁用
+            this.disabledDevices(array)
+          }
         },
         //禁用设备
         disabledDevices(arr){
@@ -426,12 +427,12 @@
 
         },
 
-        //添加分组提交
+        //批量添加提交
         addDeviceGroupSubmit(){
-              this.$refs['addDeviceGroup'].submitForm()
+              this.$refs['addDeviceGroup'].submit()
         },
 
-        //添加分组取消
+        //批量添加取消
         addDeviceGroupCancel(){
            this.addDeviceGroupVisible = false
            this.$refs['addDeviceGroup'].init()
@@ -472,6 +473,8 @@
           ]
           this.loadBtn = true
           this.getDeviceList()
+          this.$refs['addDeviceGroup'].init()
+
         },
 
         //查询产品信息
@@ -486,24 +489,24 @@
 
         },
 
-          //添加设备到分组
-          addDeviceToGroup(deviceArr){
-              console.log(deviceArr)
-              this.drawer = false
-              console.log(this.drawer )
-          },
+        //添加设备到分组
+        addDeviceToGroup(deviceArr){
+            console.log(deviceArr)
+            this.drawer = false
+            console.log(this.drawer )
+        },
 
-          //改变查询条件
-          queryParamChange(value){
-              this.searchVal = ""
-          },
+        //改变查询条件
+        queryParamChange(value){
+            this.searchVal = ""
+        },
 
-          //添加标签提交
-          addLabelSubmit(){
-              this.searchLabel = this.$refs.addLabel.label
-              this.addLabelVisible = true 
-              this.getDeviceList(1)
-          },
+        //添加标签提交
+        addLabelSubmit(){
+            this.searchLabel = this.$refs.addLabel.label
+            this.addLabelVisible = true 
+            this.getDeviceList(1)
+        },
 
         
 
