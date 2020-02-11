@@ -27,8 +27,7 @@ export const updateProduct= (data) => {
 
 //查询列表
 export const getProductList= (currentPage = 1,pageSize = 10,productName = "") => {
-  //&productName=${productName}
-  return get(`${baseUrl}/products?page=${currentPage}&item=${pageSize}`)
+  return get(`${baseUrl}/products?page=${currentPage}&item=${pageSize}&name=${productName}`)
 }
 
 
@@ -122,6 +121,18 @@ export const getModelfuncs= (id ) => {
 
 
 
+//编辑产品label
+export const editProductLabel = (data) => {
+  return post(`${baseUrl}/plabel`, data)
+}
+
+
+//查看功能定义
+export const getAbilityList= (productId = 0) => {
+  return get(`${baseUrl}/functions?pid=${productId}`)
+}
+
+
 
 
 /******************* 设备管理 start *******************/
@@ -135,20 +146,27 @@ export const addDevice = (data) => {
 export const addDeviceArr = (data) => {
   return post(`${baseUrl}/adevice`, data)
 }
+
+//批量自动新增（文件）
+export const addDeviceFile = (data) => {
+  return post(`${baseUrl}/fdevice`, data)
+}
+
+
 //删除
 export const deleteDevice= (dids = []) => {
   return deletes(`${baseUrl}/device`,{"dids":dids})
 }
 
 //修改
-export const updateDevice= (productKey,data) => {
-  return   put(`${baseUrl}/device?productKey=${productKey}`, data)
+export const updateDevice= (data) => {
+  return   put(`${baseUrl}/device`, data)
 }
 
 //查询列表(页码，每页数量，产品Id，设备名称，分组id)
 export const getDeviceList= (currentPage = 1,pageSize = 10,productId = 0,deviceName ='',groupId ='') => {
   //&pid=${productId}$deviceName=${deviceName}$groupId=${groupId}
-  return get(`${baseUrl}/devices?page=${currentPage}&item=${pageSize}&pid=${productId}`)
+  return get(`${baseUrl}/devices?page=${currentPage}&item=${pageSize}&pid=${productId}&name=${deviceName}`)
 }
 
 //查询设备详情
@@ -156,9 +174,11 @@ export const getDeviceDtl= ( deviceId = 0) => {
   return get(`${baseUrl}/device?&did=${deviceId}`)
 }
 
+
+
 //批次列表
-export const getApplyList= (currentPage = 1,pageSize = 10) => {
-  return get(`${baseUrl}/batchdevices?page=${currentPage}&item=${pageSize}`)
+export const getApplyList= (currentPage = 1,pageSize = 10,productId = 0 ) => {
+  return get(`${baseUrl}/batchdevices?page=${currentPage}&item=${pageSize}&pid=${productId}`)
 }
 
 
@@ -169,35 +189,55 @@ export const getApplyListDtl= (productId,createTime,currentPage = 1,pageSize = 1
 
 
 //更新设备状态(禁用/启用)
-export const updateDeviceStatu= (deviceKeyArr,statu) => {
-  return   put(`${baseUrl}device?deviceKey=${deviceKeyArr}&statu=${statu}`, )
+export const updateDeviceStatu = (deviceKeyArr,statu) => {
+  return   put(`${baseUrl}/device?deviceKey=${deviceKeyArr}&statu=${statu}`, )
 }
 
-//查询设备详情
+//启用设备
+export const activeDevices = (deviceKeyArr) => {
+  return   put(`${baseUrl}/activeDevices?deviceKey=${deviceKeyArr}`, )
+}
+
+//禁用设备
+export const disabledDevice = (deviceKeyArr) => {
+  return   put(`${baseUrl}/disabledDevice?deviceKey=${deviceKeyArr}`, )
+}
+
+//查询产品/设备运行状态
 export const getRunState= ( deviceId = 0,type ='pro') => {
- if(type === 'pro'){
-  return get(`${baseUrl}/prostatus?&did=${deviceId}`)
- }else{
-  return get(`${baseUrl}/desstatus?&did=${deviceId}`)
- }
-//   /iot/api/v1/desstatus?did=1    获取期望状态 get请求
-// /iot/api/v1/prostatus?did=1   获取实时状态  get请求
- // return get(`${baseUrl}/desstatus?&did=${deviceId}`)
+    if(type === 'pro'){//产品
+      return get(`${baseUrl}/prostatus?&did=${deviceId}`)
+    }else{//设备
+      return get(`${baseUrl}/desstatus?&did=${deviceId}`)
+    }
+}
+
+//运行状态详情
+export const getRunStateDtl= ( deviceId = 0,identifier = '',start = 0, end = 0,type ='pro') => {
+  if(type === 'pro'){
+    return get(`${baseUrl}/prostatus?&did=${deviceId}`)
+  }else{
+    return get(`${baseUrl}/hisstatus?&did=${deviceId}&identifier=${identifier}&start=${start}&end=${end}`)
+  }
 }
 
 
 //事件列表
 export const getEventList= (deviceId,currentPage = 1,start = 0,end = 0,type = '',identifier='') => {
   return get(`${baseUrl}/event?did=${deviceId}&page=${currentPage}&start=${start}&end=${end}&type=${type}&identifier=${identifier}`)
-
-  //did=5&page=1&start=111111&end=222222&hour=0&type=alert&identifier=alarmEvent
- // return get(`${baseUrl}/event?did=${deviceId}page=${currentPage}&item=${pageSize}`)
 }
 
+//服务列表
 export const getServiceList= (deviceId,currentPage = 1,start = 0,end =0,identifier='') => {
   return get(`${baseUrl}/server?did=${deviceId}&page=${currentPage}&start=${start}&end=${end}&identifier=${identifier}`)
- // return get(`${baseUrl}/server?did=${deviceId}page=${currentPage}&item=${pageSize}`)
 }
+
+
+//编辑设备label
+export const editDeviceLabel = (data) => {
+  return post(`${baseUrl}/dlabel`, data)
+}
+
 
 
 /******************* 设备管理 end *******************/
@@ -253,6 +293,13 @@ export const disConnectDeviceToGroup= (productKey,data) => {
 
 
 
+
+
+
+// 上传
+export const uploadFile = (data) => {
+  return upload(`${baseUrl}/upload`, data)
+}
 
 
 

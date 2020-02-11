@@ -9,6 +9,7 @@ axios.defaults.headers.post['Content-Type'] = 'application/json'        //配置
 let cancelToken = axios.CancelToken
 let retryCount = 5
 
+  let config = {   headers: {'Content-Type': 'multipart/form-data'} }
 //添加请求拦截器
 axios.interceptors.request.use(config=>{
     // if (store.state.TOKEN) {
@@ -147,8 +148,10 @@ export function  deletes (url, params ={}) {
 }
 
 export function  upload (url, param ={}) {
+   
+   
     return new Promise((resolve, reject) => {
-        axios.post(url, {params: param})
+        axios.post(url,  param, config)
             .then(response => {
                 resolve(response)
             }, err => {
