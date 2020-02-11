@@ -29,7 +29,7 @@
             label="DeviceName"
             width="200">
               <template slot-scope="scope">
-                <el-tooltip class="item" effect="dark" content="scope.row.device_name" placement="top">
+                <el-tooltip class="item" effect="dark" :content="scope.row.device_name" placement="top">
                  <span>{{ scope.row.device_name.substr(0,15) }}...</span>
              </el-tooltip>
             </template>
@@ -38,7 +38,7 @@
             label="DeviceSecret"
             width="200">
             <template slot-scope="scope">
-                <el-tooltip class="item" effect="dark" content="scope.row.device_secret" placement="top">
+                <el-tooltip class="item" effect="dark" :content="scope.row.device_secret" placement="top">
                  <span>{{scope.row.device_secret.substr(0,15)}}...</span>
              </el-tooltip>
             </template>
@@ -78,7 +78,8 @@
       watch:{
         productInf:{
           handler(val,oldVal){
-            if(val.product_id !== oldVal.product_id){
+            if(val.create_time !== oldVal.create_time){
+              this.currentPage = 1
               this.init()
             }
           }
@@ -107,6 +108,7 @@
       methods:{
         
          init (){
+
            let productId = this.productInf.product_id
            let createTime = new Date (this.productInf.create_time).getTime().toString().substr(0,10)
            
@@ -117,19 +119,16 @@
          },
 
          handleSizeChange(val) {
-            console.log(`每页 ${val} 条`)
             this.pageSize = val 
-            this.currentPage = 1
             this.init()
 
           },
           handleCurrentChange(val) {
-            console.log(`当前页: ${val}`)
             this.currentPage = val 
             this.init()
           },
 
-          dowmload(){
+          download(){
               this.$API_IOT.getApplyListDtl(productId,createTime,0,0).then((res) => {
                 this.json_data = res.data.data.data_list
             })
