@@ -111,3 +111,16 @@ body{margin: 0px;}
     color: #333;
     margin-top: 0px;
 }
+
+
+.label-span{
+  display: inline-block;
+  padding: 0 8px;
+  background: #ebedef;
+  color: #333;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  position: relative;
+  border-radius: 4px;
+}
