@@ -601,13 +601,24 @@ func GetDevices(c *gin.Context) {
 		ErrResponse(msg, c)
 		return
 	}
-
-
+	if namrRes, msg := CheckDeviceName(name); namrRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if keyRes, msg := CheckDeviceLabelKeyQuality(key); keyRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if valueRes, msg := CheckDeviceLabelValueQuality(value); valueRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if remarkRes, msg := CheckDeviceRemarkQuality(remark); remarkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	label_filter := database.DeatLabelQueryFilter(key, value)
-
-	fmt.Println(name, remark)
-	fmt.Println(label_filter)
 
 	var total = 0
 	var activate_num = 0
@@ -811,12 +822,26 @@ func AddDevice(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := data.ProductID
 	name := data.Name
 	remark := data.Remark
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if nameRes, msg := CheckDeviceName(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if remarkRes, msg := CheckDeviceRemarkQuality(remark); remarkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	device := database.Device{
 		ProductID:   product_id,
@@ -855,6 +880,10 @@ func AddDevice(c *gin.Context) {
 
 func GetDevice(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -905,8 +934,12 @@ func GetDevice(c *gin.Context) {
 }
 
 func GetDeviceTopic(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+
+	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -932,7 +965,8 @@ func DeleteDevice(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	device_id_list := data.DeviceIDList
@@ -953,8 +987,11 @@ func DeleteDevice(c *gin.Context) {
 }
 
 func GetDeviceDesireStatus(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -980,6 +1017,10 @@ func GetDeviceDesireStatus(c *gin.Context) {
 
 func GetDevicePropertyStatus(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1009,6 +1050,11 @@ func GetDeviceHistoryStatus(c *gin.Context) {
 	property := c.Query("identifier")
 	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
 	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+
+	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1067,6 +1113,11 @@ func GetDeviceEvent(c *gin.Context) {
 	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
 	event_type := c.Query("type")
 	identifier := c.Query("identifier")
+
+	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	if event_type == "" {
 		event_type = "all"
@@ -1171,11 +1222,21 @@ func AutoAddDevice(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := data.ProductID
 	number := data.Number
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if numberRes, msg := CheckAutoAddDeviceNumber(number); numberRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	time := time.Now()
 	for i := 0; i < number; i++ {
@@ -1266,9 +1327,17 @@ func GetBatchDevices(c *gin.Context) {
 func GetBatchDevice(c *gin.Context) {
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	create_time := tool.StringNumberToInTNumber(c.Query("time"))
+	if create_time == 0 {
+		ErrResponse("时间不能为0", c)
+	}
 	time := time.Unix(int64(create_time), 0)
 	page := tool.StringNumberToInTNumber(c.Query("page"))
 	item := tool.StringNumberToInTNumber(c.Query("item"))
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1329,11 +1398,21 @@ func UpdateDevice(c *gin.Context) {
 
 	var args Args
 	if err := c.ShouldBind(&args); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	remark := args.Remark
 	device_id := args.DeviceId
+
+	if remarkRes, msg := CheckDeviceRemarkQuality(remark); remarkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if deviceIDRes, msg := CheckProductIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1402,12 +1481,22 @@ func AddDeviceLabel(c *gin.Context) {
 
 	var args Args
 	if err := c.ShouldBind(&args); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	device_id := args.DeviceID
 	label := args.Label
 	data := database.DealLabelArgs(label)
+
+	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if labelRes, msg := CheckDeviceLabelQualify(label); labelRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1461,9 +1550,13 @@ func FileAddDevice(c *gin.Context) {
 	rFile, _ := c.FormFile("file")
 	product_id := tool.StringNumberToInTNumber(c.PostForm("pid"))
 
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+	}
+
 	file, err := rFile.Open()
 	if err != nil {
-		c.String(400, "文件格式错误")
+		ErrResponse("文件格式错误", c)
 		return
 	}
 	defer file.Close()

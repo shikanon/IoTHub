@@ -571,3 +571,13 @@ func GetAllProductTopicID()(result []int){
 
 	return ids
 }
+
+func GetAllDeviceID()(result []int){
+	db := DbConn()
+	defer db.Close()
+
+	var ids []int
+	db.Model(Device{}).Pluck("id", &ids)
+
+	return ids
+}

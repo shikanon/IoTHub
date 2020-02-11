@@ -187,7 +187,7 @@ func CheckProductTopicNameQualify(name string) (result bool, msg string) {
 	return true, ""
 }
 
-func CheckProductTopicIDQuality(topicID int)(result bool, msg string) {
+func CheckProductTopicIDQuality(topicID int) (result bool, msg string) {
 	ids := database.GetAllProductTopicID()
 	for _, value := range ids {
 		if topicID == value {
@@ -197,3 +197,101 @@ func CheckProductTopicIDQuality(topicID int)(result bool, msg string) {
 	return false, "TopicID不是有效参数"
 }
 
+func CheckDeviceName(name string) (result bool, msg string) {
+	for _, v := range name {
+		if unicode.Is(unicode.Han, v) {
+			return false, "设备名称不支持中文"
+		}
+	}
+	if len(name) < 4 {
+		return false, "设备名称过短"
+	}
+	if len(name) > 32 {
+		return false, "设备名称过长"
+	}
+	return true, ""
+}
+
+func CheckDeviceLabelKeyQuality(key string) (result bool, msg string) {
+	if len(key) == 0 {
+		return false, "标签key为空"
+	}
+	if len(key) > 30 {
+		return false, "标签key长度超过30"
+	}
+	for _, v := range key {
+		if unicode.Is(unicode.Han, v) {
+			return false, "标签key不支持中文"
+		}
+	}
+	return true, ""
+}
+
+func CheckDeviceLabelValueQuality(value string) (result bool, msg string) {
+	var count int
+	for _, value := range value {
+		if unicode.Is(unicode.Han, value) {
+			count += 2
+		} else {
+			count += 1
+		}
+	}
+	if count > 128 {
+		return false, "标签value长度超过128"
+	}
+	return true, ""
+}
+
+func CheckDeviceRemarkQuality(remark string) (result bool, msg string) {
+	var count int
+	for _, value := range remark {
+		if unicode.Is(unicode.Han, value) {
+			count += 2
+		} else {
+			count += 1
+		}
+	}
+
+	if count < 4 {
+		return false, "设备名称短于4"
+	}
+	if count > 64 {
+		return false, "设备名称长于64"
+	}
+
+	return true, ""
+}
+
+func CheckAutoAddDeviceNumber(number int)(result bool, msg string) {
+	if number > 1000 {
+		return false, "一次批量添加不能大于1000个"
+	}
+	if number == 0 {
+		return false, "数量不能为0"
+	}
+	return true, ""
+}
+
+func CheckDeviceIDQuality(id int)(result bool, msg string) {
+	ids := database.GetAllDeviceID()
+	for _, value := range ids {
+		if id == value {
+			return true, ""
+		}
+	}
+	return false, "设备ID不是有效参数"
+}
+
+func CheckDeviceLabelQualify(label []map[string]string) (result bool, msg string) {
+	for _, v := range label {
+		key := v["key"]
+		if keyRes, msg := CheckDeviceLabelKeyQuality(key); keyRes != true {
+			return false, msg
+		}
+		value := v["value"]
+		if valueRes, msg := CheckDeviceLabelValueQuality(value); valueRes != true {
+			return false, msg
+		}
+	}
+	return true, ""
+}
