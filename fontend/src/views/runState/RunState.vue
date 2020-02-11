@@ -54,7 +54,7 @@
             <el-card  shadow="hover" class="card  ">
                   <div style="display: flex;justify-content: space-between;">
                      {{card.Name}}
-                     <el-button type="text" size="small" @click="queryDataByName" >查看数据</el-button>
+                     <el-button type="text" size="small" @click="queryDataByName(card)" >查看数据</el-button>
                   </div>
                   <p style="font-size: 18px;color: rgb(51, 51, 51);height:21px;" >{{ card.val | cardValFilter(card.Unit) }}  </p>
                     <!-- <el-tooltip class="item" effect="dark" :content="card.Value" placement="top-start">
@@ -64,7 +64,7 @@
             </el-card>
           </el-col>
          <el-dialog title="查看数据" :visible.sync="dialogTableVisible" width="40%">
-                <StateDetailsl></StateDetailsl>
+                <StateDetailsl :deviceId="deviceId" :identifier="identifier" :name="name"></StateDetailsl>
           </el-dialog>     
     </div>  
  </template>  
@@ -86,6 +86,8 @@ import StateDetailsl from './StateDetailsl'
           tableData:[],
           dialogTableVisible:false,
           intervalId:null,
+          identifier:'',
+          name:''
         
         }
       },
@@ -118,7 +120,8 @@ import StateDetailsl from './StateDetailsl'
         
     
         getCardData(){
-            this.$API_IOT.getRunState(this.deviceId).then((res) => {
+
+            this.$API_IOT.getRunState(this.deviceId,'dev').then((res) => {
                 console.log(res.data)
                 if(res.data.status  === 'Y'){
                   this.cards = res.data.data    
@@ -127,8 +130,11 @@ import StateDetailsl from './StateDetailsl'
                 }              
              })
         },
-        queryDataByName(){
+        queryDataByName(card){
           this.dialogTableVisible = true 
+          this.identifier = card.Identifier
+          this.name = card.Name
+
         },
 
        

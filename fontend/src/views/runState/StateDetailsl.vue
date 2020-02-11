@@ -10,7 +10,7 @@
                 </el-select>
                 <el-date-picker v-if="type === '4'"
                     v-model="timeArr"
-                    @change="changeTime"
+                    @change="changeTimeArr"
                     type="datetimerange"
                     range-separator="至"
                     align="right"
@@ -20,7 +20,7 @@
                 </el-date-picker>
             </div> 
             <div>
-                <el-tabs v-model="activeName" type="card"  size="medium">
+                <el-tabs v-model="activeName" type="card"  size="medium"  @tab-click="handleClick">
                     <el-tab-pane label="表格" name="table"></el-tab-pane>
                     <el-tab-pane label="图标" name="echart"></el-tab-pane>
                 </el-tabs>
@@ -28,26 +28,30 @@
         </div>
         <div>
             <div v-if="activeName === 'table'">
-                  <el-table 
-                    :data="data"
-                    highlight-current-row
-                    style="width: 100%">
-                        <el-table-column
-                            prop="function_type"
-                            label="时间"
-                            width="120">
-                            
-                        </el-table-column>
-                        <el-table-column
-                            prop="function_name"
-                            label="原始值"
-                            width="150">
-                        </el-table-column>                  
-                    </el-table>
+                <el-table 
+                :data="data"
+                highlight-current-row
+                height="400"
+                style="width: 100%">
+                    <el-table-column
+                        prop="Time"
+                        label="时间"
+                        >
+                        
+                    </el-table-column>
+                    <el-table-column
+                        prop="Value"
+                        label="原始值"
+                        width="150">
+                    </el-table-column>                  
+                </el-table>
+                <el-button @click="query" v-if="isBtnShow">加载更多</el-button>
             </div>
             <div v-else>
-                
+                <div ref="myChart" :style="{width: '100', height: '300px'}"></div>
             </div>
+
+
         </div>    
         
     </div>   
@@ -55,98 +59,147 @@
 
 <script>
 export default {
+    props:{
+        deviceId:{
+            type:Number,
+            default:0
+        },
+        identifier:{
+            type:String,
+            default:''
+        },
+           name:{
+            type:String,
+            default:''
+        },
+    },
     data(){
         return {
             type:"1",
             timeArr:[],
-            startTime:"",
-            endTime:"",
+            startTime:0,
+            endTime:0,
             activeName:'table',
             data:[],
-            startFlg:false,
-            endFlg:false
+            next_time:0,
+            isBtnShow:false
+          
         }
     },
 
-    watch:{     
-       startTime: {
-            handler: function(val, oldVal){ 
-                if(val !== oldVal){
-                  this.startFlg = true
-                  
-                }else{
-                    this.startFlg = false
-                }   
-
-                if(this.startFlg  || this.endFlg){
-                     this.refreshData()
+    watch:{               
+        //identifier,若发生变化，重新查询设备批次
+        identifier:{  
+            handler:function(val,oldval){ 
+                if(val!=oldval){
+                    this.$nextTick(()=>{
+                        this.query()
+                    })
                 }
-            },
-            // 深度观察监听
-            deep: true
-        } ,
-
-        endTime: {
-            handler: function(val, oldVal){ 
-                if(val !== oldVal){
-                  this.endFlg = true
-                  
-                }else{
-                    this.endFlg = false
-                }  
-                
-                if(this.startFlg  || this.endFlg){
-                    this.refreshData()
-                }
-            },
-            // 深度观察监听
-            deep: true
-        },
-        refreshFlg:function(){
-            this.refreshData()
-        }
-      
+            },  
+            immediate:true,//关键
+            deep:true
+          },
     },
-    computed:{
-        refreshFlg:function(){
-            console.log('1111111111')
-            return this.startFlg && this.endFlg
-        }
-    },
+   
     created(){
+
         this.changeQueryTime("1")
     },
     methods:{
+
+       
          changeQueryTime(value){
 
            let nowDate  = new Date()
-           this.endTime = nowDate.getTime()
+           this.endTime = nowDate.getTime().toString().substr(0,10)
             if(value === "1"){
-                this.startTime = nowDate.setHours(nowDate.getHours() -1)
+                this.startTime = nowDate.setHours(nowDate.getHours() -1).toString().substr(0,10)
             }else if(value === "2"){
-                this.startTime = nowDate.setDate(nowDate.getDate() - 1)
+                this.startTime = nowDate.setDate(nowDate.getDate() - 1).toString().substr(0,10)
             }else if(value === "3"){
-                this.startTime = nowDate.setDate(nowDate.getDate() - 7)
+                this.startTime = nowDate.setDate(nowDate.getDate() - 7).toString().substr(0,10)
             }else {
-                this.getDefaultTime()
+                 //1-清空
+              this.timeArr = []
+              //2-赋值 
+              let end = new Date().getTime()
+              let start  = new Date(new Date().setHours(nowDate.getHours() -1))
+              this.timeArr = [start,end]
+              this.startTime = start.getTime().toString().substr(0,10)
+              this.endTime = end.toString().substr(0,10)
+            }
+            
+            this.query()
+        },
+
+       
+        changeTimeArr(value){
+          this.startTime = value[0].getTime().toString().substr(0,10)
+          this.endTime = value[1].getTime().toString().substr(0,10)
+          this.query()
+        },
+
+
+        query(){
+            //console.log(`查询数据,${this.deviceId},${this.identifier}开始时间${this.startTime}结束时间${this.endTime}`)
+            this.identifier = 'LightAdjustLevel'
+
+            this.$API_IOT.getRunStateDtl(this.deviceId,this.identifier,this.startTime,this.next_time !== 0 ?this.next_time : this.endTime,'dev').then((res) => {
+                if(res.data.data.data_list != null ){
+                     this.data = this.data.concat(res.data.data.data_list)
+                }else{
+                    this.data = []
+                }
+
+                if(res.data.data.next_time !== 0 ){
+                  this.isBtnShow = true     
+                }else{
+                  this.isBtnShow = false
+                }
+                this.next_time = res.data.data.next_time 
+            
+             })
+        },
+        handleClick(tab, event) {
+            if(tab.name === 'echart'){            
+                this.drawLine()   
             }
         },
 
-        getDefaultTime(){
-            //1-清空
-            this.timeArr = []
-            //2-赋值 
-            let end = new Date()
-            let start  = new Date(new Date().setDate(end.getDate() - 7))
-            this.timeArr = [start,end]
-            console.log(this.timeArr)
-        },
-        changeTime(value){
-          this.startTime = value[0].getTime()
-          this.endTime = value[1].getTime()
-        },
-        refreshData(){
-           // alert(`查询数据开始时间${this.startTime}结束时间${this.endTime}`)
+        drawLine(){
+
+            this.$nextTick(()=>{
+
+                // 基于准备好的dom，初始化echarts实例
+                let myChart =this.$echarts.init(this.$refs.myChart)
+                let yAxis_data= this.data.map(item => { return item.Value })
+                let xAxis_data= this.data.map(item => {  return  item.Time})
+    
+                //赋值
+                let option = {
+                    // title: {
+                    //     text: 'ECharts 入门示例'
+                    // },
+                    tooltip: {},
+                    legend: {
+                        data:[this.name]
+                    },
+                    xAxis: {
+                        data: xAxis_data
+                    },
+                    yAxis: {},
+                    series: [{
+                        name: this.name,
+                        type: 'line',
+                        data: yAxis_data
+                    }]
+                }
+                // 绘制图表
+                myChart.setOption(option) 
+
+                })
+            
         }
     }
 }
