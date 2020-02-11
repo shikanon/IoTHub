@@ -31,7 +31,11 @@ func Home(c *gin.Context) {
 // TODO  权限；参数校验；捕捉错误;标签字段的拆解
 
 func GetProductModels(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var models []database.Model
@@ -46,7 +50,11 @@ func GetProductModels(c *gin.Context) {
 }
 
 func GetProductNodeTypes(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var nodetypes []database.NodeType
@@ -61,7 +69,11 @@ func GetProductNodeTypes(c *gin.Context) {
 }
 
 func GetProductNetworkWays(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var networks []database.NetworkWay
@@ -76,7 +88,11 @@ func GetProductNetworkWays(c *gin.Context) {
 }
 
 func GetProductDataFormats(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var dataformats []database.DataFormat
@@ -91,7 +107,11 @@ func GetProductDataFormats(c *gin.Context) {
 }
 
 func GetProductAuthMethods(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var authmethos []database.AuthMethod
@@ -131,7 +151,11 @@ func GetProducts(c *gin.Context) {
 	var total = 0
 
 	// 查询数据
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 	var products []database.Product
 	if len(name) == 0 && len(label_filter) == 0 {
@@ -275,7 +299,11 @@ func AddProduct(c *gin.Context) {
 
 func GetProduct(c *gin.Context) {
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	if productRes, msg := CheckProductIDQualify(product_id); productRes != true {
@@ -366,7 +394,11 @@ func UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var product database.Product
@@ -443,7 +475,11 @@ func AddProductTopic(c *gin.Context) {
 		Detail:       topic_name,
 		Describe:     describe,
 	}
-	id := database.MysqlInsertOneData(&data)
+	id, msg := database.MysqlInsertOneData(&data)
+	if id == 0 {
+		ErrResponse(msg, c)
+		return
+	}
 
 	resp := gin.H{
 		"status":  "Y",
@@ -490,7 +526,11 @@ func UpdateProductTopic(c *gin.Context) {
 	}
 
 	var topic database.CustomTopic
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	db.First(&topic, topic_id)
@@ -524,7 +564,11 @@ func DeleteProductTopic(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	db.Where("id = ?", topic_id).Delete(&database.CustomTopic{})
@@ -544,7 +588,8 @@ func DeleteProduct(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := data.ProductID
@@ -554,7 +599,11 @@ func DeleteProduct(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var devices []database.Device
@@ -624,7 +673,11 @@ func GetDevices(c *gin.Context) {
 	var activate_num = 0
 	var online_num = 0
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 	var devices []database.Device
 
@@ -783,7 +836,11 @@ func GetDevices(c *gin.Context) {
 }
 
 func GetSimpleProducts(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var products []database.Product
@@ -811,7 +868,11 @@ func GetSimpleProducts(c *gin.Context) {
 }
 
 func AddDevice(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	type Data struct {
@@ -885,7 +946,11 @@ func GetDevice(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 	device := database.Device{}
 	db.First(&device, device_id)
@@ -941,7 +1006,11 @@ func GetDeviceTopic(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	device := database.Device{}
@@ -971,7 +1040,11 @@ func DeleteDevice(c *gin.Context) {
 
 	device_id_list := data.DeviceIDList
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	for index, _ := range device_id_list {
@@ -993,7 +1066,11 @@ func GetDeviceDesireStatus(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -1022,7 +1099,11 @@ func GetDevicePropertyStatus(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -1056,7 +1137,11 @@ func GetDeviceHistoryStatus(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -1087,7 +1172,11 @@ func GetModelFunctions(c *gin.Context) {
 	model_id_str := c.Query("id")
 	model_id, _ := strconv.Atoi(model_id_str)
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var data []database.ModelFunction
@@ -1127,7 +1216,11 @@ func GetDeviceEvent(c *gin.Context) {
 		identifier = "all"
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -1166,7 +1259,11 @@ func GetDeviceServer(c *gin.Context) {
 		identifier = "all"
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -1199,7 +1296,11 @@ func GetModelTSL(c *gin.Context) {
 		return
 	}
 
-	intact_mode, concise_model := database.GetProductModelInfo(product_id)
+	intact_mode, concise_model, msg := database.GetProductModelInfo(product_id)
+	if intact_mode == nil && concise_model == nil {
+		ErrResponse(msg, c)
+		return
+	}
 
 	data := map[string]primitive.M{
 		"intact_model":  intact_mode,
@@ -1265,7 +1366,11 @@ func GetBatchDevices(c *gin.Context) {
 	page := tool.StringNumberToInTNumber(c.Query("page"))
 	item := tool.StringNumberToInTNumber(c.Query("item"))
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	type Result struct {
@@ -1329,6 +1434,7 @@ func GetBatchDevice(c *gin.Context) {
 	create_time := tool.StringNumberToInTNumber(c.Query("time"))
 	if create_time == 0 {
 		ErrResponse("时间不能为0", c)
+		return
 	}
 	time := time.Unix(int64(create_time), 0)
 	page := tool.StringNumberToInTNumber(c.Query("page"))
@@ -1339,7 +1445,11 @@ func GetBatchDevice(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var product database.Product
@@ -1414,7 +1524,11 @@ func UpdateDevice(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -1456,7 +1570,11 @@ func AddProductLabel(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var product database.Product
@@ -1498,7 +1616,11 @@ func AddDeviceLabel(c *gin.Context) {
 		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -1552,6 +1674,7 @@ func FileAddDevice(c *gin.Context) {
 
 	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
 		ErrResponse(msg, c)
+		return
 	}
 
 	file, err := rFile.Open()

@@ -34,7 +34,7 @@ func (p *Product) SaveProduct() (id int) {
 	mongodb_model_id := ProductSaveModel(p.ObjectModelID, p.ProductKey)
 	p.MongodbModelID = mongodb_model_id
 
-	id = MysqlInsertOneData(p)
+	id, _ = MysqlInsertOneData(p)
 	return id
 }
 
@@ -43,7 +43,7 @@ func (d *Device) SaveDevice() (id int) {
 	iot_id := tool.GenerateIotId()
 	d.DeviceSecret = device_secret
 	d.IotID = iot_id
-	data_id := MysqlInsertOneData(d)
+	data_id, _ := MysqlInsertOneData(d)
 	return data_id
 }
 
@@ -73,12 +73,12 @@ func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id i
 		ConciseModelID: concise_id_str,
 		IntactModelID:  intact_id_str,
 	}
-	save_id := MysqlInsertOneData(mongo_model)
+	save_id, _ := MysqlInsertOneData(mongo_model)
 	return save_id
 }
 
 func ProductDeleteMongodbModel(pid int) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -121,12 +121,12 @@ func ProductSaveCustomTopic(pid int) {
 		data.ProductID = pid
 		data.Detail = value.Detail
 		data.PermissionID = value.PermissionID
-		_ = MysqlInsertOneData(&data)
+		MysqlInsertOneData(&data)
 	}
 }
 
 func GetCustomTopic(pid int) (data []TopicModel) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	data_list := []CustomTopic{}
@@ -298,7 +298,7 @@ func GetTopicModels(id int) (result Topics) {
 }
 
 func GetTopics(pid, did int) (topic Topics) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	datas := GetTopicModels(pid)
@@ -348,7 +348,7 @@ func GetTopics(pid, did int) (topic Topics) {
 }
 
 func DeviceNameToDevice(product_key, device_name string) (device Device) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var device_model Device
@@ -361,7 +361,7 @@ func DeviceNameToDevice(product_key, device_name string) (device Device) {
 }
 
 func GetIntactModel(producy_key string) (result primitive.M) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -378,8 +378,11 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 	return data
 }
 
-func GetProductModelInfo(pid int) (intact, concise primitive.M) {
-	db := DbConn()
+func GetProductModelInfo(pid int) (intact, concise primitive.M, msg string) {
+	db, msg := DbConn()
+	if db == nil {
+		return nil, nil, msg
+	}
 	defer db.Close()
 
 	var product Product
@@ -406,7 +409,7 @@ func GetProductModelInfo(pid int) (intact, concise primitive.M) {
 	concise_data := MongoDbGetFilterData(concise_collection_name, concise_filter)
 	delete(concise_data, "_id")
 
-	return intact_data, concise_data
+	return intact_data, concise_data, ""
 }
 
 func DeatLabelQueryFilter(key, value string) (filter string) {
@@ -440,7 +443,7 @@ func DealLabelArgs(args []map[string]string) (label_str string) {
 }
 
 func DeviceOnline(iot_id string) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var device Device
@@ -450,7 +453,7 @@ func DeviceOnline(iot_id string) {
 }
 
 func DeviceOutline(iot_id string) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var device Device
@@ -462,7 +465,7 @@ func DeviceOutline(iot_id string) {
 
 func ProductGetPropertyFunction(productID int) (properties []map[string]interface{}) {
 
-	db := DbConn()
+	db,_ := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -509,7 +512,7 @@ func ProductGetPropertyFunction(productID int) (properties []map[string]interfac
 }
 
 func GetAllProductID() (result []int) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var ids []int
@@ -519,7 +522,7 @@ func GetAllProductID() (result []int) {
 }
 
 func GetProductLabel(productKey string) (label map[string]string) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -530,7 +533,7 @@ func GetProductLabel(productKey string) (label map[string]string) {
 }
 
 func UpdateProductLabel(productKey string, newLabel map[string]string) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -541,7 +544,7 @@ func UpdateProductLabel(productKey string, newLabel map[string]string) {
 }
 
 func GetDeviceLabel(iotID string)(label map[string]string){
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var device Device
@@ -552,7 +555,7 @@ func GetDeviceLabel(iotID string)(label map[string]string){
 }
 
 func UpdateDeviceLabel(iotID string, newLabel map[string]string) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var device Device
@@ -563,7 +566,7 @@ func UpdateDeviceLabel(iotID string, newLabel map[string]string) {
 }
 
 func GetAllProductTopicID()(result []int){
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var ids []int
@@ -573,7 +576,7 @@ func GetAllProductTopicID()(result []int){
 }
 
 func GetAllDeviceID()(result []int){
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var ids []int

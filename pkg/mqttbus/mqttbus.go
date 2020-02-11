@@ -153,7 +153,8 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 				User["ActivationTime"] = ts
 			}
 			User["LastOnLineTime"] = ts
-			db := database.DbConn()
+			db, err := database.DbConn()
+			fmt.Println(err)
 			db.Model(&device).Updates(User)
 			database.DeviceOnline(device.IotID)
 			defer db.Close()
