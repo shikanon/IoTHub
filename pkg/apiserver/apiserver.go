@@ -41,7 +41,7 @@ func ApiRegister() {
 		v1.POST("/product", api.AddProduct)               // 产品-创建产品
 		v1.GET("/product", api.GetProduct)                // 产品-查看
 		v1.PUT("/product", api.UpdateProduct)             // 产品-查看-编辑(名称)
-		v1.POST("/plabel", api.AddProductLabel)           // 产品-添加标签 TODO
+		v1.POST("/plabel", api.AddProductLabel)           // 产品-添加标签
 		v1.GET("/ptopics", api.GetProductTopic)           // 产品-查看-topic类
 		v1.POST("/ptopic", api.AddProductTopic)           // 产品-查看-topic类，自定义，定义topic类
 		v1.PUT("/ptopic", api.UpdateProductTopic)         // 产品-查看-topic类，自定义，编辑topic类
@@ -49,7 +49,7 @@ func ApiRegister() {
 		v1.GET("/functions", api.GetProductFunction)      // 产品-产看-功能定义
 		v1.GET("/tsl", api.GetModelTSL)                   // 产品-查看-功能定义-物模型TSL
 		v1.DELETE("/product", api.DeleteProduct)          // 产品-删除
-		v1.GET("/devices", api.GetDevices)                // 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理)
+		v1.GET("/devices", api.GetDevices)                // 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理) TODO
 		v1.POST("/device", api.AddDevice)                 // 设备-创建设备
 		v1.POST("/adevice", api.AutoAddDevice)            // 设备-批量添加-自动生成
 		v1.POST("/upload", api.AnalysisUploadCSVFile)     // 设备-批量创建-上传文件

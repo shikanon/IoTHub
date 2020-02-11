@@ -47,7 +47,6 @@ func CheckProductLabelKeyQualify(key string) (result bool, msg string) {
 	for _, v := range key {
 		if unicode.Is(unicode.Han, v) {
 			return false, "标签key不支持中文"
-			break
 		}
 	}
 	return true, ""
@@ -77,7 +76,6 @@ func CheckProductCategoryQualify(category string) (result bool, msg string) {
 
 func CheckModelIDQualify(modelID int) (result bool, msg string) {
 	maxNumber := config.GeneralConfig.ModelNumber
-	fmt.Println(maxNumber)
 	if modelID > maxNumber {
 		return false, fmt.Sprintf("model_id超出最大范围。目前最大为%d", maxNumber)
 	}
@@ -86,16 +84,14 @@ func CheckModelIDQualify(modelID int) (result bool, msg string) {
 
 func CheckNodeTypeIDQualify(nodeTypeID int) (result bool, msg string) {
 	maxNumber := config.GeneralConfig.NodeTypeNumber
-	fmt.Println(maxNumber)
 	if nodeTypeID > maxNumber {
-		return false, fmt.Sprintf("node_type_id。目前最大为%d", maxNumber)
+		return false, fmt.Sprintf("node_type_id超出最大范围. 目前最大为%d", maxNumber)
 	}
 	return true, ""
 }
 
 func CheckNetworkIDQualify(netWorkID int) (result bool, msg string) {
 	maxNumber := config.GeneralConfig.NetWorkNumber
-	fmt.Println(maxNumber)
 	if netWorkID > maxNumber {
 		return false, fmt.Sprintf("network_id超出最大范围。目前最大为%d", maxNumber)
 	}
@@ -104,7 +100,6 @@ func CheckNetworkIDQualify(netWorkID int) (result bool, msg string) {
 
 func CheckDataFormatIDQualify(dataFormatID int) (result bool, msg string) {
 	maxNumber := config.GeneralConfig.DataFormatNumber
-	fmt.Println(maxNumber)
 	if dataFormatID > maxNumber {
 		return false, fmt.Sprintf("data_format_id超出最大范围。目前最大为%d", maxNumber)
 	}
@@ -113,7 +108,6 @@ func CheckDataFormatIDQualify(dataFormatID int) (result bool, msg string) {
 
 func CheckAuthMethodIDQualify(authMethodID int) (result bool, msg string) {
 	maxNumber := config.GeneralConfig.AuthMethodNumber
-	fmt.Println(maxNumber)
 	if authMethodID > maxNumber {
 		return false, fmt.Sprintf("auth_method_id超出最大范围。目前最大为%d", maxNumber)
 	}
@@ -130,10 +124,10 @@ func CheckProductIDQualify(productID int) (result bool, msg string) {
 	return false, "产品ID不是有效参数"
 }
 
-func CheckProductDescQualify(desc string)(result bool, msg string){
+func CheckProductDescQualify(desc string) (result bool, msg string) {
 	var count int
 	for range desc {
-		count ++
+		count++
 	}
 
 	if count > 100 {
@@ -142,3 +136,64 @@ func CheckProductDescQualify(desc string)(result bool, msg string){
 
 	return true, ""
 }
+
+func CheckProductLabelQualify(label []map[string]string) (result bool, msg string) {
+	for _, v := range label {
+		key := v["key"]
+		if keyRes, msg := CheckProductLabelKeyQualify(key); keyRes != true {
+			return false, msg
+		}
+		value := v["value"]
+		if valueRes, msg := CheckProductLabelValueQualify(value); valueRes != true {
+			return false, msg
+		}
+	}
+	return true, ""
+}
+
+func CheckProductTopicOperationQualify(operation int) (result bool, msg string) {
+	maxNumber := config.GeneralConfig.TopicOperationNumber
+	if operation > maxNumber {
+		return false, fmt.Sprintf("operation超出最大范围。目前最大为%d", maxNumber)
+	}
+	return true, ""
+}
+
+func CheckProductTopicDescQualify(desc string) (result bool, msg string) {
+	var count int
+	for range desc {
+		count++
+	}
+
+	if count > 100 {
+		return false, "Topic描述超长"
+	}
+
+	return true, ""
+}
+
+func CheckProductTopicNameQualify(name string) (result bool, msg string) {
+	for _, v := range name {
+		if unicode.Is(unicode.Han, v) {
+			return false, "Topic类名不支持中文"
+		}
+	}
+	if len(name) > 64 {
+		return false, "Topic类名超长"
+	}
+	if len(name) == 0 {
+		return false, "Topic类名不能为空"
+	}
+	return true, ""
+}
+
+func CheckProductTopicIDQuality(topicID int)(result bool, msg string) {
+	ids := database.GetAllProductTopicID()
+	for _, value := range ids {
+		if topicID == value {
+			return true, ""
+		}
+	}
+	return false, "TopicID不是有效参数"
+}
+

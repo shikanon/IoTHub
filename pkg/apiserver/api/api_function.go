@@ -384,10 +384,14 @@ func UpdateProduct(c *gin.Context) {
 }
 
 func GetProductTopic(c *gin.Context) {
-	product_str := c.Query("pid")
-	product_id, _ := strconv.Atoi(product_str)
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	device_id := 0
 	data := database.GetTopics(product_id, device_id)
+
+	if productRes, msg := CheckProductIDQualify(product_id); productRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	resp := gin.H{
 		"status":  "Y",
@@ -416,6 +420,23 @@ func AddProductTopic(c *gin.Context) {
 	operation := require.Operation
 	describe := require.Describe
 
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if nameRes, msg := CheckProductTopicNameQualify(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if operationRes, msg := CheckProductTopicOperationQualify(operation); operationRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if topDescRes, msg := CheckProductTopicDescQualify(describe); topDescRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
 	data := database.CustomTopic{
 		ProductID:    product_id,
 		PermissionID: operation,
@@ -442,13 +463,31 @@ func UpdateProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	topic_id := require.TopicID
 	name := require.Name
 	operation := require.Operation
 	describe := require.Describe
+
+	if topicNameRes, msg := CheckProductTopicNameQualify(name); topicNameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if operationRes, msg := CheckProductTopicOperationQualify(operation); operationRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if descRes, msg := CheckProductTopicDescQualify(describe); descRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if topidRes, msg := CheckProductTopicIDQuality(topic_id); topidRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	var topic database.CustomTopic
 	db := database.DbConn()
@@ -475,13 +514,19 @@ func DeleteProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
+	}
+	topic_id := require.TopicID
+
+	if topidRes, msg := CheckProductTopicIDQuality(topic_id); topidRes != true {
+		ErrResponse(msg, c)
+		return
 	}
 
 	db := database.DbConn()
 	defer db.Close()
 
-	topic_id := require.TopicID
 	db.Where("id = ?", topic_id).Delete(&database.CustomTopic{})
 
 	resp := gin.H{
@@ -503,6 +548,11 @@ func DeleteProduct(c *gin.Context) {
 	}
 
 	product_id := data.ProductID
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -546,6 +596,13 @@ func GetDevices(c *gin.Context) {
 	remark := c.Query("remark")
 	key := c.Query("key")
 	value := c.Query("value")
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+
 
 	label_filter := database.DeatLabelQueryFilter(key, value)
 
@@ -1084,8 +1141,12 @@ func GetDeviceServer(c *gin.Context) {
 }
 
 func GetModelTSL(c *gin.Context) {
-	product_str := c.Query("pid")
-	product_id, _ := strconv.Atoi(product_str)
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	intact_mode, concise_model := database.GetProductModelInfo(product_id)
 
@@ -1299,12 +1360,22 @@ func AddProductLabel(c *gin.Context) {
 
 	var args Args
 	if err := c.ShouldBind(&args); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := args.ProductID
 	label := args.Label
 	data := database.DealLabelArgs(label)
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if labelRes, msg := CheckProductLabelQualify(label); labelRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db := database.DbConn()
 	defer db.Close()
@@ -1426,6 +1497,11 @@ func FileAddDevice(c *gin.Context) {
 
 func GetProductFunction(c *gin.Context) {
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	property := database.ProductGetPropertyFunction(product_id)
 	services := []map[string]interface{}{}

@@ -561,3 +561,13 @@ func UpdateDeviceLabel(iotID string, newLabel map[string]string) {
 	device.Label = label
 	db.Save(&device)
 }
+
+func GetAllProductTopicID()(result []int){
+	db := DbConn()
+	defer db.Close()
+
+	var ids []int
+	db.Model(CustomTopic{}).Pluck("id", &ids)
+
+	return ids
+}
