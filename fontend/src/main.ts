@@ -62,10 +62,14 @@ import Highlight from './components/highlight/index' // from 路径是highlight.
 Vue.use(Highlight)
 
 
+//jsoneditor
 import jsoneditor from 'jsoneditor'
 
 Vue.prototype.$jsoneditor = jsoneditor
 
+//echarts
+import echarts from 'echarts'
+Vue.prototype.$echarts = echarts
 const i18n = new VueI18n({
     locale: 'zh', // 将要切换的语言，可以通过url拼的参数获取，用户行为select选择获取，本地manifest配置获取等，根据场景动态获取
     messages: {
