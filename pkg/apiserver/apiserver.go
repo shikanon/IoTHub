@@ -49,7 +49,7 @@ func ApiRegister() {
 		v1.GET("/functions", api.GetProductFunction)      // 产品-产看-功能定义
 		v1.GET("/tsl", api.GetModelTSL)                   // 产品-查看-功能定义-物模型TSL
 		v1.DELETE("/product", api.DeleteProduct)          // 产品-删除
-		v1.GET("/devices", api.GetDevices)                // 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理) TODO
+		v1.GET("/devices", api.GetDevices)                // 列出所有设备(设备首页 / 产品-管理设备 / 产品-查看-前往管理)
 		v1.POST("/device", api.AddDevice)                 // 设备-创建设备
 		v1.POST("/adevice", api.AutoAddDevice)            // 设备-批量添加-自动生成
 		v1.POST("/upload", api.AnalysisUploadCSVFile)     // 设备-批量创建-上传文件
@@ -65,7 +65,7 @@ func ApiRegister() {
 		v1.GET("/hisstatus", api.GetDeviceHistoryStatus)  // 设备-查看设备运行状态单个属性历史记录信息
 		v1.GET("/event", api.GetDeviceEvent)              // 设备-事件管理
 		v1.GET("/server", api.GetDeviceServer)            // 设备-服务调用
-		v1.GET("/modelfuncs", api.GetModelFunctions)      // 设备-获取物模型标准功能定义
+		v1.GET("/modelfuncs", api.GetModelFunctions)      // 产品-获取物模型标准功能定义
 		v1.DELETE("/device", api.DeleteDevice)            // 设备-删除
 
 		v1.GET("/", Cors(), api.Home)

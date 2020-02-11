@@ -25,7 +25,7 @@ type Topics struct {
 	Custom  []TopicModel `json:"custom"`
 }
 
-func (p *Product) SaveProduct() (id int) {
+func (p *Product) SaveProduct() (id int, msg string) {
 	product_key := tool.GenerateProductKey()
 	product_secret := tool.GenerateProductSecret()
 	p.ProductKey = product_key
@@ -34,8 +34,11 @@ func (p *Product) SaveProduct() (id int) {
 	mongodb_model_id := ProductSaveModel(p.ObjectModelID, p.ProductKey)
 	p.MongodbModelID = mongodb_model_id
 
-	id, _ = MysqlInsertOneData(p)
-	return id
+	id, msg = MysqlInsertOneData(p)
+	if id == 0 {
+		return 0, msg
+	}
+	return id, ""
 }
 
 func (d *Device) SaveDevice() (id int) {

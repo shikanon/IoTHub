@@ -9,7 +9,6 @@ import (
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"github.com/shikanon/IoTOrbHub/pkg/util"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"strconv"
 	"time"
 )
 
@@ -284,7 +283,11 @@ func AddProduct(c *gin.Context) {
 	}
 
 	// mysql持久化存储。存储topic
-	id := product.SaveProduct()
+	id, msg := product.SaveProduct()
+	if id == 0 {
+		ErrResponse(msg, c)
+		return
+	}
 	database.ProductSaveCustomTopic(id)
 
 	// 构建，返回响应
@@ -364,7 +367,6 @@ func GetProduct(c *gin.Context) {
 }
 
 func UpdateProduct(c *gin.Context) {
-
 	type Require struct {
 		Name      string `json:"name"`
 		Describe  string `json:"desc"`
@@ -443,7 +445,8 @@ func AddProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := require.ProductID
@@ -520,7 +523,7 @@ func UpdateProductTopic(c *gin.Context) {
 		ErrResponse(msg, c)
 		return
 	}
-	if topidRes, msg := CheckProductTopicIDQuality(topic_id); topidRes != true {
+	if topidRes, msg := CheckProductTopicIDQualify(topic_id); topidRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -559,7 +562,7 @@ func DeleteProductTopic(c *gin.Context) {
 	}
 	topic_id := require.TopicID
 
-	if topidRes, msg := CheckProductTopicIDQuality(topic_id); topidRes != true {
+	if topidRes, msg := CheckProductTopicIDQualify(topic_id); topidRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -650,19 +653,19 @@ func GetDevices(c *gin.Context) {
 		ErrResponse(msg, c)
 		return
 	}
-	if namrRes, msg := CheckDeviceName(name); namrRes != true {
+	if namrRes, msg := CheckDeviceNameQualify(name); namrRes != true {
 		ErrResponse(msg, c)
 		return
 	}
-	if keyRes, msg := CheckDeviceLabelKeyQuality(key); keyRes != true {
+	if keyRes, msg := CheckDeviceLabelKeyQualify(key); keyRes != true {
 		ErrResponse(msg, c)
 		return
 	}
-	if valueRes, msg := CheckDeviceLabelValueQuality(value); valueRes != true {
+	if valueRes, msg := CheckDeviceLabelValueQualify(value); valueRes != true {
 		ErrResponse(msg, c)
 		return
 	}
-	if remarkRes, msg := CheckDeviceRemarkQuality(remark); remarkRes != true {
+	if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -895,11 +898,11 @@ func AddDevice(c *gin.Context) {
 		ErrResponse(msg, c)
 		return
 	}
-	if nameRes, msg := CheckDeviceName(name); nameRes != true {
+	if nameRes, msg := CheckDeviceNameQualify(name); nameRes != true {
 		ErrResponse(msg, c)
 		return
 	}
-	if remarkRes, msg := CheckDeviceRemarkQuality(remark); remarkRes != true {
+	if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -941,7 +944,7 @@ func AddDevice(c *gin.Context) {
 
 func GetDevice(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
-	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -1001,7 +1004,7 @@ func GetDevice(c *gin.Context) {
 func GetDeviceTopic(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
 
-	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -1040,6 +1043,11 @@ func DeleteDevice(c *gin.Context) {
 
 	device_id_list := data.DeviceIDList
 
+	if didListRes, msg := CheckDeviceIDListQualify(device_id_list); didListRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
 	db, msg := database.DbConn()
 	if db == nil {
 		ErrResponse(msg, c)
@@ -1061,7 +1069,7 @@ func DeleteDevice(c *gin.Context) {
 
 func GetDeviceDesireStatus(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
-	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -1094,7 +1102,7 @@ func GetDeviceDesireStatus(c *gin.Context) {
 
 func GetDevicePropertyStatus(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
-	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -1132,7 +1140,15 @@ func GetDeviceHistoryStatus(c *gin.Context) {
 	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
 	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
 
-	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if startRes, msg := CheckTimeStampQualify(start); startRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if endRes, msg := CheckTimeStampQualify(end); endRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -1169,8 +1185,12 @@ func GetDeviceHistoryStatus(c *gin.Context) {
 }
 
 func GetModelFunctions(c *gin.Context) {
-	model_id_str := c.Query("id")
-	model_id, _ := strconv.Atoi(model_id_str)
+	model_id := tool.StringNumberToInTNumber(c.Query("id"))
+
+	if modelIDRes, msg := CheckModelIDQualify(model_id); modelIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db, msg := database.DbConn()
 	if db == nil {
@@ -1203,10 +1223,25 @@ func GetDeviceEvent(c *gin.Context) {
 	event_type := c.Query("type")
 	identifier := c.Query("identifier")
 
-	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
 		ErrResponse(msg, c)
 		return
 	}
+	if startRes, msg := CheckTimeStampQualify(start); startRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if endRes, msg := CheckTimeStampQualify(end);endRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if event_type != "" {
+		if eventTypeRes, msg := CheckEventTypeQualify(event_type); eventTypeRes != true{
+			ErrResponse(msg, c)
+			return
+		}
+	}
+
 
 	if event_type == "" {
 		event_type = "all"
@@ -1226,8 +1261,6 @@ func GetDeviceEvent(c *gin.Context) {
 	var device database.Device
 	db.First(&device, device_id)
 	device_iot := device.IotID
-
-	fmt.Println(device_iot, event_type, identifier, start, end)
 
 	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end)
 	next_time := util.GetNextDeviceEventInfo(device_iot, event_type, identifier, start, end)
@@ -1254,6 +1287,19 @@ func GetDeviceServer(c *gin.Context) {
 	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
 	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
 	identifier := c.Query("identifier")
+
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if startRes, msg := CheckTimeStampQualify(start); startRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if endRes, msg := CheckTimeStampQualify(end); endRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	if identifier == "" {
 		identifier = "all"
@@ -1334,7 +1380,7 @@ func AutoAddDevice(c *gin.Context) {
 		ErrResponse(msg, c)
 		return
 	}
-	if numberRes, msg := CheckAutoAddDeviceNumber(number); numberRes != true {
+	if numberRes, msg := CheckAutoAddDeviceNumberQualify(number); numberRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -1444,6 +1490,10 @@ func GetBatchDevice(c *gin.Context) {
 		ErrResponse(msg, c)
 		return
 	}
+	if createTimeRes, msg := CheckTimeStampQualify(int64(create_time)); createTimeRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	db, msg := database.DbConn()
 	if db == nil {
@@ -1515,7 +1565,7 @@ func UpdateDevice(c *gin.Context) {
 	remark := args.Remark
 	device_id := args.DeviceId
 
-	if remarkRes, msg := CheckDeviceRemarkQuality(remark); remarkRes != true {
+	if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
 		ErrResponse(msg, c)
 		return
 	}
@@ -1607,7 +1657,7 @@ func AddDeviceLabel(c *gin.Context) {
 	label := args.Label
 	data := database.DealLabelArgs(label)
 
-	if deviceIDRes, msg := CheckDeviceIDQuality(device_id); deviceIDRes != true {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
 		ErrResponse(msg, c)
 		return
 	}
