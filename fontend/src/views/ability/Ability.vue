@@ -1,11 +1,11 @@
 <template>
   <el-tabs v-model="activeName" type="card">
         <el-tab-pane label="标准功能" name="first">
-            <AbilityList type="standard" :productKey="productKey" :productId="productId"></AbilityList>
+            <AbilityList type="standard" ref="standardList" :productKey="productKey" :productId="productId"></AbilityList>
         </el-tab-pane>
-        <el-tab-pane label="自定义功能" name="second">
-             <AbilityList type="customize" :productKey="productKey" :productId="productId"></AbilityList>
-        </el-tab-pane>
+        <!-- <el-tab-pane label="自定义功能" name="second">
+             <AbilityList type="customize" ref="customizeList" :productKey="productKey" :productId="productId"></AbilityList>
+        </el-tab-pane> -->
    </el-tabs>
 </template>
 
@@ -35,7 +35,11 @@ import AbilityList from './AbilityList'
     methods: {
       
       handleClick(tab, event) {
-        console.log(tab, event);
+        if(tab.name === 'first'){
+            this.$refs.standardList.getAbilityList()
+        }else{
+
+        }
       }
     }
   };
