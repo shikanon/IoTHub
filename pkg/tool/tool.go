@@ -71,4 +71,32 @@ func TimeDeal(time time.Time) (result string) {
 	}
 }
 
+func JsonStrToMap(data_str string) (data_map map[string]string) {
+	map_data := make(map[string]string)
+	json.Unmarshal([]byte(data_str), &map_data)
+	return map_data
+}
 
+func MapToJsonStr(map_data map[string]string) (data_str string) {
+	data, _ := json.Marshal(map_data)
+	result := string(data)
+	return result
+}
+
+func GetStringSpecialCharCount(data, char string)(number int){
+	re, _ := regexp.Compile(char);
+	b := re.FindAllString(data,-1)
+	return len(b)
+}
+
+func GetStringChinaCharCount(data string) (number int) {
+	re, _ := regexp.Compile("[\u4e00-\u9fa5]")
+	b := re.FindAllString(data, -1)
+	return len(b)
+}
+
+func GetStringEnglishCharAndNumberCount(data string) (number int) {
+	re, _ := regexp.Compile("[0-9a-zA-Z]")
+	b := re.FindAllString(data, -1)
+	return len(b)
+}

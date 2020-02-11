@@ -47,6 +47,7 @@ CREATE TABLE `device` (
   `iot_id` varchar(255) NOT NULL,
   `label` varchar(255) DEFAULT NULL,
   `batch_create` tinyint(1) DEFAULT NULL,
+  `online` tinyint(1) NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `device_secret` (`device_secret`),
   UNIQUE KEY `iot_id` (`iot_id`)

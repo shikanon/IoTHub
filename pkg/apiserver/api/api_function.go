@@ -1,13 +1,14 @@
 package api
 
 import (
+	"bufio"
+	"encoding/csv"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"github.com/shikanon/IoTOrbHub/pkg/util"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"strconv"
 	"time"
 )
 
@@ -18,7 +19,7 @@ func Home(c *gin.Context) {
 		"status":  "Y",
 		"message": "批次管理设备查询成功",
 		"data":    ".............",
-		//"data": response,
+		//"data": tool.JsonStrToMap(productLabel),
 	}
 	c.JSON(200, resp)
 
@@ -29,7 +30,11 @@ func Home(c *gin.Context) {
 // TODO  权限；参数校验；捕捉错误;标签字段的拆解
 
 func GetProductModels(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var models []database.Model
@@ -44,7 +49,11 @@ func GetProductModels(c *gin.Context) {
 }
 
 func GetProductNodeTypes(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var nodetypes []database.NodeType
@@ -59,7 +68,11 @@ func GetProductNodeTypes(c *gin.Context) {
 }
 
 func GetProductNetworkWays(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var networks []database.NetworkWay
@@ -74,7 +87,11 @@ func GetProductNetworkWays(c *gin.Context) {
 }
 
 func GetProductDataFormats(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var dataformats []database.DataFormat
@@ -89,7 +106,11 @@ func GetProductDataFormats(c *gin.Context) {
 }
 
 func GetProductAuthMethods(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var authmethos []database.AuthMethod
@@ -104,17 +125,52 @@ func GetProductAuthMethods(c *gin.Context) {
 }
 
 func GetProducts(c *gin.Context) {
-	// 获取参数
-	page_str := c.Query("page")
-	page, _ := strconv.Atoi(page_str)
-	item_str := c.Query("item")
-	item, _ := strconv.Atoi(item_str)
+	//获取参数
+	page := tool.StringNumberToInTNumber(c.Query("page"))
+	item := tool.StringNumberToInTNumber(c.Query("item"))
+	name := c.Query("name")
+	key := c.Query("key")
+	value := c.Query("value")
+
+	if len(key) != 0 {
+		if key_res, msg := CheckProductLabelKeyQualify(key); key_res != true {
+			ErrResponse(msg, c)
+			return
+		}
+	}
+	if len(value) != 0 {
+		if value_res, msg := CheckProductLabelValueQualify(value); value_res != true {
+			ErrResponse(msg, c)
+			return
+		}
+	}
+
+	label_filter := database.DeatLabelQueryFilter(key, value)
+
+	var total = 0
 
 	// 查询数据
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 	var products []database.Product
-	db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	if len(name) == 0 && len(label_filter) == 0 {
+		db.Model(&database.Product{}).Count(&total)
+		db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	} else if len(name) == 0 && len(label_filter) != 0 {
+		db.Model(&database.Product{}).Where("label LIKE ?", label_filter).Count(&total)
+		db.Where("label LIKE ?", label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	} else if len(name) != 0 && len(label_filter) == 0 {
+		db.Model(&database.Product{}).Where("name = ?", name).Count(&total)
+		db.Where("name = ?", name).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	} else if len(name) != 0 && len(label_filter) != 0 {
+		db.Model(&database.Product{}).Where("name = ? AND label LIKE ?", name, label_filter).Count(&total)
+		db.Where("name = ? AND label LIKE ?", name, label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+	}
+
 	// 构建响应数据结构
 	type info struct {
 		ID         int    `json:"id"`
@@ -134,9 +190,6 @@ func GetProducts(c *gin.Context) {
 		}
 		result = append(result, data)
 	}
-
-	var total = 0
-	db.Model(&database.Product{}).Count(&total)
 
 	type RespData struct {
 		NumResults int    `json:"num_results"`
@@ -171,7 +224,8 @@ func AddProduct(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	name := data.Name
@@ -182,6 +236,39 @@ func AddProduct(c *gin.Context) {
 	data_format_id := data.DataFormatID
 	auth_method_id := data.AuthMethodID
 	desc := data.Describe
+
+	if nameRes, msg := CheckProductNameQualify(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if categoryRes, msg := CheckProductCategoryQualify(category); categoryRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if modelRes, msg := CheckModelIDQualify(model_id); modelRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if nodeTypeRes, msg := CheckNodeTypeIDQualify(node_type_id); nodeTypeRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if netWorkRes, msg := CheckNetworkIDQualify(network_id); netWorkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if dataFormatRes, msg := CheckDataFormatIDQualify(data_format_id); dataFormatRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if authMethodRes, msg := CheckAuthMethodIDQualify(auth_method_id); authMethodRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if descRes, msg := CheckProductDescQualify(desc); descRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	// 构建实例
 	product := &database.Product{
@@ -196,7 +283,11 @@ func AddProduct(c *gin.Context) {
 	}
 
 	// mysql持久化存储。存储topic
-	id := product.SaveProduct()
+	id, msg := product.SaveProduct()
+	if id == 0 {
+		ErrResponse(msg, c)
+		return
+	}
 	database.ProductSaveCustomTopic(id)
 
 	// 构建，返回响应
@@ -210,30 +301,17 @@ func AddProduct(c *gin.Context) {
 }
 
 func GetProduct(c *gin.Context) {
-	product_id := c.Query("pid")
-	db := database.DbConn()
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
-	type Response struct {
-		ID              int    `json:"id"`
-		Name            string `json:"name"`
-		NodeType        string `json:"node_type"`
-		NodeTypeID      int    `json:"node_type_id"`
-		CreateTime      string `json:"create_time"`
-		ObjectModelName string `json:"object_model_name"`
-		DataFormat      string `json:"data_format"`
-		DataFormatID    int    `json:"data_format_id"`
-		AuthMethod      string `json:"auth_method"`
-		AuthMethodID    int    `json:"auth_method_id"`
-		Status          string `json:"status"`
-		NetworkWay      string `json:"network_way"`
-		NetworkWayID    int    `json:"network_way_id"`
-		Describe        string `json:"desc"`
-		ConciseModelID  string `json:"concise_model_id"`
-		IntactModelID   string `json:"intact_model_id"`
-		ProductKey      string `json:"product_key"`
-		ProductSecret   string `json:"product_secret"`
-		DeviceCount     int    `json:"device_count"` // TODO
+	if productRes, msg := CheckProductIDQualify(product_id); productRes != true {
+		ErrResponse(msg, c)
+		return
 	}
 
 	var product database.Product
@@ -246,26 +324,38 @@ func GetProduct(c *gin.Context) {
 	db.Model(&product).Related(&product.AuthMethod, "AuthMethod")
 	db.Model(&product).Related(&product.Device, "Device")
 
-	response := Response{
-		ID:              product.ID,
-		Name:            product.Name,
-		NodeType:        product.NodeType.Name,
-		NodeTypeID:      product.NodeTypeID,
-		CreateTime:      tool.TimeDeal(product.CreateTime),
-		ObjectModelName: product.ObjectModel.Name,
-		DataFormat:      product.DataFormat.Name,
-		DataFormatID:    product.DataFormatID,
-		AuthMethod:      product.AuthMethod.Name,
-		AuthMethodID:    product.AuthMethodID,
-		Status:          product.Status,
-		NetworkWay:      product.NetworkWay.Name,
-		NetworkWayID:    product.NetworkWayID,
-		Describe:        product.Describe,
-		ConciseModelID:  product.MongodbModel.ConciseModelID,
-		IntactModelID:   product.MongodbModel.IntactModelID,
-		ProductKey:      product.ProductKey,
-		ProductSecret:   product.ProductSecret,
-		DeviceCount:     len(product.Device),
+	label_map := tool.JsonStrToMap(product.Label)
+	label_spl := []map[string]string{}
+
+	for key, value := range label_map {
+		data := map[string]string{
+			"key":   key,
+			"value": value,
+		}
+		label_spl = append(label_spl, data)
+	}
+
+	response := map[string]interface{}{
+		"id":                product.ID,
+		"name":              product.Name,
+		"node_type":         product.NodeType.Name,
+		"node_type_id":      product.NodeTypeID,
+		"create_time":       tool.TimeDeal(product.CreateTime),
+		"object_model_name": product.ObjectModel.Name,
+		"data_format":       product.DataFormat.Name,
+		"data_format_id":    product.DataFormatID,
+		"auth_method":       product.AuthMethod.Name,
+		"auth_method_id":    product.AuthMethodID,
+		"status":            product.Status,
+		"network_way":       product.NetworkWay.Name,
+		"network_way_id":    product.NetworkWayID,
+		"desc":              product.Describe,
+		"concise_model_id":  product.MongodbModel.ConciseModelID,
+		"intact_model_id":   product.MongodbModel.IntactModelID,
+		"product_key":       product.ProductKey,
+		"product_secret":    product.ProductSecret,
+		"device_count":      len(product.Device),
+		"label":             label_spl,
 	}
 
 	resp := gin.H{
@@ -277,7 +367,6 @@ func GetProduct(c *gin.Context) {
 }
 
 func UpdateProduct(c *gin.Context) {
-
 	type Require struct {
 		Name      string `json:"name"`
 		Describe  string `json:"desc"`
@@ -286,14 +375,32 @@ func UpdateProduct(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	name := require.Name
 	desc := require.Describe
 	product_id := require.ProductID
 
-	db := database.DbConn()
+	if nameRes, msg := CheckProductNameQualify(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if descRes, msg := CheckProductDescQualify(desc); descRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var product database.Product
@@ -311,10 +418,14 @@ func UpdateProduct(c *gin.Context) {
 }
 
 func GetProductTopic(c *gin.Context) {
-	product_str := c.Query("pid")
-	product_id, _ := strconv.Atoi(product_str)
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	device_id := 0
 	data := database.GetTopics(product_id, device_id)
+
+	if productRes, msg := CheckProductIDQualify(product_id); productRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	resp := gin.H{
 		"status":  "Y",
@@ -334,7 +445,8 @@ func AddProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := require.ProductID
@@ -343,13 +455,34 @@ func AddProductTopic(c *gin.Context) {
 	operation := require.Operation
 	describe := require.Describe
 
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if nameRes, msg := CheckProductTopicNameQualify(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if operationRes, msg := CheckProductTopicOperationQualify(operation); operationRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if topDescRes, msg := CheckProductTopicDescQualify(describe); topDescRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
 	data := database.CustomTopic{
 		ProductID:    product_id,
 		PermissionID: operation,
 		Detail:       topic_name,
 		Describe:     describe,
 	}
-	id := database.MysqlInsertOneData(&data)
+	id, msg := database.MysqlInsertOneData(&data)
+	if id == 0 {
+		ErrResponse(msg, c)
+		return
+	}
 
 	resp := gin.H{
 		"status":  "Y",
@@ -369,7 +502,8 @@ func UpdateProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	topic_id := require.TopicID
@@ -377,8 +511,29 @@ func UpdateProductTopic(c *gin.Context) {
 	operation := require.Operation
 	describe := require.Describe
 
+	if topicNameRes, msg := CheckProductTopicNameQualify(name); topicNameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if operationRes, msg := CheckProductTopicOperationQualify(operation); operationRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if descRes, msg := CheckProductTopicDescQualify(describe); descRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if topidRes, msg := CheckProductTopicIDQualify(topic_id); topidRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
 	var topic database.CustomTopic
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	db.First(&topic, topic_id)
@@ -402,13 +557,23 @@ func DeleteProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
+	}
+	topic_id := require.TopicID
+
+	if topidRes, msg := CheckProductTopicIDQualify(topic_id); topidRes != true {
+		ErrResponse(msg, c)
+		return
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
-	topic_id := require.TopicID
 	db.Where("id = ?", topic_id).Delete(&database.CustomTopic{})
 
 	resp := gin.H{
@@ -426,14 +591,22 @@ func DeleteProduct(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := data.ProductID
 
-	fmt.Println(product_id)
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var devices []database.Device
@@ -468,34 +641,153 @@ func DeleteProduct(c *gin.Context) {
 func GetDevices(c *gin.Context) {
 	// product为0，设备首页
 	// product不为0，产品-管理设备 / 产品-查看-前往管理
-	product_str := c.Query("pid")
-	product_id, _ := strconv.Atoi(product_str)
-	page_str := c.Query("page")
-	page, _ := strconv.Atoi(page_str)
-	item_str := c.Query("item")
-	item, _ := strconv.Atoi(item_str)
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+	page := tool.StringNumberToInTNumber(c.Query("page"))
+	item := tool.StringNumberToInTNumber(c.Query("item"))
+	name := c.Query("name")
+	remark := c.Query("remark")
+	key := c.Query("key")
+	value := c.Query("value")
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if namrRes, msg := CheckDeviceNameQualify(name); namrRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if keyRes, msg := CheckDeviceLabelKeyQualify(key); keyRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if valueRes, msg := CheckDeviceLabelValueQualify(value); valueRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	label_filter := database.DeatLabelQueryFilter(key, value)
 
 	var total = 0
 	var activate_num = 0
 	var online_num = 0
-	db := database.DbConn()
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 	var devices []database.Device
+
 	if product_id == 0 {
-		db.Where("activation_time != ?", "0000-00-00 00:00:00").Find(&devices)
-		activate_num = len(devices)
-		db.Where("last_on_line_time != ?", "0000-00-00 00:00:00").Find(&devices)
-		online_num = len(devices)
-		db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
-		db.Model(&database.Device{}).Count(&total)
+		if len(name) == 0 && len(remark) == 0 {
+			if len(label_filter) == 0 {
+				db.Where("activation_time != ?", "0000-00-00 00:00:00").Find(&devices)
+				activate_num = len(devices)
+				db.Where("online = ?", 1).Find(&devices)
+				online_num = len(devices)
+				db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+				db.Model(&database.Device{}).Count(&total)
+			} else {
+				db.Where("activation_time != ? AND label LIKE ?", "0000-00-00 00:00:00", label_filter).Find(&devices)
+				activate_num = len(devices)
+				db.Where("online = ? AND label LIKE ?", 1, label_filter).Find(&devices)
+				online_num = len(devices)
+				db.Model(&database.Device{}).Where("label LIKE ?", label_filter).Count(&total)
+				db.Where("label LIKE ?", label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+			}
+		} else {
+			if len(name) != 0 {
+				if len(label_filter) == 0 {
+					db.Where("activation_time != ? AND name = ?", "0000-00-00 00:00:00", name).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND name = ?", 1, name).Find(&devices)
+					online_num = len(devices)
+					db.Model(&database.Device{}).Where("name = ?", name).Count(&total)
+					db.Where("name = ?", name).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+				} else {
+					db.Where("activation_time != ? AND label LIKE ? AND name = ?", "0000-00-00 00:00:00", label_filter, name).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND label LIKE ? AND name = ?", 1, label_filter, name).Find(&devices)
+					online_num = len(devices)
+					db.Where("label LIKE ? AND name = ?", label_filter, name).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+					db.Model(&database.Device{}).Where("label LIKE ? AND name = ?", label_filter, name).Count(&total)
+				}
+			} else {
+				if len(label_filter) == 0 {
+					db.Where("activation_time != ? AND remark = ?", "0000-00-00 00:00:00", remark).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND remark = ?", 1, remark).Find(&devices)
+					online_num = len(devices)
+					db.Where("remark = ?", remark).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+					db.Model(&database.Device{}).Where("remark = ?", remark).Count(&total)
+				} else {
+					db.Where("activation_time != ? AND label LIKE ? AND remark = ?", "0000-00-00 00:00:00", label_filter, remark).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND label LIKE ? AND remark = ?", 1, label_filter, remark).Find(&devices)
+					online_num = len(devices)
+					db.Where("label LIKE ? AND remark = ?", label_filter, remark).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+					db.Model(&database.Device{}).Where("label LIKE ? AND remark = ?", label_filter, remark).Count(&total)
+				}
+			}
+		}
 	} else {
-		db.Where("product_id = ? AND activation_time != ?", product_id, "0000-00-00 00:00:00").Find(&devices)
-		activate_num = len(devices)
-		db.Where("product_id = ? AND last_on_line_time != ?", product_id, "0000-00-00 00:00:00").Find(&devices)
-		online_num = len(devices)
-		db.Where("product_id = ?", product_id).Find(&devices)
-		total = len(devices)
-		db.Where("product_id = ?", product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+		if len(name) == 0 && len(remark) == 0 {
+			if len(label_filter) == 0 {
+				db.Where("activation_time != ? AND product_id = ?", "0000-00-00 00:00:00", product_id).Find(&devices)
+				activate_num = len(devices)
+				db.Where("online = ? AND product_id = ?", 1, product_id).Find(&devices)
+				online_num = len(devices)
+				db.Where("product_id = ?", product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+				db.Model(&database.Device{}).Where("product_id = ?", product_id).Count(&total)
+			} else {
+				db.Where("activation_time != ? AND label LIKE ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, product_id).Find(&devices)
+				activate_num = len(devices)
+				db.Where("online = ? AND label LIKE ? AND product_id = ?", 1, label_filter, product_id).Find(&devices)
+				online_num = len(devices)
+				db.Where("label LIKE ? AND product_id = ?", label_filter, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+				db.Model(&database.Device{}).Where("label LIKE ? AND product_id = ?", label_filter, product_id).Count(&total)
+			}
+		} else {
+			if len(name) != 0 {
+				if len(label_filter) == 0 {
+					db.Where("activation_time != ? AND name = ? AND product_id = ?", "0000-00-00 00:00:00", name, product_id).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND name = ? AND product_id = ?", 1, name, product_id).Find(&devices)
+					online_num = len(devices)
+					db.Where("name = ? AND product_id = ?", name, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+					db.Model(&database.Device{}).Where("name = ? AND product_id = ?", name, product_id).Count(&total)
+				} else {
+					db.Where("activation_time != ? AND label LIKE ? AND name = ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, name, product_id).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND label LIKE ? AND name = ? AND product_id = ?", 1, label_filter, name, product_id).Find(&devices)
+					online_num = len(devices)
+					db.Where("label LIKE ? AND name = ? AND product_id = ?", label_filter, name, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+					db.Model(&database.Device{}).Where("label LIKE ? AND name = ? AND product_id = ?", label_filter, name, product_id).Count(&total)
+				}
+			} else {
+				if len(label_filter) == 0 {
+					db.Where("activation_time != ? AND remark = ? AND product_id = ?", "0000-00-00 00:00:00", remark, product_id).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND remark = ? AND product_id = ?", 1, remark, product_id).Find(&devices)
+					online_num = len(devices)
+					db.Where("remark = ? AND product_id = ?", remark, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+					db.Model(&database.Device{}).Where("remark = ? AND product_id = ?", remark, product_id).Count(&total)
+				} else {
+					db.Where("activation_time != ? AND label LIKE ? AND remark = ? AND product_id = ?", "0000-00-00 00:00:00", label_filter, remark, product_id).Find(&devices)
+					activate_num = len(devices)
+					db.Where("online = ? AND label LIKE ? AND remark = ? AND product_id = ?", 1, label_filter, remark, product_id).Find(&devices)
+					online_num = len(devices)
+					db.Where("label LIKE ? AND remark = ? AND product_id = ?", label_filter, remark, product_id).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("Status").Find(&devices)
+					db.Model(&database.Device{}).Where("label LIKE ? AND remark = ? AND product_id = ?", label_filter, remark, product_id).Count(&total)
+				}
+			}
+		}
 	}
 
 	type Response struct {
@@ -547,7 +839,11 @@ func GetDevices(c *gin.Context) {
 }
 
 func GetSimpleProducts(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var products []database.Product
@@ -575,7 +871,11 @@ func GetSimpleProducts(c *gin.Context) {
 }
 
 func AddDevice(c *gin.Context) {
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	type Data struct {
@@ -586,12 +886,26 @@ func AddDevice(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := data.ProductID
 	name := data.Name
 	remark := data.Remark
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if nameRes, msg := CheckDeviceNameQualify(name); nameRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	device := database.Device{
 		ProductID:   product_id,
@@ -600,6 +914,7 @@ func AddDevice(c *gin.Context) {
 		Remark:      remark,
 		BatchCreate: false,
 		CreateTime:  time.Now(),
+		Online:      false,
 	}
 
 	id := device.SaveDevice()
@@ -628,53 +943,55 @@ func AddDevice(c *gin.Context) {
 }
 
 func GetDevice(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
-	db := database.DbConn()
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 	device := database.Device{}
 	db.First(&device, device_id)
-	type Response struct {
-		ID             int    `json:"id"`
-		ProductID      int    `json:"product_id"`
-		ProductKey     string `json:"product_key"`
-		ProductName    string `json:"product_name"`
-		NoteTypeID     int    `json:"node_type_id"`
-		NodeType       string `json:"node_type"`
-		StatusID       int    `json:"status_id"`
-		Name           string `json:"name"`
-		Remark         string `json:"remark"`
-		DeviceSecret   string `json:"device_secret"`
-		IP             string `json:"ip"`
-		CreateTime     string `json:"create_time"`
-		ActivationTime string `json:"activate_time"`
-		LastOnLineTime string `json:"last_online_time"`
-		IotID          string `json:"iot_id"`
-		Label          string `json:"label"`
-		BatchCreate    bool   `json:"batch_create"`
+
+	label_map := tool.JsonStrToMap(device.Label)
+	label_spl := []map[string]string{}
+
+	for key, value := range label_map {
+		data := map[string]string{
+			"key":   key,
+			"value": value,
+		}
+		label_spl = append(label_spl, data)
 	}
-	var response Response
-	response.ID = device.ID
-	response.ProductID = device.ProductID
-	response.StatusID = device.StatusID
-	response.Name = device.Name
-	response.Remark = device.Remark
-	response.DeviceSecret = device.DeviceSecret
-	response.IP = device.IP
-	response.CreateTime = tool.TimeDeal(device.CreateTime)
-	response.ActivationTime = tool.TimeDeal(device.ActivationTime)
-	response.LastOnLineTime = tool.TimeDeal(device.LastOnLineTime)
-	response.IotID = device.IotID
-	response.Label = device.Label
-	response.BatchCreate = device.BatchCreate
 
 	var product database.Product
-	db.First(&product, response.ProductID)
+	db.First(&product, device.ProductID)
 	db.Model(&product).Related(&product.NodeType, "NodeType")
-	response.ProductKey = product.ProductKey
-	response.ProductName = product.Name
-	response.NoteTypeID = product.NetworkWayID
-	response.NodeType = product.NodeType.Name
+
+	response := map[string]interface{}{
+		"id":               device.ID,
+		"product_id":       device.ProductID,
+		"product_key":      product.ProductKey,
+		"product_name":     product.Name,
+		"node_type_id":     product.NetworkWayID,
+		"node_type":        product.NodeType.Name,
+		"status_id":        device.StatusID,
+		"name":             device.Name,
+		"remark":           device.Remark,
+		"device_secret":    device.DeviceSecret,
+		"ip":               device.IP,
+		"create_time":      tool.TimeDeal(device.CreateTime),
+		"activate_time":    tool.TimeDeal(device.ActivationTime),
+		"last_online_time": tool.TimeDeal(device.LastOnLineTime),
+		"iot_id":           device.IotID,
+		"label":            label_spl,
+		"batch_create":     device.BatchCreate,
+	}
 
 	resp := gin.H{
 		"status":  "Y",
@@ -685,10 +1002,18 @@ func GetDevice(c *gin.Context) {
 }
 
 func GetDeviceTopic(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
 
-	db := database.DbConn()
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	device := database.Device{}
@@ -712,12 +1037,22 @@ func DeleteDevice(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	device_id_list := data.DeviceIDList
 
-	db := database.DbConn()
+	if didListRes, msg := CheckDeviceIDListQualify(device_id_list); didListRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	for index, _ := range device_id_list {
@@ -733,10 +1068,17 @@ func DeleteDevice(c *gin.Context) {
 }
 
 func GetDeviceDesireStatus(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -759,10 +1101,17 @@ func GetDeviceDesireStatus(c *gin.Context) {
 }
 
 func GetDevicePropertyStatus(c *gin.Context) {
-	device_str := c.Query("did")
-	device_id, _ := strconv.Atoi(device_str)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
@@ -774,6 +1123,7 @@ func GetDevicePropertyStatus(c *gin.Context) {
 	product_key := product.ProductKey
 
 	data := util.GetDevicePropertyStatusInfo(product_key, device_iot)
+
 	result := tool.DealSequentialDatabaseData(data)
 
 	resp := gin.H{
@@ -785,36 +1135,68 @@ func GetDevicePropertyStatus(c *gin.Context) {
 }
 
 func GetDeviceHistoryStatus(c *gin.Context) {
-	//device_id := tool.StringNumberToInTNumber(c.Query("did"))
-	//property := c.Query("Identifier")
-	//time := tool.StringNumberToInTNumber(c.Query("time"))
-	//
-	//
-	//
-	//
-	//
-	//db := database.DbConn()
-	//defer db.Close()
-	//
-	//var device database.Device
-	//db.First(&device, device_id)
-	//device_iot := device.IotID
-	//
-	//data := util.GetPropertyHistory(device_iot, property, hour)
-	//result := tool.DealSequentialDatabaseData(data)
-	//resp := gin.H{
-	//	"status":  "Y",
-	//	"message": "设备运行状态单个属性历史记录信息查询成功",
-	//	"data":    result,
-	//}
-	//c.JSON(200, resp)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	property := c.Query("identifier")
+	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if startRes, msg := CheckTimeStampQualify(start); startRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if endRes, msg := CheckTimeStampQualify(end); endRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device_iot := device.IotID
+
+	data := util.GetPropertyHistory(device_iot, property, start, end)
+
+	next_time := util.GetNextPropertyHistory(device_iot, property, start, end)
+	if next_time == -1 {
+		next_time = 0
+	}
+
+	response := map[string]interface{}{
+		"next_time": next_time,
+		"data_list": data,
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备运行状态单个属性历史记录信息查询成功",
+		"data":    response,
+	}
+	c.JSON(200, resp)
 }
 
 func GetModelFunctions(c *gin.Context) {
-	model_id_str := c.Query("id")
-	model_id, _ := strconv.Atoi(model_id_str)
+	model_id := tool.StringNumberToInTNumber(c.Query("id"))
 
-	db := database.DbConn()
+	if modelIDRes, msg := CheckModelIDQualify(model_id); modelIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var data []database.ModelFunction
@@ -836,72 +1218,135 @@ func GetModelFunctions(c *gin.Context) {
 
 func GetDeviceEvent(c *gin.Context) {
 	device_id := tool.StringNumberToInTNumber(c.Query("did"))
-	page := tool.StringNumberToInTNumber(c.Query("page"))
 	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
 	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
 	event_type := c.Query("type")
 	identifier := c.Query("identifier")
 
-	if (event_type == "") {
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if startRes, msg := CheckTimeStampQualify(start); startRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if endRes, msg := CheckTimeStampQualify(end);endRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if event_type != "" {
+		if eventTypeRes, msg := CheckEventTypeQualify(event_type); eventTypeRes != true{
+			ErrResponse(msg, c)
+			return
+		}
+	}
+
+
+	if event_type == "" {
 		event_type = "all"
 	}
 
-	if (identifier == "") {
+	if identifier == "" {
 		identifier = "all"
 	}
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var device database.Device
 	db.First(&device, device_id)
 	device_iot := device.IotID
 
-	fmt.Println(device_iot, event_type, identifier, start, end, page)
+	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end)
+	next_time := util.GetNextDeviceEventInfo(device_iot, event_type, identifier, start, end)
 
-	data := util.GetDeviceEventInfo(device_iot, event_type, identifier, start, end, page)
+	if next_time == -1 {
+		next_time = 0
+	}
+
+	response := map[string]interface{}{
+		"next_time": next_time,
+		"data_list": data,
+	}
 
 	resp := gin.H{
 		"status":  "Y",
 		"message": "设备事件管理查询成功",
-		"data":    data,
+		"data":    response,
 	}
 	c.JSON(200, resp)
 }
 
 func GetDeviceServer(c *gin.Context) {
-	//device_str := c.Query("did")
-	//device_id, _ := strconv.Atoi(device_str)
-	//page := tool.StringNumberToInTNumber(c.Query("page"))
-	//start := int64(tool.StringNumberToInTNumber(c.Query("start")))
-	//end := int64(tool.StringNumberToInTNumber(c.Query("end")))
-	//identifier := c.Query("identifier")
-	//
-	//if (identifier == "") {
-	//	identifier = "all"
-	//}
-	//
-	//db := database.DbConn()
-	//defer db.Close()
-	//
-	//var device database.Device
-	//db.First(&device, device_id)
-	//device_iot := device.IotID
-	//data := util.GetDeviceServiceInfo(device_iot)
-	//
-	//resp := gin.H{
-	//	"status":  "Y",
-	//	"message": "设备服务调用查询成功",
-	//	"data":    data,
-	//}
-	//c.JSON(200, resp)
+	device_id := tool.StringNumberToInTNumber(c.Query("did"))
+	start := int64(tool.StringNumberToInTNumber(c.Query("start")))
+	end := int64(tool.StringNumberToInTNumber(c.Query("end")))
+	identifier := c.Query("identifier")
+
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if startRes, msg := CheckTimeStampQualify(start); startRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if endRes, msg := CheckTimeStampQualify(end); endRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	if identifier == "" {
+		identifier = "all"
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device_iot := device.IotID
+	data := util.GetDeviceServiceInfo(device_iot, identifier, start, end)
+	next_time := util.GetNextDeviceServiceInfo(device_iot, identifier, start, end)
+	if next_time == -1 {
+		next_time = 0
+	}
+
+	response := map[string]interface{}{
+		"next_time": next_time,
+		"data_list": data,
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备服务调用查询成功",
+		"data":    response,
+	}
+	c.JSON(200, resp)
 }
 
 func GetModelTSL(c *gin.Context) {
-	product_str := c.Query("pid")
-	product_id, _ := strconv.Atoi(product_str)
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 
-	intact_mode, concise_model := database.GetProductModelInfo(product_id)
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	intact_mode, concise_model, msg := database.GetProductModelInfo(product_id)
+	if intact_mode == nil && concise_model == nil {
+		ErrResponse(msg, c)
+		return
+	}
 
 	data := map[string]primitive.M{
 		"intact_model":  intact_mode,
@@ -924,11 +1369,21 @@ func AutoAddDevice(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		fmt.Println(err)
+		ErrResponse("参数解析错误", c)
+		return
 	}
 
 	product_id := data.ProductID
 	number := data.Number
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if numberRes, msg := CheckAutoAddDeviceNumberQualify(number); numberRes != true {
+		ErrResponse(msg, c)
+		return
+	}
 
 	time := time.Now()
 	for i := 0; i < number; i++ {
@@ -940,6 +1395,7 @@ func AutoAddDevice(c *gin.Context) {
 			Remark:      "",
 			BatchCreate: true,
 			CreateTime:  time,
+			Online:      false,
 		}
 		device.SaveDevice()
 	}
@@ -956,7 +1412,11 @@ func GetBatchDevices(c *gin.Context) {
 	page := tool.StringNumberToInTNumber(c.Query("page"))
 	item := tool.StringNumberToInTNumber(c.Query("item"))
 
-	db := database.DbConn()
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	type Result struct {
@@ -1018,11 +1478,28 @@ func GetBatchDevices(c *gin.Context) {
 func GetBatchDevice(c *gin.Context) {
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	create_time := tool.StringNumberToInTNumber(c.Query("time"))
+	if create_time == 0 {
+		ErrResponse("时间不能为0", c)
+		return
+	}
 	time := time.Unix(int64(create_time), 0)
 	page := tool.StringNumberToInTNumber(c.Query("page"))
 	item := tool.StringNumberToInTNumber(c.Query("item"))
 
-	db := database.DbConn()
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if createTimeRes, msg := CheckTimeStampQualify(int64(create_time)); createTimeRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
 	defer db.Close()
 
 	var product database.Product
@@ -1030,9 +1507,9 @@ func GetBatchDevice(c *gin.Context) {
 	prodyct_key := product.ProductKey
 
 	var result []database.Device
-	if (page == 0 && item == 0) {
-		db.Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
-	} else {
+	db.Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
+	total := len(result)
+	if page != 0 && item != 0 {
 		db.Limit(item).Offset((page-1)*item).Order("id desc").Where("product_id = ? AND create_time  = ?", product_id, time).Find(&result)
 	}
 
@@ -1055,9 +1532,256 @@ func GetBatchDevice(c *gin.Context) {
 		response = append(response, data)
 	}
 
+	type RespData struct {
+		NumResults int        `json:"num_results"`
+		DataList   []Response `json:"data_list"`
+	}
+
+	var resp_data = RespData{
+		NumResults: total,
+		DataList:   response,
+	}
+
 	resp := gin.H{
 		"status":  "Y",
 		"message": "批次管理设备查询成功",
+		"data":    resp_data,
+	}
+	c.JSON(200, resp)
+}
+
+func UpdateDevice(c *gin.Context) {
+	type Args struct {
+		Remark   string `json:"remark"`
+		DeviceId int    `json:"did"`
+	}
+
+	var args Args
+	if err := c.ShouldBind(&args); err != nil {
+		ErrResponse("参数解析错误", c)
+		return
+	}
+
+	remark := args.Remark
+	device_id := args.DeviceId
+
+	if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if deviceIDRes, msg := CheckProductIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+	device.Remark = remark
+	db.Save(&device)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备信息更新成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+
+}
+
+func AddProductLabel(c *gin.Context) {
+	type Args struct {
+		ProductID int                 `json:"pid"`
+		Label     []map[string]string `json:"label"`
+	}
+
+	var args Args
+	if err := c.ShouldBind(&args); err != nil {
+		ErrResponse("参数解析错误", c)
+		return
+	}
+
+	product_id := args.ProductID
+	label := args.Label
+	data := database.DealLabelArgs(label)
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if labelRes, msg := CheckProductLabelQualify(label); labelRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
+	var product database.Product
+	db.First(&product, product_id)
+
+	product.Label = data
+	db.Save(&product)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品添加标签成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+func AddDeviceLabel(c *gin.Context) {
+	type Args struct {
+		DeviceID int                 `json:"did"`
+		Label    []map[string]string `json:"label"`
+	}
+
+	var args Args
+	if err := c.ShouldBind(&args); err != nil {
+		ErrResponse("参数解析错误", c)
+		return
+	}
+
+	device_id := args.DeviceID
+	label := args.Label
+	data := database.DealLabelArgs(label)
+
+	if deviceIDRes, msg := CheckDeviceIDQualify(device_id); deviceIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+	if labelRes, msg := CheckDeviceLabelQualify(label); labelRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	db, msg := database.DbConn()
+	if db == nil {
+		ErrResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
+	var device database.Device
+	db.First(&device, device_id)
+
+	device.Label = data
+	db.Save(&device)
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备添加标签成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+func AnalysisUploadCSVFile(c *gin.Context) {
+	rFile, err := c.FormFile("file")
+	if err != nil {
+		c.String(400, "文件格式错误")
+		return
+	}
+
+	file, err := rFile.Open()
+	if err != nil {
+		c.String(400, "文件格式错误")
+		return
+	}
+	defer file.Close()
+	reader := csv.NewReader(bufio.NewReader(file))
+
+	data, _ := reader.ReadAll()
+
+	response_data := map[string]interface{}{
+		"number_count": len(data[1:]),
+		"file_name":    rFile.Filename,
+		"file_size":    fmt.Sprintf("%.2f", float64(rFile.Size)/float64(1024)),
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "文件识别成功",
+		"data":    response_data,
+	}
+	c.JSON(200, resp)
+}
+
+func FileAddDevice(c *gin.Context) {
+	rFile, _ := c.FormFile("file")
+	product_id := tool.StringNumberToInTNumber(c.PostForm("pid"))
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	file, err := rFile.Open()
+	if err != nil {
+		ErrResponse("文件格式错误", c)
+		return
+	}
+	defer file.Close()
+	reader := csv.NewReader(bufio.NewReader(file))
+
+	data, _ := reader.ReadAll()
+	device_list := data[1:]
+
+	time := time.Now()
+	for _, value := range device_list {
+		device_name := value[0]
+		device := database.Device{
+			ProductID:   product_id,
+			StatusID:    1,
+			Name:        device_name,
+			Remark:      "",
+			BatchCreate: true,
+			CreateTime:  time,
+			Online:      false,
+		}
+		device.SaveDevice()
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "设备批量添加成功",
+		"data":    nil,
+	}
+	c.JSON(200, resp)
+}
+
+func GetProductFunction(c *gin.Context) {
+	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
+
+	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+		ErrResponse(msg, c)
+		return
+	}
+
+	property := database.ProductGetPropertyFunction(product_id)
+	services := []map[string]interface{}{}
+	events := []map[string]interface{}{}
+
+	response := map[string]interface{}{
+		"property": property,
+		"services": services,
+		"events":   events,
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "产品功能定义查询成功",
 		"data":    response,
 	}
 	c.JSON(200, resp)

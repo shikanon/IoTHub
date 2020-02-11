@@ -29,7 +29,13 @@ type Mongodb struct {
 var MongodbConfig = &Mongodb{}
 
 type Constant struct {
-	TimeFormat string
+	TimeFormat           string
+	ModelNumber          int `ini:"modelNumber"`
+	NodeTypeNumber       int `ini:"nodeTypeNumber"`
+	NetWorkNumber        int `ini:"netWorkNumber"`
+	DataFormatNumber     int `ini:"dataFormatNumber"`
+	AuthMethodNumber     int `ini:"authMethodNumber"`
+	TopicOperationNumber int `ini:"topicOperationNumber"`
 }
 
 var GeneralConfig = &Constant{}

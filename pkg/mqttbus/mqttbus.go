@@ -144,20 +144,23 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		if err != nil {
 			logs.Error(err)
 		}
+		device := database.DeviceNameToDevice(productKey, deviceName)
 		if connectionMsg.Online == true {
 			User := make(map[string]interface{})
-			logs.Info(fmt.Sprintf("设备上线:%s&%s", deviceName, productKey))
+			logs.Info(fmt.Sprintf("设备上线:%s", connectionMsg.ClientID))
 			ts := time.Now()
-			device := database.DeviceNameToDevice(productKey, deviceName)
 			if tool.TimeDeal(device.ActivationTime) == "-" {
 				User["ActivationTime"] = ts
 			}
 			User["LastOnLineTime"] = ts
-			db := database.DbConn()
+			db, err := database.DbConn()
+			fmt.Println(err)
 			db.Model(&device).Updates(User)
+			database.DeviceOnline(device.IotID)
 			defer db.Close()
 		} else {
 			logs.Info(fmt.Sprintf("设备下线:%s", connectionMsg.ClientID))
+			database.DeviceOutline(device.IotID)
 		}
 		// 消息传递给controller
 		//event := deviceController.Event{Operate: 1, Topic:message.Topic(), Message:message.Payload()}
@@ -453,7 +456,6 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 	} else if reg, err := regexp.MatchString("/sys/(?P<productKey>.+)/(?P<deviceName>.+)/thing/deviceinfo/update", message.Topic()); reg == true && err == nil {
 		// 设备标签信息上报
 		logs.Info("设备标签信息上报处理逻辑")
-
 		var replyMsg ReplyMsg
 		replyMsg.Code = constants.Success
 		replyMsg.Message = constants.SuccessMsg
@@ -476,12 +478,14 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 			replyMsg.Code = constants.RequestParameterError
 			replyMsg.Message = constants.RequestParameterErrorMsg
 		}
+		device := database.DeviceNameToDevice(productKey, deviceName)
+		label := database.GetDeviceLabel(device.IotID)
 		for _, v := range params.Array() {
 			attrKey := v.Get("attrKey")
 			attrValue := v.Get("attrValue")
-			// TODO:保存标签到数据库
-			fmt.Println(attrKey, attrValue)
+			label[attrKey.String()] = attrValue.String()
 		}
+		database.UpdateDeviceLabel(device.IotID, label)
 		res, err := json.Marshal(replyMsg)
 		if err != nil {
 			logs.Error(err)
@@ -515,11 +519,13 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 			replyMsg.Code = constants.RequestParameterError
 			replyMsg.Message = constants.RequestParameterErrorMsg
 		}
+		device := database.DeviceNameToDevice(productKey, deviceName)
+		label := database.GetDeviceLabel(device.IotID)
 		for _, v := range params.Array() {
 			attrKey := v.Get("attrKey")
-			// TODO:删除标签
-			fmt.Println(attrKey)
+			delete(label, attrKey.String())
 		}
+		database.UpdateDeviceLabel(device.IotID, label)
 		res, err := json.Marshal(replyMsg)
 		if err != nil {
 			logs.Error(err)

@@ -1,11 +1,14 @@
 package database
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
+	"github.com/tidwall/gjson"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type TopicModel struct {
@@ -22,7 +25,7 @@ type Topics struct {
 	Custom  []TopicModel `json:"custom"`
 }
 
-func (p *Product) SaveProduct() (id int) {
+func (p *Product) SaveProduct() (id int, msg string) {
 	product_key := tool.GenerateProductKey()
 	product_secret := tool.GenerateProductSecret()
 	p.ProductKey = product_key
@@ -31,8 +34,11 @@ func (p *Product) SaveProduct() (id int) {
 	mongodb_model_id := ProductSaveModel(p.ObjectModelID, p.ProductKey)
 	p.MongodbModelID = mongodb_model_id
 
-	id = MysqlInsertOneData(p)
-	return id
+	id, msg = MysqlInsertOneData(p)
+	if id == 0 {
+		return 0, msg
+	}
+	return id, ""
 }
 
 func (d *Device) SaveDevice() (id int) {
@@ -40,7 +46,7 @@ func (d *Device) SaveDevice() (id int) {
 	iot_id := tool.GenerateIotId()
 	d.DeviceSecret = device_secret
 	d.IotID = iot_id
-	data_id := MysqlInsertOneData(d)
+	data_id, _ := MysqlInsertOneData(d)
 	return data_id
 }
 
@@ -70,12 +76,12 @@ func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id i
 		ConciseModelID: concise_id_str,
 		IntactModelID:  intact_id_str,
 	}
-	save_id := MysqlInsertOneData(mongo_model)
+	save_id, _ := MysqlInsertOneData(mongo_model)
 	return save_id
 }
 
 func ProductDeleteMongodbModel(pid int) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -118,12 +124,12 @@ func ProductSaveCustomTopic(pid int) {
 		data.ProductID = pid
 		data.Detail = value.Detail
 		data.PermissionID = value.PermissionID
-		_ = MysqlInsertOneData(&data)
+		MysqlInsertOneData(&data)
 	}
 }
 
 func GetCustomTopic(pid int) (data []TopicModel) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	data_list := []CustomTopic{}
@@ -295,7 +301,7 @@ func GetTopicModels(id int) (result Topics) {
 }
 
 func GetTopics(pid, did int) (topic Topics) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	datas := GetTopicModels(pid)
@@ -345,7 +351,7 @@ func GetTopics(pid, did int) (topic Topics) {
 }
 
 func DeviceNameToDevice(product_key, device_name string) (device Device) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var device_model Device
@@ -358,7 +364,7 @@ func DeviceNameToDevice(product_key, device_name string) (device Device) {
 }
 
 func GetIntactModel(producy_key string) (result primitive.M) {
-	db := DbConn()
+	db, _ := DbConn()
 	defer db.Close()
 
 	var product Product
@@ -366,6 +372,7 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
 	intact_model_id := product.MongodbModel.IntactModelID
 	intact_collection_name := config.MongodbConfig.IntactProductModel
+
 	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
 	filter := bson.M{"_id": model_id}
 	data := MongoDbGetFilterData(intact_collection_name, filter)
@@ -374,8 +381,11 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 	return data
 }
 
-func GetProductModelInfo(pid int) (intact, concise primitive.M) {
-	db := DbConn()
+func GetProductModelInfo(pid int) (intact, concise primitive.M, msg string) {
+	db, msg := DbConn()
+	if db == nil {
+		return nil, nil, msg
+	}
 	defer db.Close()
 
 	var product Product
@@ -402,5 +412,178 @@ func GetProductModelInfo(pid int) (intact, concise primitive.M) {
 	concise_data := MongoDbGetFilterData(concise_collection_name, concise_filter)
 	delete(concise_data, "_id")
 
-	return intact_data, concise_data
+	return intact_data, concise_data, ""
+}
+
+func DeatLabelQueryFilter(key, value string) (filter string) {
+
+	key_filter_model := "\"%s\":"
+	value_filter_model := ":\"%s\""
+	filter_model := "\"%s\":\"%s\""
+
+	label_filter := ""
+
+	if len(key) == 0 && len(value) == 0 {
+		label_filter = ""
+	} else if len(key) != 0 && len(value) == 0 {
+		label_filter = "%" + fmt.Sprintf(key_filter_model, key) + "%"
+	} else if len(key) == 0 && len(value) != 0 {
+		label_filter = "%" + fmt.Sprintf(value_filter_model, value) + "%"
+	} else if len(key) != 0 && len(value) != 0 {
+		label_filter = "%" + fmt.Sprintf(filter_model, key, value) + "%"
+	}
+
+	return label_filter
+}
+
+func DealLabelArgs(args []map[string]string) (label_str string) {
+	result := make(map[string]string)
+	for _, value := range args {
+		result[value["key"]] = value["value"]
+	}
+	result_str := tool.MapToJsonStr(result)
+	return result_str
+}
+
+func DeviceOnline(iot_id string) {
+	db, _ := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iot_id).First(&device)
+	device.Online = true
+	db.Save(&device)
+}
+
+func DeviceOutline(iot_id string) {
+	db, _ := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iot_id).First(&device)
+	device.Online = false
+	device.LastOnLineTime = time.Now()
+	db.Save(&device)
+}
+
+func ProductGetPropertyFunction(productID int) (properties []map[string]interface{}) {
+
+	db,_ := DbConn()
+	defer db.Close()
+
+	var product Product
+	db.First(&product, productID)
+	db.Model(&product).Related(&product.MongodbModel, "MongodbModel")
+	intact_model_id := product.MongodbModel.IntactModelID
+	intact_collection_name := config.MongodbConfig.IntactProductModel
+
+	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
+	filter := bson.M{"_id": model_id}
+	data := MongoDbGetFilterData(intact_collection_name, filter)
+	delete(data, "_id")
+
+	modelJson, _ := json.Marshal(data)
+	result := gjson.Get(string(modelJson), "properties")
+
+	for _, v := range result.Array() {
+		property := make(map[string]interface{})
+		property["identifier"] = v.Map()["identifier"].String()
+		property["name"] = v.Map()["name"].String()
+		property["accessMode"] = v.Map()["accessMode"].String()
+		property["desc"] = v.Map()["desc"].String()
+		property["required"] = v.Map()["required"].String()
+		property["data_type"] = v.Map()["dataType"].Map()["type"].String()
+
+		condition := v.Map()["dataType"].Map()["specs"].Array()
+		if condition == nil {
+			property["data_condition"] = tool.JsonStrToMap(v.Map()["dataType"].Map()["specs"].Raw)
+		} else {
+			var need_data []map[string]interface{}
+			for _, value := range condition {
+				resolve_data := make(map[string]interface{})
+				resolve_data["identifier"] = value.Map()["identifier"].String()
+				resolve_data["name"] = value.Map()["name"].String()
+				resolve_data["data_type"] = value.Map()["dataType"].Map()["type"].String()
+				resolve_data["data_condition"] = tool.JsonStrToMap(value.Map()["dataType"].Map()["specs"].Raw)
+				need_data = append(need_data, resolve_data)
+			}
+			property["data_condition"] = need_data
+		}
+		properties = append(properties, property)
+	}
+	return properties
+}
+
+func GetAllProductID() (result []int) {
+	db, _ := DbConn()
+	defer db.Close()
+
+	var ids []int
+	db.Model(Product{}).Pluck("id", &ids)
+
+	return ids
+}
+
+func GetProductLabel(productKey string) (label map[string]string) {
+	db, _ := DbConn()
+	defer db.Close()
+
+	var product Product
+	db.Where("product_key = ?", productKey).First(&product)
+
+	productLabel := product.Label
+	return tool.JsonStrToMap(productLabel)
+}
+
+func UpdateProductLabel(productKey string, newLabel map[string]string) {
+	db, _ := DbConn()
+	defer db.Close()
+
+	var product Product
+	db.Where("product_key = ?", productKey).First(&product)
+	label := tool.MapToJsonStr(newLabel)
+	product.Label = label
+	db.Save(&product)
+}
+
+func GetDeviceLabel(iotID string)(label map[string]string){
+	db, _ := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iotID).First(&device)
+
+	deviceLabel := device.Label
+	return tool.JsonStrToMap(deviceLabel)
+}
+
+func UpdateDeviceLabel(iotID string, newLabel map[string]string) {
+	db, _ := DbConn()
+	defer db.Close()
+
+	var device Device
+	db.Where("iot_id = ?", iotID).First(&device)
+	label := tool.MapToJsonStr(newLabel)
+	device.Label = label
+	db.Save(&device)
+}
+
+func GetAllProductTopicID()(result []int){
+	db, _ := DbConn()
+	defer db.Close()
+
+	var ids []int
+	db.Model(CustomTopic{}).Pluck("id", &ids)
+
+	return ids
+}
+
+func GetAllDeviceID()(result []int){
+	db, _ := DbConn()
+	defer db.Close()
+
+	var ids []int
+	db.Model(Device{}).Pluck("id", &ids)
+
+	return ids
 }
