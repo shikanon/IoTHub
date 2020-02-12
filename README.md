@@ -3,8 +3,8 @@
 
 ## 项目结构
 
-cmd: go包启动命令
-fontend: 前端代码
-pkg: go包代码
-test: 单元测试代码
+- cmd: go包启动命令
+- fontend: 前端代码
+- pkg: go包代码
+- test: 单元测试代码
 
