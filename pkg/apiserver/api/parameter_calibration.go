@@ -30,11 +30,10 @@ func CheckProductNameQualify(name string) (result bool, msg string) {
 	b := tool.GetStringSpecialCharCount(name, "-")
 	c := tool.GetStringSpecialCharCount(name, "_")
 	d := tool.GetStringSpecialCharCount(name, "@")
+	e := tool.GetParenthesesInStringCount(name)
+	f := tool.GetTheParenthesesInStringCount(name)
 	g := tool.GetStringChinaCharCount(name)
-
-	fmt.Println(originalLength, a + b + c + d + g)
-
-	statisticalLength := a + b + c + d + g*3
+	statisticalLength := a + b + c + d + e + f + g*3
 	if originalLength != statisticalLength {
 		return false, "不支持的产品名称"
 	}

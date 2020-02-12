@@ -83,9 +83,9 @@ func MapToJsonStr(map_data map[string]string) (data_str string) {
 	return result
 }
 
-func GetStringSpecialCharCount(data, char string)(number int){
+func GetStringSpecialCharCount(data, char string) (number int) {
 	re, _ := regexp.Compile(char)
-	b := re.FindAllString(data,-1)
+	b := re.FindAllString(data, -1)
 	return len(b)
 }
 
@@ -101,8 +101,20 @@ func GetStringEnglishCharAndNumberCount(data string) (number int) {
 	return len(b)
 }
 
-func GetPointInStringCount(data string)(number int){
-	re, _ :=  regexp.Compile(`\(`)
-	b := re.FindAll([]byte(data),-1)
+func GetPointInStringCount(data string) (number int) {
+	re, _ := regexp.Compile(`\.`)
+	b := re.FindAll([]byte(data), -1)
+	return len(b)
+}
+
+func GetParenthesesInStringCount(data string) (number int) {
+	re, _ := regexp.Compile(`\(`)
+	b := re.FindAll([]byte(data), -1)
+	return len(b)
+}
+
+func GetTheParenthesesInStringCount(data string) (number int) {
+	re, _ := regexp.Compile(`\)`)
+	b := re.FindAll([]byte(data), -1)
 	return len(b)
 }
