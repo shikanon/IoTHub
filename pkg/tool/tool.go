@@ -84,7 +84,7 @@ func MapToJsonStr(map_data map[string]string) (data_str string) {
 }
 
 func GetStringSpecialCharCount(data, char string)(number int){
-	re, _ := regexp.Compile(char);
+	re, _ := regexp.Compile(char)
 	b := re.FindAllString(data,-1)
 	return len(b)
 }

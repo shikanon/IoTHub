@@ -2,22 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"time"
 	"unicode"
 )
-
-func ErrResponse(msg string, c *gin.Context) {
-	resp := gin.H{
-		"status":  "N",
-		"message": msg,
-		"data":    nil,
-	}
-	c.JSON(400, resp)
-}
 
 func CheckProductNameQualify(name string) (result bool, msg string) {
 	var count int
@@ -40,10 +30,11 @@ func CheckProductNameQualify(name string) (result bool, msg string) {
 	b := tool.GetStringSpecialCharCount(name, "-")
 	c := tool.GetStringSpecialCharCount(name, "_")
 	d := tool.GetStringSpecialCharCount(name, "@")
-	e := tool.GetStringSpecialCharCount(name, "(")
-	f := tool.GetStringSpecialCharCount(name, ")")
 	g := tool.GetStringChinaCharCount(name)
-	statisticalLength := a + b + c + d + e + f + g*3
+
+	fmt.Println(originalLength, a + b + c + d + g)
+
+	statisticalLength := a + b + c + d + g*3
 	if originalLength != statisticalLength {
 		return false, "不支持的产品名称"
 	}

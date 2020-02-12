@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+
 // 跨域
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -27,6 +28,7 @@ func Cors() gin.HandlerFunc {
 func ApiRegister() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+	//router.Use(log.LoggerToFile())
 	router.Use(Cors())
 	router.Use(gin.Recovery())
 	v1 := router.Group("/iot/api/v1")
@@ -67,8 +69,6 @@ func ApiRegister() {
 		v1.GET("/server", api.GetDeviceServer)            // 设备-服务调用
 		v1.GET("/modelfuncs", api.GetModelFunctions)      // 产品-获取物模型标准功能定义
 		v1.DELETE("/device", api.DeleteDevice)            // 设备-删除
-
-		v1.GET("/", Cors(), api.Home)
 	}
 	router.Run("0.0.0.0:9898")
 }

@@ -8,7 +8,6 @@ import (
 )
 
 func init() {
-	// 初始化配置
 	config.ConfigInit()
 
 	hub := &mqttBus.Client{

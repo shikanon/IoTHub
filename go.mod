@@ -10,8 +10,11 @@ require (
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d
 	github.com/jinzhu/gorm v1.9.12
+	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
+	github.com/lestrrat-go/strftime v1.0.1 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/rs/xid v1.2.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/segmentio/ksuid v1.0.2

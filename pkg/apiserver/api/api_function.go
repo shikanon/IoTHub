@@ -8,31 +8,17 @@ import (
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"github.com/shikanon/IoTOrbHub/pkg/util"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
-// *******************************************************************************************************
-func Home(c *gin.Context) {
-
-	resp := gin.H{
-		"status":  "Y",
-		"message": "批次管理设备查询成功",
-		"data":    ".............",
-		//"data": tool.JsonStrToMap(productLabel),
-	}
-	c.JSON(200, resp)
-
-}
-
-// *********************************************************************************************************
-
-// TODO  权限；参数校验；捕捉错误;标签字段的拆解
+var log = logrus.New()
 
 func GetProductModels(c *gin.Context) {
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -51,7 +37,7 @@ func GetProductModels(c *gin.Context) {
 func GetProductNodeTypes(c *gin.Context) {
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -70,7 +56,7 @@ func GetProductNodeTypes(c *gin.Context) {
 func GetProductNetworkWays(c *gin.Context) {
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -89,7 +75,7 @@ func GetProductNetworkWays(c *gin.Context) {
 func GetProductDataFormats(c *gin.Context) {
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -108,7 +94,7 @@ func GetProductDataFormats(c *gin.Context) {
 func GetProductAuthMethods(c *gin.Context) {
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -152,7 +138,7 @@ func GetProducts(c *gin.Context) {
 	// 查询数据
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -212,19 +198,19 @@ func GetProducts(c *gin.Context) {
 
 func AddProduct(c *gin.Context) {
 	type Data struct {
-		Name         string `form:"name" json:"name" binding:"required"`
-		Category     string `form:"category" json:"category" binding:"required"`
-		ModelID      int    `form:"model_id" json:"model_id" binding:"required"`
-		NodeTypeID   int    `form:"node_type_id" json:"node_type_id" binding:"required"`
-		NetworkID    int    `form:"network_id" json:"network_id" binding:"required"`
-		DataFormatID int    `form:"data_format_id" json:"data_format_id" binding:"required"`
-		AuthMethodID int    `form:"auth_method_id" json:"auth_method_id" binding:"required"`
-		Describe     string `form:"desc" json:"desc" binding:"required"`
+		Name         string `form:"name" json:"name"`
+		Category     string `form:"category" json:"category" `
+		ModelID      int    `form:"model_id" json:"model_id" `
+		NodeTypeID   int    `form:"node_type_id" json:"node_type_id" `
+		NetworkID    int    `form:"network_id" json:"network_id" `
+		DataFormatID int    `form:"data_format_id" json:"data_format_id" `
+		AuthMethodID int    `form:"auth_method_id" json:"auth_method_id" `
+		Describe     string `form:"desc" json:"desc"`
 	}
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -285,7 +271,7 @@ func AddProduct(c *gin.Context) {
 	// mysql持久化存储。存储topic
 	id, msg := product.SaveProduct()
 	if id == 0 {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	database.ProductSaveCustomTopic(id)
@@ -304,7 +290,7 @@ func GetProduct(c *gin.Context) {
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -375,7 +361,7 @@ func UpdateProduct(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -398,7 +384,7 @@ func UpdateProduct(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -445,7 +431,7 @@ func AddProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -480,7 +466,7 @@ func AddProductTopic(c *gin.Context) {
 	}
 	id, msg := database.MysqlInsertOneData(&data)
 	if id == 0 {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 
@@ -502,7 +488,7 @@ func UpdateProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -531,7 +517,7 @@ func UpdateProductTopic(c *gin.Context) {
 	var topic database.CustomTopic
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -557,7 +543,7 @@ func DeleteProductTopic(c *gin.Context) {
 
 	var require Require
 	if err := c.ShouldBind(&require); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 	topic_id := require.TopicID
@@ -569,7 +555,7 @@ func DeleteProductTopic(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -591,7 +577,7 @@ func DeleteProduct(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -604,7 +590,7 @@ func DeleteProduct(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -649,9 +635,11 @@ func GetDevices(c *gin.Context) {
 	key := c.Query("key")
 	value := c.Query("value")
 
-	if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
-		ErrResponse(msg, c)
-		return
+	if product_id != 0 {
+		if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
+			ErrResponse(msg, c)
+			return
+		}
 	}
 	if namrRes, msg := CheckDeviceNameQualify(name); namrRes != true {
 		ErrResponse(msg, c)
@@ -678,7 +666,7 @@ func GetDevices(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -841,7 +829,7 @@ func GetDevices(c *gin.Context) {
 func GetSimpleProducts(c *gin.Context) {
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -873,20 +861,20 @@ func GetSimpleProducts(c *gin.Context) {
 func AddDevice(c *gin.Context) {
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
 
 	type Data struct {
-		ProductID int    `form:"pid" json:"pid" binding:"required"`
-		Name      string `form:"name" json:"name" binding:"required"`
-		Remark    string `form:"remark" json:"remark" binding:"required"`
+		ProductID int    `form:"pid" json:"pid"`
+		Name      string `form:"name" json:"name"`
+		Remark    string `form:"remark" json:"remark"`
 	}
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -951,7 +939,7 @@ func GetDevice(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1011,7 +999,7 @@ func GetDeviceTopic(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1037,7 +1025,7 @@ func DeleteDevice(c *gin.Context) {
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -1050,7 +1038,7 @@ func DeleteDevice(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1076,7 +1064,7 @@ func GetDeviceDesireStatus(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1109,7 +1097,7 @@ func GetDevicePropertyStatus(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1155,7 +1143,7 @@ func GetDeviceHistoryStatus(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1194,7 +1182,7 @@ func GetModelFunctions(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1231,17 +1219,16 @@ func GetDeviceEvent(c *gin.Context) {
 		ErrResponse(msg, c)
 		return
 	}
-	if endRes, msg := CheckTimeStampQualify(end);endRes != true {
+	if endRes, msg := CheckTimeStampQualify(end); endRes != true {
 		ErrResponse(msg, c)
 		return
 	}
 	if event_type != "" {
-		if eventTypeRes, msg := CheckEventTypeQualify(event_type); eventTypeRes != true{
+		if eventTypeRes, msg := CheckEventTypeQualify(event_type); eventTypeRes != true {
 			ErrResponse(msg, c)
 			return
 		}
 	}
-
 
 	if event_type == "" {
 		event_type = "all"
@@ -1253,7 +1240,7 @@ func GetDeviceEvent(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1307,7 +1294,7 @@ func GetDeviceServer(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1344,7 +1331,7 @@ func GetModelTSL(c *gin.Context) {
 
 	intact_mode, concise_model, msg := database.GetProductModelInfo(product_id)
 	if intact_mode == nil && concise_model == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 
@@ -1363,13 +1350,13 @@ func GetModelTSL(c *gin.Context) {
 
 func AutoAddDevice(c *gin.Context) {
 	type Data struct {
-		ProductID int `form:"pid" json:"pid" binding:"required"`
-		Number    int `form:"num" json:"num" binging:"required"`
+		ProductID int `form:"pid" json:"pid"`
+		Number    int `form:"num" json:"num"`
 	}
 
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -1414,7 +1401,7 @@ func GetBatchDevices(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1497,7 +1484,7 @@ func GetBatchDevice(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1558,7 +1545,7 @@ func UpdateDevice(c *gin.Context) {
 
 	var args Args
 	if err := c.ShouldBind(&args); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -1576,7 +1563,7 @@ func UpdateDevice(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1603,7 +1590,7 @@ func AddProductLabel(c *gin.Context) {
 
 	var args Args
 	if err := c.ShouldBind(&args); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -1622,7 +1609,7 @@ func AddProductLabel(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1649,7 +1636,7 @@ func AddDeviceLabel(c *gin.Context) {
 
 	var args Args
 	if err := c.ShouldBind(&args); err != nil {
-		ErrResponse("参数解析错误", c)
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
@@ -1668,7 +1655,7 @@ func AddDeviceLabel(c *gin.Context) {
 
 	db, msg := database.DbConn()
 	if db == nil {
-		ErrResponse(msg, c)
+		DbErrorResponse(msg, c)
 		return
 	}
 	defer db.Close()
@@ -1690,13 +1677,13 @@ func AddDeviceLabel(c *gin.Context) {
 func AnalysisUploadCSVFile(c *gin.Context) {
 	rFile, err := c.FormFile("file")
 	if err != nil {
-		c.String(400, "文件格式错误")
+		AnalyticParameterErrResponse(c)
 		return
 	}
 
 	file, err := rFile.Open()
 	if err != nil {
-		c.String(400, "文件格式错误")
+		ErrResponse("文件错误", c)
 		return
 	}
 	defer file.Close()
