@@ -53,6 +53,7 @@ func DealSequentialDatabaseData(arg []map[string]interface{}) (result []map[stri
 		var dat map[string]interface{}
 		var json_str string
 		json_str = value["Value"].(string)
+
 		if json_str != "" {
 			json.Unmarshal([]byte(json_str), &dat)
 			arg[index]["Value"] = dat
