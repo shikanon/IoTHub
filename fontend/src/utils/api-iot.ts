@@ -203,22 +203,20 @@ export const disabledDevice = (deviceKeyArr) => {
   return   put(`${baseUrl}/disabledDevice?deviceKey=${deviceKeyArr}`, )
 }
 
-//查询产品/设备运行状态
+//查询设备运行实时/期望状态
 export const getRunState= ( deviceId = 0,type ='pro') => {
-    if(type === 'pro'){//产品
+    if(type === 'pro'){//实时
       return get(`${baseUrl}/prostatus?&did=${deviceId}`)
-    }else{//设备
+    }else{//期望
       return get(`${baseUrl}/desstatus?&did=${deviceId}`)
     }
 }
 
-//运行状态详情
-export const getRunStateDtl= ( deviceId = 0,identifier = '',start = 0, end = 0,type ='pro') => {
-  if(type === 'pro'){
-    return get(`${baseUrl}/prostatus?&did=${deviceId}`)
-  }else{
-    return get(`${baseUrl}/hisstatus?&did=${deviceId}&identifier=${identifier}&start=${start}&end=${end}`)
-  }
+//运行状态历史数据
+export const getRunStateHistory= ( deviceId = 0,identifier = '',start = 0, end = 0,type ='pro') => {
+  
+  return get(`${baseUrl}/hisstatus?&did=${deviceId}&identifier=${identifier}&start=${start}&end=${end}`)
+  
 }
 
 

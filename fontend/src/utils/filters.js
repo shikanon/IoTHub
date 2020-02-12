@@ -17,10 +17,11 @@ export function timeFilter(value) {
 }
 
 export function cardValFilter(value,unit) {
-        if(unit){
-              return value ? value: '--' + unit
+        console.log(value,unit)
+        if(value){
+              return  value  + unit
         }else{
-                return ''
+                return '--' + unit
         }
 }
 
@@ -63,8 +64,13 @@ export function topicOperationFilter(value) {
 
 
 export function formatTags(tags) {
+        if(tags){
+                return tags.map((item) => item).join("·")
+
+        }else{
+                return ""
+        }
         
-        return tags.map((item) => item).join("·")
 }
 
 

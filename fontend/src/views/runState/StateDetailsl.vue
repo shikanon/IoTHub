@@ -143,9 +143,9 @@ export default {
 
         query(){
             //console.log(`查询数据,${this.deviceId},${this.identifier}开始时间${this.startTime}结束时间${this.endTime}`)
-            this.identifier = 'LightAdjustLevel'
+           // this.identifier = 'LightAdjustLevel'
 
-            this.$API_IOT.getRunStateDtl(this.deviceId,this.identifier,this.startTime,this.next_time !== 0 ?this.next_time : this.endTime,'dev').then((res) => {
+            this.$API_IOT.getRunStateHistory(this.deviceId,this.identifier,this.startTime,this.next_time !== 0 ?this.next_time : this.endTime,'pro').then((res) => {
                 if(res.data.data.data_list != null ){
                      this.data = this.data.concat(res.data.data.data_list)
                 }else{

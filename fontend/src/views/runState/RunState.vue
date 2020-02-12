@@ -14,8 +14,7 @@
                 ref="singleTable"
                 :data="cards"
                 highlight-current-row
-                style="width: 100%">
-                
+                style="width: 100%">              
                 <el-table-column
                   property="Name"
                   label="属性名称"
@@ -55,12 +54,21 @@
                   <div style="display: flex;justify-content: space-between;">
                      {{card.Name}}
                      <el-button type="text" size="small" @click="queryDataByName(card)" >查看数据</el-button>
-                  </div>
-                  <p style="font-size: 18px;color: rgb(51, 51, 51);height:21px;" >{{ card.val | cardValFilter(card.Unit) }}  </p>
-                    <!-- <el-tooltip class="item" effect="dark" :content="card.Value" placement="top-start">
-                        <p style="color: #999">{{card.Value ? card.Value : '--' }}</p>
-                    </el-tooltip>            -->
-                     <p style="color: #999">{{card.Value ? card.Value : '--' }}</p>
+                  </div>                
+                    <p v-if="card.DataType === 'struct'" class="value-json" >
+                        <el-tooltip placement="top" effect="light"> 
+                          <div slot="content"> {{ card.Value  |  cardValFilter(card.Unit) }} </div>
+                           <span>{{ card.Value  |  cardValFilter(card.Unit) }} </span> 
+                        </el-tooltip>                                      
+                    </p>    
+                     <p v-else class="value-span" >
+                        {{ card.Value  |  cardValFilter(card.Unit) }}    
+                        <el-tooltip placement="top" effect="light" v-if="hopeData.filter(item => item.Identifier = card.Identifier ).length > 0">
+                          <div slot="content">期望值{{hopeData.filter(item => item.Identifier = card.Identifier )[0].Value ? hopeData.filter(item => item.Identifier = card.Identifier )[0].Value : '--'}}</div>
+                          <span class="el-icon-info"></span>  
+                        </el-tooltip>                                      
+                    </p>                                                   
+                  <p style="color: #999">{{card.Time ? card.Time : '--' }}</p>
             </el-card>
           </el-col>
          <el-dialog title="查看数据" :visible.sync="dialogTableVisible" width="40%">
@@ -87,7 +95,8 @@ import StateDetailsl from './StateDetailsl'
           dialogTableVisible:false,
           intervalId:null,
           identifier:'',
-          name:''
+          name:'',
+          hopeData:[]
         
         }
       },
@@ -121,14 +130,25 @@ import StateDetailsl from './StateDetailsl'
     
         getCardData(){
 
-            this.$API_IOT.getRunState(this.deviceId,'dev').then((res) => {
-                console.log(res.data)
+          //实际状态
+            this.$API_IOT.getRunState(this.deviceId,'pro').then((res) => {
                 if(res.data.status  === 'Y'){
                   this.cards = res.data.data    
                 }else{
                   this.$message.error(res.message);
                 }              
              })
+              //期望值
+             this.$API_IOT.getRunState(this.deviceId,'des').then((res) => {
+                if(res.data.status  === 'Y'){
+                  this.hopeData = res.data.data    
+                }else{
+                  this.$message.error(res.message);
+                }              
+             })
+
+
+
         },
         queryDataByName(card){
           this.dialogTableVisible = true 
@@ -153,6 +173,26 @@ import StateDetailsl from './StateDetailsl'
     }
     .state-type{
       padding-bottom: 20px;
+    }
+
+    .value-span{
+      font-size: 18px;
+      color: rgb(51, 51, 51);
+      height:21px;
+    }
+
+
+    .value-json{
+      font-size: 14px;
+      color: rgb(51, 51, 51);
+      height:21px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .el-icon-info{
+      color:#ccc;
     }
 
     
