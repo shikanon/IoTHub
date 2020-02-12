@@ -247,9 +247,11 @@ func CheckDeviceNameQualify(name string) (result bool, msg string) {
 	b := tool.GetStringSpecialCharCount(name, "-")
 	c := tool.GetStringSpecialCharCount(name, "_")
 	d := tool.GetStringSpecialCharCount(name, "@")
-	e := tool.GetStringSpecialCharCount(name, ".")
+	//e := tool.GetStringSpecialCharCount(name, ".")
 	f := tool.GetStringSpecialCharCount(name, ":")
-	statisticalLength := a + b + c + d + e + f
+	//statisticalLength := a + b + c + d + e + f
+	statisticalLength := a + b + c + d + f
+	fmt.Println(originalLength, statisticalLength)
 	if originalLength != statisticalLength {
 		return false, "不支持的设备名称"
 	}
@@ -316,10 +318,10 @@ func CheckDeviceRemarkQualify(remark string) (result bool, msg string) {
 	}
 
 	if count < 4 {
-		return false, "设备名称短于4"
+		return false, "设备备注名称短于4"
 	}
 	if count > 64 {
-		return false, "设备名称长于64"
+		return false, "设备备注名称长于64"
 	}
 	originalLength := len(remark)
 	a := tool.GetStringEnglishCharAndNumberCount(remark)
