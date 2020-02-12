@@ -12,31 +12,22 @@
             <el-radio v-model="ruleForm.category" label="custom_category">自定义品类</el-radio>
       
           </el-form-item>
-          <el-form-item >
+          <el-form-item v-if="ruleForm.category === 'standard_category'" >
 
-            <el-select  v-if="ruleForm.category === 'standard_category'" 
-              v-model="categoryName" 
-              placeholder="请选择标准品类" 
-              @visible-change="drawer = true"
-              no-data-text="未选择" > 
-                </el-select>
-            <el-button type="text" :disabled="categoryName === ''"  @click="queryAttributeList">查看功能</el-button>
-              <!-- <el-input
-               v-if="ruleForm.category === 'standard_category'"
-              placeholder="请选择标准品类"
-              suffix-icon="el-icon-arrow-down"
-              @focus="focusCategoryName"
-              class="search-input"
-              size="medium"
-              v-model="categoryName">
-            </el-input> -->
-         
+            <el-select  
+                  v-model="categoryName" 
+                  placeholder="请选择标准品类" 
+                  @visible-change="openCategoryList"
+                  ref="category"> 
+            </el-select>
+            <el-button type="text" :disabled="categoryName === ''"  @click="showAttributeList(ruleForm.model_id)">查看功能</el-button>       
           </el-form-item>
           <el-form-item label="节点类型" prop="NodeType">  
              <el-radio-group v-model="ruleForm.node_type_id">
                 <el-radio  v-for="(item,key) in nodeTypeArr" :key="key" :label="item.id" border>{{item.name}}</el-radio>
              </el-radio-group>
           </el-form-item>
+           <el-divider></el-divider>
           <p>连网与数据</p>
           <el-form-item label="连网方式" prop="NetType">
               <el-select v-model="ruleForm.network_id" placeholder="请选择连网方式">
@@ -58,35 +49,43 @@
                 </el-option>
               </el-select>
           </el-form-item>
-          <el-collapse  @change="handleChange">
-            <el-collapse-item title="认证方式" >
-              <el-select v-model="ruleForm.auth_method_id" placeholder="请选择">
+
+          <el-button class="el-icon-arrow-down" type="text" @click="authMethodVisiable = true" v-if="!authMethodVisiable">认证方式</el-button><br>
+          <el-form-item  label="认证方式" prop="auth_method_id" v-if="authMethodVisiable">
+              <el-select v-model="ruleForm.auth_method_id" placeholder="请选择" >
                 <el-option
                   v-for="item in authTypeArr"
                   :key="item.id"
                   :label="item.name"
                   :value="item.id">
                 </el-option>
-              </el-select>
-            </el-collapse-item>
-          </el-collapse>
-          <p>更多信息</p>
-          
-            <el-collapse @change="handleChange">
-            <el-collapse-item title=" 产品描述" >
-              <el-input type="textarea" v-model="ruleForm.desc"></el-input>
-            </el-collapse-item>
-          </el-collapse>
+              </el-select><br>
+              <el-button class="el-icon-arrow-up" type="text" @click="authMethodVisiable = false" v-if="authMethodVisiable">收起</el-button>
+          </el-form-item>
+          <el-divider></el-divider>
+          <p>更多信息</p>    
+          <el-button class="el-icon-arrow-down" type="text" @click="descVisiable = true" v-if="!descVisiable">产品描述</el-button><br>
+          <el-form-item  label="产品描述" prop="desc" v-if="descVisiable">
+              <el-input type="textarea" v-model="ruleForm.desc"></el-input>                <br>
+              <el-button class="el-icon-arrow-up" type="text" @click="descVisiable = false" v-if="descVisiable">收起</el-button>
+          </el-form-item>
+          <el-divider></el-divider>
           <el-form-item>
               <el-button type="primary" @click="submitForm('ruleForm')">立即创建</el-button>
               <el-button @click="resetForm('ruleForm')">重置</el-button>
           </el-form-item>
         </el-form>
         <el-drawer
-          title="选择品类"
           :visible.sync="drawer"
-           size='26%'>
-            <CategoryList @select="selectCategory"></CategoryList>
+           size='25%'>
+            <CategoryList @select="selectCategory" @showAttributeList="showAttributeList($event)" :categoryId="ruleForm.model_id"></CategoryList>
+            <el-drawer
+              :append-to-body="true"
+              :visible.sync="innerDrawer"
+               direction="rtl"
+               style="right:26%">
+              <AttributeList :attributes="attributes"></AttributeList>
+          </el-drawer>
         </el-drawer>
       </div>
       <div v-else>
@@ -96,18 +95,21 @@
 </template>
 <script>
 import CategoryList from './CategoryList'
+import AttributeList from './AttributeList'
+
 import AfterAddProduct from './AfterAddProduct'
 
   export default {
-    components:{CategoryList,AfterAddProduct},
+    components:{CategoryList,AttributeList,AfterAddProduct},
     data() {
       return {
         drawer:false,
+        innerDrawer:false,
         addProduct:true,
         ruleForm: {
             name:"",
             category:"standard_category",
-            model_id:1,
+            model_id:0,
             node_type_id:1,
             network_id:1,
             data_format_id:1,
@@ -120,6 +122,7 @@ import AfterAddProduct from './AfterAddProduct'
         authTypeArr:[],
         categoryName:'',
         productId:0,
+        attributes:[],
         // ruleForm: {
         //   RegionId:"cn-shanghai",
         //   AliyunCommodityCode:"iothub_senior",
@@ -143,7 +146,9 @@ import AfterAddProduct from './AfterAddProduct'
           categoryName: [
             { required: true, message: '请选择所属品类', trigger: 'blur' }
           ],
-        },       
+        },   
+        authMethodVisiable:false ,
+        descVisiable:false   
       };
     },
     created(){
@@ -187,10 +192,7 @@ import AfterAddProduct from './AfterAddProduct'
           if (valid) {
             this.$API_IOT.addProduct(this.ruleForm).then((res) => {
               if(res.data.status === 'Y'){
-                  this.$message({
-                    message: '添加产品成功',
-                    type: 'success'
-                  })
+                  this.$message.success( '添加产品成功' )
                   this.addProduct = false
 
                   this.productId = res.data.data.product_id 
@@ -207,27 +209,28 @@ import AfterAddProduct from './AfterAddProduct'
       resetForm(formName) {
         this.$refs[formName].resetFields();
       },
-      handleChange(){
 
+      openCategoryList(){console.log()
+        this.drawer = true
+        this.$refs.category.blur()
       },
 
-      focusCategoryName(){
-        if(this.drawer){
-          this.drawer = false
-        }else{
-          this.drawer =  true
-        }
-       
+      closeCategoryList(){ 
+        this.drawer = false    
       },
-
+  
       selectCategory(category){ 
         this.categoryName = `${category.territory.name}/${category.scene}/${category.name}`
-        this.ruleForm.model_id = category.id
-        this.drawer = false
+        this.ruleForm.model_id = category.id 
+        this.closeCategoryList()
       },
 
-      queryAttributeList(){
-          console.log(this.ruleForm.model_id );
+      showAttributeList(id){
+          this.innerDrawer = true        
+          this.$API_IOT.getModelfuncs(id ).then((res) => {
+             this.attributes = res.data.data
+           }) 
+         
       }
     
     }
@@ -235,6 +238,8 @@ import AfterAddProduct from './AfterAddProduct'
 </script>
 <style scoped >
      .el-form {
-        width:460px;
+        width:600px;
     } 
+    .el-drawer{top:50px !important}
+    .el-select,.el-input{width: 460px;}
 </style>

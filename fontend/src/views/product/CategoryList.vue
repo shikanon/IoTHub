@@ -1,7 +1,8 @@
 <template>
-    <div name="category-list"> 
+    <div id="category-list"> 
         <el-row>
-            <el-select v-model="value" placeholder="全部领域">
+            <el-select v-model="value" placeholder="全部领域" size="medium" @change="getCategoryList(1)">
+              <el-option label="全部领域" value=""></el-option>
                 <el-option
                 v-for="item in options"
                 :key="item.id"
@@ -24,14 +25,14 @@
         <el-table 
           :data="tableData"
           highlight-current-row
-           @current-change="handleCurrentChange"
+           @current-change="selectThisRow"
           style="width: 100%">
           <el-table-column
             label="品类名称"
             width="200">
               <template slot-scope="scope">
                   <span >{{scope.row.name}}</span>
-                   <i class="el-icon-info" @click="showAttribute(scope.row.attribute)"></i>
+                   <i class="el-icon-info" @click="showAttribute(scope.row.id)"></i>
             </template>
           </el-table-column>
            <el-table-column
@@ -41,28 +42,30 @@
           </el-table-column>
           <el-table-column
             label="操作"
-            width="100">
+            >
             <template slot-scope="scope">
-              <el-button type="text" size="small" @click="handleClick(scope.row)">选择</el-button>
+              <el-button type="text" size="small" @click="selectCategory(scope.row)" :disabled="categoryId === scope.row.id">
+                {{categoryId === scope.row.id ? '已选择':'选择'}} 
+                </el-button>             
             </template>
           </el-table-column>
         </el-table>
         <Pagination :currentPage="currentPage" :pageSize="pageSize" :total ="total" 
           @handleSizeChange="handleSizeChange" @handleCurrentChange="handleCurrentChange"
-        ></Pagination>
-        <el-drawer
-          title="标准功能定义"
-          :visible.sync="drawer"
-          size='30%'>
-            <AttributeList ></AttributeList>
-        </el-drawer>
-      </div>
+        ></Pagination>     
+    </div>
   </template>
 
   <script>
     import AttributeList from './AttributeList'
     export default {
-        components:{AttributeList},
+      props:{
+        categoryId:{
+          type:Number,
+          default:0
+        }
+      },
+      components:{AttributeList},
       data() {
         return {
           tableData:[],
@@ -71,9 +74,8 @@
           total:0,
           options: [],
           value: '',
-          attribute:[],
+          attributes:[],
           query:'',
-          drawer:false
         }
       },
    
@@ -84,8 +86,10 @@
     },
       created(){
         this.openRouter = false
-        this.get
+        this.getModelTypeList()
         this.getCategoryList() 
+                       this.tableData =  [{'id':1,'name':"1",'scene':"123",'territory':'12312312'}]
+
       },
       methods:{
        
@@ -95,6 +99,7 @@
            }
              this.$API_IOT.getCategoryList(this.currentPage,this.pageSize,this.value).then((res) => {
                 this.tableData = res.data.data
+
                 this.total = res.data.num_results
             })           
          },
@@ -107,9 +112,9 @@
             {id:5,name:"	商业共享"},
             {id:6,name:"	智能模板"},
             {id:7,name:"	智能电力"},
-           {id: 8,name:"	智能农业"},
+            {id: 8,name:"	智能农业"},
             {id:9,name:"	智能建筑"},
-           {id: 10,name:"	智能园区"}]
+            {id: 10,name:"	智能园区"}]
 
             //  this.$API_IOT.getCategoryList(this.currentPage,this.pageSize,this.username).then((res) => {
             //     this.tableData = res.data.data
@@ -117,25 +122,7 @@
             // })           
          },
 
-         getAttributeList(){
-            this.attribute =[
-                {type:'属性',
-                 name:'工作状态',
-                 symbal:'LightStatus',
-                 dataType:'BOOL',
-                },
-                 {type:'属性',
-                 name:'工作电压',
-                 symbal:'LightVolt',
-                 dataType:'FLOAT',
-                },
-                  {type:'属性',
-                 name:'地理位置',
-                 symbal:'GeoLocation',
-                 dataType:'STRUCT',
-                },           
-            ]
-         },
+        
 
          handleSizeChange(val) {
             this.pageSize = val 
@@ -147,15 +134,22 @@
             this.getCategoryList()
           },
 
-            handleClick(category){     
+          selectThisRow(value){
+
+          },
+
+            selectCategory(category){     
                 this.$emit('select',category)            
             },
-            handleCurrentChange(category){
-                this.$emit('select',category)            
+            // handleCurrentChange(category){
+            //     this.$emit('select',category)            
+            // },
+            showAttribute(id){        
+                this.$emit('showAttributeList',id)
+                
             },
-            showAttribute(){        
-                this.drawer = true 
-            }
+
+         
         
       }
     }
@@ -164,5 +158,8 @@
   <style scoped>
     .search-input{
       width:200px;
+    }
+    #category-list{
+      margin: 0 20px;
     }
   </style>
