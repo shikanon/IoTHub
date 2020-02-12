@@ -2,22 +2,12 @@ package api
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/shikanon/IoTOrbHub/config"
 	"github.com/shikanon/IoTOrbHub/pkg/database"
 	"github.com/shikanon/IoTOrbHub/pkg/tool"
 	"time"
 	"unicode"
 )
-
-func ErrResponse(msg string, c *gin.Context) {
-	resp := gin.H{
-		"status":  "N",
-		"message": msg,
-		"data":    nil,
-	}
-	c.JSON(400, resp)
-}
 
 func CheckProductNameQualify(name string) (result bool, msg string) {
 	var count int
@@ -40,8 +30,8 @@ func CheckProductNameQualify(name string) (result bool, msg string) {
 	b := tool.GetStringSpecialCharCount(name, "-")
 	c := tool.GetStringSpecialCharCount(name, "_")
 	d := tool.GetStringSpecialCharCount(name, "@")
-	e := tool.GetStringSpecialCharCount(name, "(")
-	f := tool.GetStringSpecialCharCount(name, ")")
+	e := tool.GetParenthesesInStringCount(name)
+	f := tool.GetTheParenthesesInStringCount(name)
 	g := tool.GetStringChinaCharCount(name)
 	statisticalLength := a + b + c + d + e + f + g*3
 	if originalLength != statisticalLength {
@@ -65,7 +55,7 @@ func CheckProductLabelKeyQualify(key string) (result bool, msg string) {
 
 	originalLength := len(key)
 	a := tool.GetStringEnglishCharAndNumberCount(key)
-	b := tool.GetStringSpecialCharCount(key, ".")
+	b := tool.GetPointInStringCount(key)
 	statisticalLength := a + b
 	if originalLength != statisticalLength {
 		return false, "不支持的key"
@@ -87,7 +77,7 @@ func CheckProductLabelValueQualify(value string) (result bool, msg string) {
 	}
 	originalLength := len(value)
 	a := tool.GetStringEnglishCharAndNumberCount(value)
-	b := tool.GetStringSpecialCharCount(value, ".")
+	b := tool.GetPointInStringCount(value)
 	c := tool.GetStringSpecialCharCount(value, "-")
 	d := tool.GetStringSpecialCharCount(value, "_")
 	e := tool.GetStringSpecialCharCount(value, ":")
@@ -256,9 +246,10 @@ func CheckDeviceNameQualify(name string) (result bool, msg string) {
 	b := tool.GetStringSpecialCharCount(name, "-")
 	c := tool.GetStringSpecialCharCount(name, "_")
 	d := tool.GetStringSpecialCharCount(name, "@")
-	e := tool.GetStringSpecialCharCount(name, ".")
+	e := tool.GetPointInStringCount(name)
 	f := tool.GetStringSpecialCharCount(name, ":")
 	statisticalLength := a + b + c + d + e + f
+	fmt.Println(originalLength, statisticalLength)
 	if originalLength != statisticalLength {
 		return false, "不支持的设备名称"
 	}
@@ -280,7 +271,7 @@ func CheckDeviceLabelKeyQualify(key string) (result bool, msg string) {
 
 	originalLength := len(key)
 	a := tool.GetStringEnglishCharAndNumberCount(key)
-	b := tool.GetStringSpecialCharCount(key, ".")
+	b := tool.GetPointInStringCount(key)
 	statisticalLength := a + b
 	if originalLength != statisticalLength {
 		return false, "不支持的key"
@@ -302,7 +293,7 @@ func CheckDeviceLabelValueQualify(value string) (result bool, msg string) {
 	}
 	originalLength := len(value)
 	a := tool.GetStringEnglishCharAndNumberCount(value)
-	b := tool.GetStringSpecialCharCount(value, ".")
+	b := tool.GetPointInStringCount(value)
 	c := tool.GetStringSpecialCharCount(value, "-")
 	d := tool.GetStringSpecialCharCount(value, "_")
 	e := tool.GetStringSpecialCharCount(value, ":")
@@ -325,10 +316,10 @@ func CheckDeviceRemarkQualify(remark string) (result bool, msg string) {
 	}
 
 	if count < 4 {
-		return false, "设备名称短于4"
+		return false, "设备备注名称短于4"
 	}
 	if count > 64 {
-		return false, "设备名称长于64"
+		return false, "设备备注名称长于64"
 	}
 	originalLength := len(remark)
 	a := tool.GetStringEnglishCharAndNumberCount(remark)

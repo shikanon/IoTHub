@@ -1,0 +1,3 @@
+[submodule "sota-website"]
+	path = sota-website
+	url = https://github.com/shikanon/sota-website.git
