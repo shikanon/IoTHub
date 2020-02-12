@@ -641,21 +641,29 @@ func GetDevices(c *gin.Context) {
 			return
 		}
 	}
-	if namrRes, msg := CheckDeviceNameQualify(name); namrRes != true {
-		ErrResponse(msg, c)
-		return
+	if name != "" {
+		if namrRes, msg := CheckDeviceNameQualify(name); namrRes != true {
+			ErrResponse(msg, c)
+			return
+		}
 	}
-	if keyRes, msg := CheckDeviceLabelKeyQualify(key); keyRes != true {
-		ErrResponse(msg, c)
-		return
+	if key != "" {
+		if keyRes, msg := CheckDeviceLabelKeyQualify(key); keyRes != true {
+			ErrResponse(msg, c)
+			return
+		}
 	}
-	if valueRes, msg := CheckDeviceLabelValueQualify(value); valueRes != true {
-		ErrResponse(msg, c)
-		return
+	if value != "" {
+		if valueRes, msg := CheckDeviceLabelValueQualify(value); valueRes != true {
+			ErrResponse(msg, c)
+			return
+		}
 	}
-	if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
-		ErrResponse(msg, c)
-		return
+	if remark != "" {
+		if remarkRes, msg := CheckDeviceRemarkQualify(remark); remarkRes != true {
+			ErrResponse(msg, c)
+			return
+		}
 	}
 
 	label_filter := database.DeatLabelQueryFilter(key, value)
