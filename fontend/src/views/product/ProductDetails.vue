@@ -17,7 +17,7 @@
             <Ability :productInf="ProductInf"></Ability>
         </el-tab-pane>
         <el-tab-pane label="服务端订阅" name="fourth" lazy>
-           
+            <ServersubsList :productInf="ProductInf"></ServersubsList>
         </el-tab-pane>
         
         <!-- <el-tab-pane label="日志服务" name="third6">
@@ -44,11 +44,11 @@
   import ProductInfo from './ProductInfo'
   import Ability from '@/views/ability/Ability'
   import PublishProduct from './PublishProduct'
-
+  import ServersubsList from '../serverSubscription/ServersubsList'
   import {mapState, mapMutations, mapGetters} from 'vuex'
 
     export default {
-      components: { productInfoHead,ProductInfo,Ability,PublishProduct },
+      components: { productInfoHead,ProductInfo,Ability,PublishProduct,ServersubsList },
     
       data() {
         return {      
