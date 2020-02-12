@@ -14,18 +14,18 @@
                 v-if="type === 'base' || type === 'physics'"
                 property="name"
                 label="功能"
-                width="100">
+                width="80">
             </el-table-column>
 
             <el-table-column
              property="topic_name"
              label="Topic类"
-             width="800">
+             >
             </el-table-column>
 
             <el-table-column          
             label="操作权限"
-            width="120"
+            width="90"
             >
                 <template slot-scope="scope">
                     <span > {{scope.row.operation | topicOperationFilter}} </span>
@@ -33,7 +33,8 @@
             </el-table-column>
             <el-table-column
             property="desc"
-            label="描述">
+            label="描述"
+             width="300">
             </el-table-column>
 
             <el-table-column

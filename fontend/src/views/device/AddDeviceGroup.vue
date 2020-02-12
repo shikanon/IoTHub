@@ -194,9 +194,7 @@
   }
 </script>
 <style scoped >
-  .el-select{
-      width: 360px;
-  }
+ 
   .el-upload{
     display: flex !important;
   }

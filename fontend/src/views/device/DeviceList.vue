@@ -58,15 +58,14 @@
             width="55">
         </el-table-column>     
         <el-table-column
-            label="DeviceName/备注名称"
-            width="300"  
+            label="DeviceName"    
             >
             <template slot-scope="scope">{{ scope.row.name }}</template>
         </el-table-column>
         <el-table-column
             prop="their_product_name"
             label="设备所属产品"
-            width="300">
+            >
         </el-table-column>
         <el-table-column v-if="!drawer"
             prop="node_type"
@@ -76,6 +75,7 @@
         </el-table-column>
         <el-table-column
             label="状态/启用状态"
+            width="200"
             show-overflow-tooltip
             :filters="[{text: '已禁用', value: 2}, {text: '未激活', value: 1},
             {text: '在线', value: 3}, {text: '离线', value: 4}]"
@@ -93,13 +93,13 @@
             </template>
         </el-table-column>
         <el-table-column
-            label="最后上线时间"  >
+            label="最后上线时间"  width="200">
             <template slot-scope="scope">{{ scope.row.last_on_line_time  }}</template>
         </el-table-column>
         <el-table-column 
                 fixed="right"
                 label="操作"
-                width="200">
+                width="100">
                 <template slot-scope="scope">
                 <el-button v-if="type === 'device'" @click="goToDeviceDetails(scope.row.id)" type="text" size="small">查看 </el-button>
                 <el-button  v-else  @click="goToDeviceList(scope.row.id)" type="text" size="small">查看</el-button>

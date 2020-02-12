@@ -29,16 +29,17 @@
           <el-table-column
             prop="name"
             label="产品名称"
-            width="300">
+            >
           </el-table-column>
            <el-table-column
             prop="product_key"
             label="ProductKey"
-            width="280">
+            >
           </el-table-column>
           <el-table-column
             label="节点类型"
-            width="200">
+             width="120"
+            >
             <template slot-scope="scope">
               <span
                 class="name-span"           
@@ -52,7 +53,7 @@
           </el-table-column>          
           <el-table-column
             label="操作"
-            width="400">
+            width="200">
             <template slot-scope="scope">
               <el-button type="text" size="small" @click="gotoProductDtl(scope.row.id)">查看</el-button>
               <el-divider direction="vertical"></el-divider>
