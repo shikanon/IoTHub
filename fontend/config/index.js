@@ -10,7 +10,8 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/iot': {
-        target: 'http://10.10.6.78:9898/iot/api/v1',
+       // target: 'http://10.10.6.78:9898/iot/api/v1',
+        target: 'http://139.199.89.93:9898/iot/api/v1',
         changeOrigin: true,//是否跨域
         pathRewrite:{
           '^/api': ''
