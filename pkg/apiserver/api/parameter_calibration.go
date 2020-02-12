@@ -56,7 +56,7 @@ func CheckProductLabelKeyQualify(key string) (result bool, msg string) {
 
 	originalLength := len(key)
 	a := tool.GetStringEnglishCharAndNumberCount(key)
-	b := tool.GetStringSpecialCharCount(key, ".")
+	b := tool.GetPointInStringCount(key)
 	statisticalLength := a + b
 	if originalLength != statisticalLength {
 		return false, "不支持的key"
@@ -78,7 +78,7 @@ func CheckProductLabelValueQualify(value string) (result bool, msg string) {
 	}
 	originalLength := len(value)
 	a := tool.GetStringEnglishCharAndNumberCount(value)
-	b := tool.GetStringSpecialCharCount(value, ".")
+	b := tool.GetPointInStringCount(value)
 	c := tool.GetStringSpecialCharCount(value, "-")
 	d := tool.GetStringSpecialCharCount(value, "_")
 	e := tool.GetStringSpecialCharCount(value, ":")
@@ -247,10 +247,9 @@ func CheckDeviceNameQualify(name string) (result bool, msg string) {
 	b := tool.GetStringSpecialCharCount(name, "-")
 	c := tool.GetStringSpecialCharCount(name, "_")
 	d := tool.GetStringSpecialCharCount(name, "@")
-	//e := tool.GetStringSpecialCharCount(name, ".")
+	e := tool.GetPointInStringCount(name)
 	f := tool.GetStringSpecialCharCount(name, ":")
-	//statisticalLength := a + b + c + d + e + f
-	statisticalLength := a + b + c + d + f
+	statisticalLength := a + b + c + d + e + f
 	fmt.Println(originalLength, statisticalLength)
 	if originalLength != statisticalLength {
 		return false, "不支持的设备名称"
@@ -273,7 +272,7 @@ func CheckDeviceLabelKeyQualify(key string) (result bool, msg string) {
 
 	originalLength := len(key)
 	a := tool.GetStringEnglishCharAndNumberCount(key)
-	b := tool.GetStringSpecialCharCount(key, ".")
+	b := tool.GetPointInStringCount(key)
 	statisticalLength := a + b
 	if originalLength != statisticalLength {
 		return false, "不支持的key"
@@ -295,7 +294,7 @@ func CheckDeviceLabelValueQualify(value string) (result bool, msg string) {
 	}
 	originalLength := len(value)
 	a := tool.GetStringEnglishCharAndNumberCount(value)
-	b := tool.GetStringSpecialCharCount(value, ".")
+	b := tool.GetPointInStringCount(value)
 	c := tool.GetStringSpecialCharCount(value, "-")
 	d := tool.GetStringSpecialCharCount(value, "_")
 	e := tool.GetStringSpecialCharCount(value, ":")

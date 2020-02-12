@@ -100,3 +100,9 @@ func GetStringEnglishCharAndNumberCount(data string) (number int) {
 	b := re.FindAllString(data, -1)
 	return len(b)
 }
+
+func GetPointInStringCount(data string)(number int){
+	re, _ :=  regexp.Compile(`\(`)
+	b := re.FindAll([]byte(data),-1)
+	return len(b)
+}
