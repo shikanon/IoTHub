@@ -145,16 +145,16 @@ func GetProducts(c *gin.Context) {
 	var products []database.Product
 	if len(name) == 0 && len(label_filter) == 0 {
 		db.Model(&database.Product{}).Count(&total)
-		db.Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+		db.Limit(item).Offset((page - 1) * item).Order("id desc").Find(&products)
 	} else if len(name) == 0 && len(label_filter) != 0 {
 		db.Model(&database.Product{}).Where("label LIKE ?", label_filter).Count(&total)
-		db.Where("label LIKE ?", label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+		db.Where("label LIKE ?", label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&products)
 	} else if len(name) != 0 && len(label_filter) == 0 {
 		db.Model(&database.Product{}).Where("name = ?", name).Count(&total)
-		db.Where("name = ?", name).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+		db.Where("name = ?", name).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&products)
 	} else if len(name) != 0 && len(label_filter) != 0 {
 		db.Model(&database.Product{}).Where("name = ? AND label LIKE ?", name, label_filter).Count(&total)
-		db.Where("name = ? AND label LIKE ?", name, label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Preload("NodeType").Find(&products)
+		db.Where("name = ? AND label LIKE ?", name, label_filter).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&products)
 	}
 
 	// 构建响应数据结构
@@ -163,7 +163,7 @@ func GetProducts(c *gin.Context) {
 		Name       string `json:"name"`
 		ProductKey string `json:"product_key"`
 		CreateTime string `json:"create_time"`
-		NodeType   string `json:"node_type"`
+		NodeTypeID int    `json:"node_type_id"`
 	}
 	result := []info{}
 	for _, val := range products {
@@ -172,19 +172,14 @@ func GetProducts(c *gin.Context) {
 			Name:       val.Name,
 			ProductKey: val.ProductKey,
 			CreateTime: tool.TimeDeal(val.CreateTime),
-			NodeType:   val.NodeType.Name,
+			NodeTypeID: val.NodeTypeID,
 		}
 		result = append(result, data)
 	}
 
-	type RespData struct {
-		NumResults int    `json:"num_results"`
-		DataList   []info `json:"data_list"`
-	}
-
-	var resp_data = RespData{
-		NumResults: total,
-		DataList:   result,
+	resp_data := map[string]interface{}{
+		"num_results": total,
+		"data_list": result,
 	}
 
 	//  响应
@@ -628,8 +623,6 @@ func GetDevices(c *gin.Context) {
 	// product为0，设备首页
 	// product不为0，产品-管理设备 / 产品-查看-前往管理
 
-	t1 := time.Now().UnixNano() / 1e6
-
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	page := tool.StringNumberToInTNumber(c.Query("page"))
 	item := tool.StringNumberToInTNumber(c.Query("item"))
@@ -637,10 +630,6 @@ func GetDevices(c *gin.Context) {
 	remark := c.Query("remark")
 	key := c.Query("key")
 	value := c.Query("value")
-
-	fmt.Println("***********")
-	t2 := time.Now().UnixNano() / 1e6
-	fmt.Println("---> 1 ", t2 -t1)
 
 	if product_id != 0 {
 		if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
@@ -673,15 +662,7 @@ func GetDevices(c *gin.Context) {
 		}
 	}
 
-	fmt.Println("***********")
-	t3 := time.Now().UnixNano() / 1e6
-	fmt.Println("---> 2 ", t3 -t2)
-
 	label_filter := database.DeatLabelQueryFilter(key, value)
-
-	fmt.Println("***********")
-	t4 := time.Now().UnixNano() / 1e6
-	fmt.Println("---> 3 ", t4 -t3)
 
 	var total = 0
 	var activate_num = 0
@@ -801,10 +782,6 @@ func GetDevices(c *gin.Context) {
 		}
 	}
 
-	fmt.Println("***********")
-	t5 := time.Now().UnixNano() / 1e6
-	fmt.Println("---> 4 ", t5 -t4)
-
 	type Response struct {
 		ID               int    `json:"id"`                 // 设备id
 		Name             string `json:"name"`               // 备注名称
@@ -835,16 +812,9 @@ func GetDevices(c *gin.Context) {
 	resp_data := map[string]interface{}{
 		"device_active_count": activate_num,
 		"device_online_count": online_num,
-		"num_results": total,
-		"data_list": responses,
+		"num_results":         total,
+		"data_list":           responses,
 	}
-
-	fmt.Println("***********")
-	t6 := time.Now().UnixNano() / 1e6
-	fmt.Println("---> 5 ", t6 -t5)
-
-	fmt.Println("*****************************")
-	fmt.Println("---> total ", t6 - t1)
 
 	resp := gin.H{
 		"status":  "Y",
