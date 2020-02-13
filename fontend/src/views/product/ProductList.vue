@@ -43,7 +43,7 @@
             <template slot-scope="scope">
               <span
                 class="name-span"           
-              >{{ scope.row.node_type  }}</span>
+              >{{ scope.row.node_type_id |  nodeTypeFilter }}</span>
             </template>
           </el-table-column>
          <el-table-column

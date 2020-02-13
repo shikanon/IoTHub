@@ -75,15 +75,14 @@ export function formatTags(tags) {
 
 
 export function nodeTypeFilter(nodeType) {
-        
         switch (nodeType) {
-                case '0':
+                case 1:
                         nodeType = "直连设备";
                         break;
-                case '1':
+                case 2:
                         nodeType = "网关子设备";
                         break;
-                case '2':
+                case 3:
                         nodeType = "网关设备";
                         break;
                                               

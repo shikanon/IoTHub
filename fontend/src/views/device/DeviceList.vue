@@ -68,10 +68,10 @@
             >
         </el-table-column>
         <el-table-column v-if="!drawer"
-            prop="node_type"
             label="节点类型"
             width="120"
             show-overflow-tooltip>
+                <template slot-scope="scope">{{ scope.row.node_type_id | nodeTypeFilter}}</template>
         </el-table-column>
         <el-table-column
             label="状态/启用状态"
