@@ -23,7 +23,7 @@
               @focus="addLabelVisible = true"
               class="search-input"
               size="medium"
-              v-module="label">
+              v-model="label">
             </el-input>
         </el-row>  
         <el-row v-if="type === 'group'">

@@ -108,7 +108,7 @@
              <span v-for="(item,index) in device.label" :key = "index" class="label-span">{{item['key']}}:{{item['value']}}</span>
         </p>
         <el-dialog title="添加标签" :visible.sync="addLabelVisible" width="26%">
-            <AddLabel  ref="addLabel" :labelArr="JSON.parse(JSON.stringify(device.label))" type="device" @close="addLabelVisible = false"></AddLabel>
+            <AddLabel  ref="addLabel" :labelArr="device.label ? JSON.parse(JSON.stringify(device.label)) :[]" type="device" @close="addLabelVisible = false"></AddLabel>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="addLabelSubmit">确 定</el-button>
                 <el-button @click="addLabelVisible = false">取 消</el-button>
