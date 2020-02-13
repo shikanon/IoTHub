@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func MongoDbClient() (connect *mongo.Database) {
+func MongoDbClient() (connect *mongo.Database, msg string) {
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	host := config.MongodbConfig.Host
 	port := config.MongodbConfig.Port
@@ -19,36 +19,42 @@ func MongoDbClient() (connect *mongo.Database) {
 	url := fmt.Sprintf("mongodb://%s:%d", host, port)
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
 	if err != nil {
-		fmt.Println("ERR:", err)
+		return nil, "mongodb数据库连接失败"
 	}
 	db_client := client.Database(db)
-	return db_client
+	return db_client, ""
 }
 
-func MongoDbInsertOneData(collection_name string, data bson.M) (id_str string) {
-	db_client := MongoDbClient()
+func MongoDbInsertOneData(collection_name string, data bson.M) (id_str, mag string) {
+	db_client, msg := MongoDbClient()
+	if db_client == nil {
+		return "", msg
+	}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	collection := db_client.Collection(collection_name)
 	res, _ := collection.InsertOne(ctx, &data)
 	id := res.InsertedID.(primitive.ObjectID).Hex() // objectID转string
-	return id
+	return id, ""
 }
 
-func MongoDbGetFilterData(collection_name string, filter bson.M) (result bson.M) {
-	db_client := MongoDbClient()
+func MongoDbGetFilterData(collection_name string, filter bson.M) (result bson.M, msg string) {
+	db_client, msg := MongoDbClient()
+	if db_client == nil {
+		return nil, ""
+	}
 	data := bson.M{}
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	collection := db_client.Collection(collection_name)
 	err := collection.FindOne(ctx, filter).Decode(&data)
 	if err != nil {
-		fmt.Println(err)
+		return nil, "数据查找失败"
 	}
-	return data
+	return data, ""
 }
 
 func MongodbDeleteOneData(collection_name string, _id string) {
 	id, _ := primitive.ObjectIDFromHex(_id) // string转objectID
-	db_client := MongoDbClient()
+	db_client, _ := MongoDbClient()
 	collection := db_client.Collection(collection_name)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 	filter := bson.M{"_id": id}

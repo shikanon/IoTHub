@@ -409,7 +409,10 @@ func CheckArray(key string, value, result gjson.Result) (interface{}, error) {
 }
 
 func GetDevicePropertyStatusInfo(productKey,deviceId string) (properties []map[string]interface{}) {
-	model := database.GetIntactModel(productKey)
+	model, msg := database.GetIntactModel(productKey)
+	if model == nil {
+		fmt.Println(msg)
+	}
 	modelJson,err := json.Marshal(model)
 	if err != nil {
 		fmt.Println(err)
@@ -438,7 +441,10 @@ func GetDevicePropertyStatusInfo(productKey,deviceId string) (properties []map[s
 }
 
 func GetDeviceDesiredPropertyInfo(productKey,deviceId string) (properties []map[string]interface{}) {
-	model := database.GetIntactModel(productKey)
+	model, msg := database.GetIntactModel(productKey)
+	if model == nil {
+		fmt.Println(msg)
+	}
 	modelJson,err := json.Marshal(model)
 	if err != nil {
 		fmt.Println(err)

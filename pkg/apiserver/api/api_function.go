@@ -627,6 +627,9 @@ func DeleteProduct(c *gin.Context) {
 func GetDevices(c *gin.Context) {
 	// product为0，设备首页
 	// product不为0，产品-管理设备 / 产品-查看-前往管理
+
+	t1 := time.Now().UnixNano() / 1e6
+
 	product_id := tool.StringNumberToInTNumber(c.Query("pid"))
 	page := tool.StringNumberToInTNumber(c.Query("page"))
 	item := tool.StringNumberToInTNumber(c.Query("item"))
@@ -634,6 +637,10 @@ func GetDevices(c *gin.Context) {
 	remark := c.Query("remark")
 	key := c.Query("key")
 	value := c.Query("value")
+
+	fmt.Println("***********")
+	t2 := time.Now().UnixNano() / 1e6
+	fmt.Println("---> 1 ", t2 -t1)
 
 	if product_id != 0 {
 		if productIDRes, msg := CheckProductIDQualify(product_id); productIDRes != true {
@@ -666,7 +673,15 @@ func GetDevices(c *gin.Context) {
 		}
 	}
 
+	fmt.Println("***********")
+	t3 := time.Now().UnixNano() / 1e6
+	fmt.Println("---> 2 ", t3 -t2)
+
 	label_filter := database.DeatLabelQueryFilter(key, value)
+
+	fmt.Println("***********")
+	t4 := time.Now().UnixNano() / 1e6
+	fmt.Println("---> 3 ", t4 -t3)
 
 	var total = 0
 	var activate_num = 0
@@ -786,6 +801,10 @@ func GetDevices(c *gin.Context) {
 		}
 	}
 
+	fmt.Println("***********")
+	t5 := time.Now().UnixNano() / 1e6
+	fmt.Println("---> 4 ", t5 -t4)
+
 	type Response struct {
 		ID               int    `json:"id"`                 // 设备id
 		Name             string `json:"name"`               // 备注名称
@@ -802,29 +821,30 @@ func GetDevices(c *gin.Context) {
 		data.ID = device.ID
 		data.Name = device.Name
 		var product database.Product
-		db.First(&product, device.ProductID).Related(&product.NodeType, "NodeType")
+		//db.First(&product, device.ProductID).Related(&product.NodeType, "NodeType")
+		db.First(&product, device.ProductID)
 		data.TheirProductName = product.Name
-		data.NodeType = product.NodeType.Name
+		//data.NodeType = product.NodeType.Name
 		data.NodeTypeID = product.NodeTypeID
-		data.Status = device.Status.Name
+		//data.Status = device.Status.Name
 		data.StatusID = device.StatusID
 		data.LastOnLineTime = tool.TimeDeal(device.LastOnLineTime)
 		responses = append(responses, data)
 	}
 
-	type RespData struct {
-		ActivateCount int        `json:"device_active_count"`
-		OnlineCount   int        `json:"device_online_count"`
-		NumResults    int        `json:"num_results"`
-		DataList      []Response `json:"data_list"`
+	resp_data := map[string]interface{}{
+		"device_active_count": activate_num,
+		"device_online_count": online_num,
+		"num_results": total,
+		"data_list": responses,
 	}
 
-	var resp_data = RespData{
-		ActivateCount: activate_num,
-		OnlineCount:   online_num,
-		NumResults:    total,
-		DataList:      responses,
-	}
+	fmt.Println("***********")
+	t6 := time.Now().UnixNano() / 1e6
+	fmt.Println("---> 5 ", t6 -t5)
+
+	fmt.Println("*****************************")
+	fmt.Println("---> total ", t6 - t1)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -1763,7 +1783,11 @@ func GetProductFunction(c *gin.Context) {
 		return
 	}
 
-	property := database.ProductGetPropertyFunction(product_id)
+	property, msg := database.ProductGetPropertyFunction(product_id)
+	if property == nil {
+		DbErrorResponse(msg, c)
+		return
+	}
 	services := []map[string]interface{}{}
 	events := []map[string]interface{}{}
 

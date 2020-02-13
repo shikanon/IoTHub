@@ -190,7 +190,10 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		// 数据校验
 		device := database.DeviceNameToDevice(productKey, deviceName)
 		deviceId := device.IotID
-		model := database.GetIntactModel(productKey)
+		model, msg := database.GetIntactModel(productKey)
+		if model == nil {
+			fmt.Println(msg)
+		}
 		modelJson, err := json.Marshal(model)
 		if err != nil {
 			fmt.Println(err)
@@ -279,7 +282,10 @@ func OnSubMessageReceived(client MQTT.Client, message MQTT.Message) {
 		// 数据校验
 		device := database.DeviceNameToDevice(productKey, deviceName)
 		deviceId := device.IotID
-		model := database.GetIntactModel(productKey)
+		model, msg := database.GetIntactModel(productKey)
+		if model == nil {
+			fmt.Println(msg)
+		}
 		modelJson, err := json.Marshal(model)
 		if err != nil {
 			fmt.Println(err)
@@ -672,7 +678,10 @@ func (mq *Client) SetProperty(productKey, deviceName string, args string) (errDa
 	// 数据校验
 	errData = make(map[string]interface{})
 	fields := make(map[string]interface{})
-	model := database.GetIntactModel(productKey)
+	model, msg := database.GetIntactModel(productKey)
+	if model == nil {
+		fmt.Println(msg)
+	}
 	modelJson, err := json.Marshal(model)
 	if err != nil {
 		fmt.Println(err)
@@ -730,7 +739,10 @@ func (mq *Client) CallService(productKey, deviceName, service string, args strin
 	// 数据校验
 	errData = make(map[string]interface{})
 	fields := make(map[string]interface{})
-	model := database.GetIntactModel(productKey)
+	model, msg := database.GetIntactModel(productKey)
+	if model == nil {
+		fmt.Println(msg)
+	}
 	modelJson, err := json.Marshal(model)
 	if err != nil {
 		fmt.Println(err)

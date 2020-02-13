@@ -31,7 +31,10 @@ func (p *Product) SaveProduct() (id int, msg string) {
 	p.ProductKey = product_key
 	p.ProductSecret = product_secret
 
-	mongodb_model_id := ProductSaveModel(p.ObjectModelID, p.ProductKey)
+	mongodb_model_id, msg := ProductSaveModel(p.ObjectModelID, p.ProductKey)
+	if mongodb_model_id == 0 {
+		return 0, msg
+	}
 	p.MongodbModelID = mongodb_model_id
 
 	id, msg = MysqlInsertOneData(p)
@@ -50,7 +53,7 @@ func (d *Device) SaveDevice() (id int) {
 	return data_id
 }
 
-func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id int) {
+func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id int, msg string) {
 	intact_product_tab := config.MongodbConfig.IntactProductModel
 	concise_product_tab := config.MongodbConfig.ConciseProductModel
 	concise_base_tab := config.MongodbConfig.BaseModelConcise
@@ -58,26 +61,38 @@ func ProductSaveModel(base_model_id int, product_key string) (mongodb_model_id i
 
 	filter := bson.M{"id": base_model_id}
 
-	concise_data := MongoDbGetFilterData(concise_base_tab, filter)
+	concise_data, msg := MongoDbGetFilterData(concise_base_tab, filter)
+	if concise_data == nil {
+		return 0, msg
+	}
 	delete(concise_data, "_id")
 	delete(concise_data, "id")
 
-	intact_data := MongoDbGetFilterData(intact_base_tab, filter)
+	intact_data, msg := MongoDbGetFilterData(intact_base_tab, filter)
+	if intact_data == nil {
+		return 0, msg
+	}
 	delete(intact_data, "_id")
 	delete(intact_data, "id")
 	intact_data["profile"] = map[string]string{
 		"productKey": product_key,
 	}
 
-	concise_id_str := MongoDbInsertOneData(concise_product_tab, concise_data)
-	intact_id_str := MongoDbInsertOneData(intact_product_tab, intact_data)
+	concise_id_str, msg := MongoDbInsertOneData(concise_product_tab, concise_data)
+	if concise_id_str == "" {
+		return 0, msg
+	}
+	intact_id_str, msg := MongoDbInsertOneData(intact_product_tab, intact_data)
+	if intact_id_str == "" {
+		return 0, msg
+	}
 
 	mongo_model := &MongodbModel{
 		ConciseModelID: concise_id_str,
 		IntactModelID:  intact_id_str,
 	}
 	save_id, _ := MysqlInsertOneData(mongo_model)
-	return save_id
+	return save_id, ""
 }
 
 func ProductDeleteMongodbModel(pid int) {
@@ -363,8 +378,11 @@ func DeviceNameToDevice(product_key, device_name string) (device Device) {
 	return device_model
 }
 
-func GetIntactModel(producy_key string) (result primitive.M) {
-	db, _ := DbConn()
+func GetIntactModel(producy_key string) (result primitive.M, msg string) {
+	db, msg := DbConn()
+	if db == nil {
+		return nil, msg
+	}
 	defer db.Close()
 
 	var product Product
@@ -375,10 +393,13 @@ func GetIntactModel(producy_key string) (result primitive.M) {
 
 	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
 	filter := bson.M{"_id": model_id}
-	data := MongoDbGetFilterData(intact_collection_name, filter)
+	data, msg := MongoDbGetFilterData(intact_collection_name, filter)
+	if data == nil {
+		return nil, msg
+	}
 	delete(data, "_id")
 
-	return data
+	return data, ""
 }
 
 func GetProductModelInfo(pid int) (intact, concise primitive.M, msg string) {
@@ -403,13 +424,19 @@ func GetProductModelInfo(pid int) (intact, concise primitive.M, msg string) {
 	concise_filter := bson.M{"_id": concise_model_id}
 
 	intact_collection_name := config.MongodbConfig.IntactProductModel
-	intact_data := MongoDbGetFilterData(intact_collection_name, intact_filter)
+	intact_data, msg := MongoDbGetFilterData(intact_collection_name, intact_filter)
+	if intact_data == nil {
+		return nil, nil, msg
+	}
 	delete(intact_data, "_id")
 	profile := map[string]string{"productKey": product_key}
 	intact_data["profile"] = profile
 
 	concise_collection_name := config.MongodbConfig.ConciseProductModel
-	concise_data := MongoDbGetFilterData(concise_collection_name, concise_filter)
+	concise_data, msg := MongoDbGetFilterData(concise_collection_name, concise_filter)
+	if concise_data == nil {
+		return nil, nil, msg
+	}
 	delete(concise_data, "_id")
 
 	return intact_data, concise_data, ""
@@ -466,9 +493,12 @@ func DeviceOutline(iot_id string) {
 	db.Save(&device)
 }
 
-func ProductGetPropertyFunction(productID int) (properties []map[string]interface{}) {
+func ProductGetPropertyFunction(productID int) (properties []map[string]interface{}, msg string) {
 
-	db,_ := DbConn()
+	db, msg := DbConn()
+	if db == nil {
+		return nil, msg
+	}
 	defer db.Close()
 
 	var product Product
@@ -479,7 +509,10 @@ func ProductGetPropertyFunction(productID int) (properties []map[string]interfac
 
 	model_id, _ := primitive.ObjectIDFromHex(intact_model_id)
 	filter := bson.M{"_id": model_id}
-	data := MongoDbGetFilterData(intact_collection_name, filter)
+	data, msg := MongoDbGetFilterData(intact_collection_name, filter)
+	if data == nil {
+		return nil, msg
+	}
 	delete(data, "_id")
 
 	modelJson, _ := json.Marshal(data)
@@ -511,7 +544,7 @@ func ProductGetPropertyFunction(productID int) (properties []map[string]interfac
 		}
 		properties = append(properties, property)
 	}
-	return properties
+	return properties, ""
 }
 
 func GetAllProductID() (result []int) {

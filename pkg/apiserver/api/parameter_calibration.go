@@ -249,7 +249,6 @@ func CheckDeviceNameQualify(name string) (result bool, msg string) {
 	e := tool.GetPointInStringCount(name)
 	f := tool.GetStringSpecialCharCount(name, ":")
 	statisticalLength := a + b + c + d + e + f
-	fmt.Println(originalLength, statisticalLength)
 	if originalLength != statisticalLength {
 		return false, "不支持的设备名称"
 	}
