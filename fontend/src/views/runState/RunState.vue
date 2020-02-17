@@ -63,8 +63,8 @@
                     </p>    
                      <p v-else class="value-span" >
                         {{ card.Value  |  cardValFilter(card.Unit) }}    
-                        <el-tooltip placement="top" effect="light" v-if="hopeData.filter(item => item.Identifier = card.Identifier ).length > 0">
-                          <div slot="content">期望值{{hopeData.filter(item => item.Identifier = card.Identifier )[0].Value ? hopeData.filter(item => item.Identifier = card.Identifier )[0].Value : '--'}}</div>
+                        <el-tooltip placement="top" effect="light" v-if="hopeData.filter(item => item.Identifier === card.Identifier).length > 0">
+                          <div slot="content">期望值{{hopeData.filter(item => item.Identifier === card.Identifier)[0].Value ? hopeData.filter(item => item.Identifier === card.Identifier)[0].Value : '--'}}</div>
                           <span class="el-icon-info"></span>  
                         </el-tooltip>                                      
                     </p>                                                   
@@ -109,47 +109,55 @@ import StateDetailsl from './StateDetailsl'
               }else{
                 clearInterval(this.intervalId)
               }
-                      
           }
-         
       },
       created(){  
-        this.getCardData()        
+        this.getCardData()
+        
       },
+    
+  
       destoryed() {
         clearInterval(this.intervalId)
       },
       methods:{
        
        
-  
         handleClick(tab, event) {
           //console.log(tab, event);
         },
-        
-    
+         
         getCardData(){
 
-          //实际状态
-            this.$API_IOT.getRunState(this.deviceId,'pro').then((res) => {
-                if(res.data.status  === 'Y'){
-                  this.cards = res.data.data    
-                }else{
-                  this.$message.error(res.message);
-                }              
-             })
-              //期望值
-             this.$API_IOT.getRunState(this.deviceId,'des').then((res) => {
-                if(res.data.status  === 'Y'){
-                  this.hopeData = res.data.data    
-                }else{
-                  this.$message.error(res.message);
-                }              
-             })
+           let that = this 
+           let promise = new Promise(function(resolve, reject) {
+              //期望
+              that.$API_IOT.getRunState(that.deviceId,'des').then((res) => {
+                  if(res.data.status  === 'Y'){
+                    that.hopeData = res.data.data                 
+                  }else{
+                    that.$message.error(res.message);
+                  }               
+                 resolve()    
+              })  
+               
+            })
 
-
-
+           promise.then(function() {
+               //实际
+              that.$API_IOT.getRunState(that.deviceId,'pro').then((res) => {
+                  if(res.data.status  === 'Y'){
+                     that.cards = res.data.data  
+                  }else{
+                    that.$message.error(res.message);
+                  }  
+              })
+                                            
+          })
+                 
         },
+
+     
         queryDataByName(card){
           this.dialogTableVisible = true 
           this.identifier = card.Identifier
