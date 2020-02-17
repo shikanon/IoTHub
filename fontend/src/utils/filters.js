@@ -17,7 +17,6 @@ export function timeFilter(value) {
 }
 
 export function cardValFilter(value,unit) {
-        console.log(value,unit)
         if(value){
               return  value  + unit
         }else{
