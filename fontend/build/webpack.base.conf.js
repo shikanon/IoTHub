@@ -29,6 +29,19 @@ module.exports = {
       '@': resolve('src'),
     }
   },
+
+  optimization: {
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+            name: "commons",
+            chunks: "initial",
+            minChunks: 2
+        }
+    }
+  }
+},
+
   module: {
     rules: [
       {
