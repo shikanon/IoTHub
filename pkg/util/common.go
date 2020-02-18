@@ -135,7 +135,7 @@ func DataVerification(key, dataType string, value, result gjson.Result) (interfa
 	case "enum":
 		return CheckEnum(key, value, result)
 	case "bool":
-		return CheckBool(key, value)
+		return CheckBool(key, value, result)
 	case "text":
 		return CheckText(key, value, result)
 	case "date":
@@ -221,16 +221,19 @@ func CheckEnum(key string, value, result gjson.Result) (interface{}, error) {
 	return x, nil
 }
 
-func CheckBool(key string, value gjson.Result) (interface{}, error) {
+func CheckBool(key string, value, result gjson.Result) (interface{}, error) {
 	var x int
 	err := json.Unmarshal([]byte(value.Raw), &x)
 	if err != nil {
 		fmt.Println(err)
 		return nil, errors.New(fmt.Sprintf("6308:tsl parse: value of bool type must be int -> %s", key))
-	} else if x != 0 && x != 1 {
+	} else if x == 0 {
+		return fmt.Sprintf("0(%s)",result.Get("dataType.specs.0").String()), nil
+	} else if x == 1 {
+		return fmt.Sprintf("1(%s)",result.Get("dataType.specs.1").String()), nil
+	} else {
 		return nil, errors.New(fmt.Sprintf("6308:tsl parse: bool specs error -> %s", key))
 	}
-	return x, nil
 }
 
 func CheckText(key string, value, result gjson.Result) (interface{}, error) {
@@ -311,7 +314,7 @@ func CheckStruct(key string, value, result gjson.Result) (interface{}, error) {
 				x[k] = v
 			}
 		case "bool":
-			v, err := CheckBool(k, v)
+			v, err := CheckBool(k, v, result)
 			if err != nil {
 				return nil, err
 			} else {
