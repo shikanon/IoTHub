@@ -53,7 +53,7 @@
 
 <style scoped >
   .el-pagination{
-    margin-top: 20px;
+    margin: 20px 0px;
     float: right;
   }
 </style>

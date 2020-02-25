@@ -38,7 +38,7 @@
           </el-table-column>
           <el-table-column
             label="节点类型"
-             width="120"
+             width="100"
             >
             <template slot-scope="scope">
               <span
@@ -49,6 +49,7 @@
          <el-table-column
             prop="create_time"
             label="添加时间"
+            width="150"
             >
           </el-table-column>          
           <el-table-column

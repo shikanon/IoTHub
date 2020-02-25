@@ -69,7 +69,7 @@
         </el-table-column>
         <el-table-column v-if="!drawer"
             label="节点类型"
-            width="120"
+            width="80"
             show-overflow-tooltip>
                 <template slot-scope="scope">{{ scope.row.node_type_id | nodeTypeFilter}}</template>
         </el-table-column>
@@ -93,7 +93,7 @@
             </template>
         </el-table-column>
         <el-table-column
-            label="最后上线时间"  width="200">
+            label="最后上线时间"  width="150">
             <template slot-scope="scope">{{ scope.row.last_on_line_time  }}</template>
         </el-table-column>
         <el-table-column 

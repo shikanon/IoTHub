@@ -68,36 +68,60 @@ body{margin: 0px;}
   /**表格样式*/
   .table-info{
      display: flex;
-     flex-direction: column;
-     border: 1px solid #ccc;
+     flex-direction: row;
+     flex-wrap: wrap;
+     height: 100%;
+     border-right: 1px solid #ccc;
+     border-bottom: 1px solid #ccc;
+     font-size: 14px;
    }
    .table-row{
      display: flex;
      flex-direction: row;
-     border-bottom: 1px solid #ccc;
+     border-top: 1px solid #ccc;
    }
-   .table-row:last-child{
-       border-bottom:none
-   }
-   .table-row-label{
-     width: 130px;
-     background: #fbfbfc;
-     border-right: 1px solid #ccc;
-     color: #73777a;
 
+   .table-row-item{
+    display: flex;
+    flex-direction: row;
    }
-   .table-row-info{
-     width: 390px;
+   /* .table-info:last-child{
+    border-bottom: 1px solid #ccc;
+   } */
+   .table-row-8{
+    flex: 0 0 33.33333%;
+    width: 33.33333%;
+    max-width: 33.33333%;
+   }
+   .table-row-16{
+    flex: 0 0 66.66667%;
+    width: 66.66667%;
+    max-width: 66.66667%;
+   }
+
+   .table-row-24{
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+  }
+ 
+   .table-row-label{
+     width: 120px;
+     background: #fbfbfc;
+     color: #73777a;
+     border-left: 1px solid #ccc;
      border-right: 1px solid #ccc;
    }
-   .table-row-info:last-child{
-     border-right:none
-   }
+ 
    .table-row-label,.table-row-info{
      line-height: 36px;
      padding: 5px 10px;
+     word-break: break-word;
    }
 
+   .font-size-12{
+     font-size: 12px;
+   }
 
    .margin-b-10{
     margin-bottom: 10px;

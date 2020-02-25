@@ -1,104 +1,156 @@
 <template>
     <div name="device-info"> 
         <p class="label-title"> 设备信息</p>
-  
         <div class="table-info">
-          <div class="table-row">
+          <div class="table-row table-row-8">
+            <div class="table-row-item">
                 <div class="table-row-label">产品名称</div> 
                 <div class="table-row-info">
                     <span>{{device.name}}</span>
                 </div>
-           
-                <div class="table-row-label">ProductKey</div>
-                <div class="table-row-info">
-                    <span>{{device.product_key}}</span>
-                    <CopyBtn :content="device.product_key"></CopyBtn>
-                </div>
-           
-                <div class="table-row-label">区域</div>
-                <div class="table-row-info">
-                    <span>{{device.Region}}</span>
-                </div>
-            </div>
-            <div class="table-row">
-                <div class="table-row-label">节点类型</div> 
-                <div class="table-row-info">
-                    <span>{{device.node_type}}</span>
-                </div>          
-                <div class="table-row-label">DeviceName</div>
-                <div class="table-row-info">
-                    <span>{{device.name}}</span>
-                    <CopyBtn :content="device.name"></CopyBtn>
-                </div>
-            
-                <div class="table-row-label">认证方式</div>
-                <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
+             </div> 
+           </div>  
+           <div class="table-row table-row-8">
+               <div class="table-row-item">   
+                    <div class="table-row-label">ProductKey</div>
+                    <div class="table-row-info">
+                        <span>{{device.product_key}}</span>
+                        <CopyBtn :content="device.product_key"></CopyBtn>
+                    </div>
+               </div>
+            </div>  
+           <div class="table-row table-row-8">   
+                <div class="table-row-item">   
+                    <div class="table-row-label">区域</div>
+                    <div class="table-row-info">
+                        <span>{{device.Region}}</span>
+                    </div>
                 </div>
             </div>
-            <div class="table-row">
-                <div class="table-row-label">备注名称</div> 
-                <div class="table-row-info">
-                    <span>{{device.remark}}</span>
-                    <el-button type="text" @click="editRemark">编辑</el-button>
-                </div>        
-                <div class="table-row-label">IP地址</div>
-                <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
+            <div class="table-row table-row-8">
+                <div class="table-row-item"> 
+                    <div class="table-row-label">节点类型</div> 
+                    <div class="table-row-info">
+                        <span>{{device.node_type}}</span>
+                    </div>   
                 </div>
-                <div class="table-row-label">固件版本</div>
-                <div class="table-row-info">
-                    <span>{{device.ProductName}}</span>
-                </div>
-            </div>
-             <div class="table-row">
-                <div class="table-row-label">添加时间</div> 
-                <div class="table-row-info">
-                    <span>{{device.create_time}}</span>
-                </div>         
-                <div class="table-row-label">激活时间</div>
-                <div class="table-row-info">
-                    <span>{{device.activate_time}}</span>
-                </div>
-                <div class="table-row-label">最后上线时间</div>
-                <div class="table-row-info">
-                    <span>{{device.last_online_time}}</span>
+            </div>  
+           <div class="table-row table-row-8">
+               <div class="table-row-item">           
+                    <div class="table-row-label">DeviceName</div>
+                    <div class="table-row-info">
+                        <span>{{device.name}}</span>
+                        <CopyBtn :content="device.name"></CopyBtn>
+                    </div>
+                </div > 
+            </div>  
+            <div class="table-row table-row-8">
+                <div class="table-row-item">    
+                    <div class="table-row-label">认证方式</div>
+                    <div class="table-row-info">
+                        <span>{{device.ProductName}}</span>
+                    </div>
                 </div>
             </div>
-             <div class="table-row">
-                <div class="table-row-label">当前状态</div> 
-                <div class="table-row-info">
-                    <span>{{device.status_id | deviceStatusFilter}}</span>
+            <div class="table-row table-row-8">
+                <div class="table-row-item">    
+                    <div class="table-row-label">备注名称</div> 
+                    <div class="table-row-info">
+                        <span>{{device.remark}}</span>
+                        <el-button type="text" @click="editRemark">编辑</el-button>
+                    </div>  
                 </div>
-          
-                <div class="table-row-label">实时延迟</div>
-                <div class="table-row-info">
-                    <el-button type="text" @click="test">测试</el-button>
+            </div>  
+            <div class="table-row table-row-8"> 
+                <div class="table-row-item">              
+                    <div class="table-row-label">IP地址</div>
+                    <div class="table-row-info">
+                        <span>{{device.ProductName}}</span>
+                    </div>
                 </div>
-               
+            </div>  
+            <div class="table-row table-row-8">    
+                <div class="table-row-item">       
+                    <div class="table-row-label">固件版本</div>
+                    <div class="table-row-info">
+                        <span>{{device.ProductName}}</span>
+                    </div>
+                 </div>
+            </div>
+             <div class="table-row table-row-8">
+                <div class="table-row-item">       
+                    <div class="table-row-label">添加时间</div> 
+                    <div class="table-row-info">
+                        <span>{{device.create_time}}</span>
+                    </div>
+                </div>
+             </div>  
+             <div class="table-row table-row-8"> 
+                <div class="table-row-item">                 
+                    <div class="table-row-label">激活时间</div>
+                    <div class="table-row-info">
+                        <span>{{device.activate_time}}</span>
+                    </div>
+                </div>
+             </div>  
+             <div class="table-row table-row-8"> 
+                <div class="table-row-item">  
+                    <div class="table-row-label">最后上线时间</div>
+                    <div class="table-row-info">
+                        <span>{{device.last_online_time}}</span>
+                    </div>
+                 </div>
+            </div>
+             <div class="table-row table-row-8">
+                <div class="table-row-item">  
+                    <div class="table-row-label">当前状态</div> 
+                    <div class="table-row-info">
+                        <span>{{device.status_id | deviceStatusFilter}}</span>
+                    </div>
+                 </div>
+             </div>  
+             <div class="table-row table-row-16"> 
+                <div class="table-row-item">  
+                    <div class="table-row-label">实时延迟</div>
+                    <div class="table-row-info">
+                        <el-button type="text" @click="test">测试</el-button>
+                    </div>    
+                 </div>
             </div>
         </div>
-         <p class="label-title">设备扩展信息</p>
-         <div class="table-info">
-          <div class="table-row">
-                <div class="table-row-label">SDK 语言</div> 
-                <div class="table-row-info">
-                    <span>Python</span>
-                </div>       
-                <div class="table-row-label">版本号</div>
-                <div class="table-row-info">
-                    <span>1.2.0</span>
-                </div> 
-                <div class="table-row-label">模组商</div>
-                <div class="table-row-info">
-                    <span>-</span>
+        <p class="label-title">设备扩展信息</p>
+        <div class="table-info">
+            <div class="table-row table-row-8">
+                <div class="table-row-item">  
+                    <div class="table-row-label">SDK 语言</div> 
+                    <div class="table-row-info">
+                        <span>Python</span>
+                    </div>  
+                </div>    
+            </div>  
+            <div class="table-row table-row-8">   
+                <div class="table-row-item">          
+                    <div class="table-row-label">版本号</div>
+                    <div class="table-row-info">
+                        <span>1.2.0</span>
+                    </div> 
                 </div>
+            </div>  
+            <div class="table-row table-row-8">  
+                <div class="table-row-item">        
+                    <div class="table-row-label">模组商</div>
+                    <div class="table-row-info">
+                        <span>-</span>
+                    </div>
+                 </div>
             </div>
-             <div class="table-row">
-                <div class="table-row-label">模组信息</div> 
-                <div class="table-row-info">
-                    <span>-</span>
-                </div>                 
+             <div class="table-row table-row-24">
+                <div class="table-row-item">    
+                    <div class="table-row-label">模组信息</div> 
+                    <div class="table-row-info">
+                        <span>-</span>
+                    </div>   
+                </div>              
              </div>
          </div>
         <p class="label-title">标签信息
