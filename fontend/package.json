@@ -1,7 +1,7 @@
 {
   "name": "vue-demo",
   "version": "1.0.0",
-  "description": "test for vue",
+  "description": "IoTOrbHub",
   "author": "liujingxian <18273427041@139.com>",
   "private": true,
   "scripts": {
@@ -74,7 +74,7 @@
     "webpack": "^4.41.2",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.0.0",
+    "webpack-dev-server": "^3.1.4",
     "webpack-merge": "^4.1.0"
   },
   "engines": {
