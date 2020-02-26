@@ -1,0 +1,19 @@
+FROM node:12.13.0 as builder
+WORKDIR /root
+COPY . /root
+# RUN npm
+RUN npm install -g cnpm --registry=https://registry.npm.taobao.org
+
+RUN npm config set registry https://registry.npm.taobao.org
+
+RUN npm install
+
+RUN npm run build
+
+# Second stage: minimal runtime environment
+FROM nginx:alpine
+MAINTAINER xjc <xjc23456789@163.com>
+# copy dist from the first stage
+COPY --from=builder /root/dist /etc/nginx/html/web_data/dist
+# copy nginx.conf
+COPY nginx.conf /etc/nginx/conf.d/

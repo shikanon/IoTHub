@@ -1,0 +1,20 @@
+version: "2"
+volumes: 
+  web_data:
+services:
+  iot-web:
+    build: ./fontend/
+    volumes:
+      - web_data:/db
+  iotorbbec:
+    build: ./
+    restart: always
+  nginx:
+    image: nginx
+    ports: 
+      - "8080:80"
+    links: 
+      - iotorbbec 
+    volumes: 
+      - ./nginx.conf/:/etc/nginx/conf.d/
+      - web_data:/etc/nginx/html/
