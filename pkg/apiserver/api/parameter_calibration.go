@@ -211,7 +211,7 @@ func CheckProductTopicNameQualify(name string) (result bool, msg string) {
 	a := tool.GetStringEnglishCharAndNumberCount(name)
 	b := tool.GetStringSpecialCharCount(name, "/")
 	c := tool.GetStringSpecialCharCount(name, "_")
-	d := tool.GetStringSpecialCharCount(name, "+")
+	d := tool.GetStringSpecialCharCount(name, "\\+")
 	statisticalLength := a + b + c + d
 	if originalLength != statisticalLength {
 		return false, "不支持的Topic类名"
