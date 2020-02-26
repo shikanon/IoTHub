@@ -17,7 +17,7 @@
                 <el-input v-model="ruleForm.name" placeholder="请输入您的Topic类名"></el-input>
             </el-form-item>
             <el-form-item label="描述:">
-                 <el-input type="textarea" v-model="ruleForm.desc"></el-input>
+                 <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit></el-input>
             </el-form-item>
         </el-form>        
     </div>
@@ -34,21 +34,30 @@
     
     watch:{
         form:{  
-            handler:function(val,oldval){ 
-                console.log(val)
-                console.log(oldval)
-
-               // if( (val.id &&  val.id != oldval.id) || val.pid ){
-                    this.$nextTick(()=>{
-                        this.init()
-                    })
-                //}
+            handler:function(val,oldval){           
+                this.$nextTick(()=>{
+                    this.init()
+                })            
             },  
             immediate:true,//关键
             deep:true
           },
     },
     data() {
+        var checkTopicName = (rule, value, callback) => {
+           
+            setTimeout(() => {
+                // Topic类名用/分割，支持英文字母、数字、下划线、+和#（仅权限是订阅时支持），长度限制64
+                let pattern =/[^a-z|A-Z|0-9|\_|\+|\#)]/
+                let length =  Number(value.replace(/[^\x00-\xff]/g,"01").length )
+                if (!( length < 65 && !pattern.test(value))) {
+                    callback(new Error('Topic类名用/分割，支持英文字母、数字、下划线、+和#（仅权限是订阅时支持），长度限制64'))
+                } else {     
+                    callback()   
+                }
+                
+            }, 1000)
+        };
       return {  
          topic_pre:"", 
          operationArr:[{label:'发布',value:1},
@@ -60,7 +69,8 @@
             { required: true, message: '请选择设备操作权限', trigger: 'change' }
           ],
           name: [
-            { required: true, message: '请输入您的Topic类名', trigger: 'blur' },
+           { required: true, message: '请输入Topic类名', trigger: 'blur' },
+           { validator: checkTopicName, trigger: 'blur' }
           ],
         }    
       }     
@@ -89,11 +99,8 @@
         submit(){
             this.$refs['ruleForm'].validate((valid) => {
                 if (valid) {                   
-                    console.log(this.ruleForm)
                     if(this.ruleForm.pid){ //新增
                         this.$API_IOT.addTopic(this.ruleForm).then((res) => {
-
-                  
                             if(res.data.status === "Y"){
                                 this.$message.success('新增topic成功')    
                                 this.$emit('refresh')

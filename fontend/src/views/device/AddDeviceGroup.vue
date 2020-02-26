@@ -21,7 +21,7 @@
         </el-form-item>
     
         <el-form-item  v-if="type === '1'" label="设备数量" prop="num">
-            <el-input-number v-model="ruleForm.num" controls-position="right"  :min="1"  label="请输入设备数量"></el-input-number>
+            <el-input-number v-model="ruleForm.num" controls-position="right"  :min="1" :max="1000" label="请输入设备数量"></el-input-number>
         </el-form-item>  
          
           <el-form-item v-if="type === '2'" label="批量上传文件" prop="fileList">      
@@ -73,6 +73,19 @@
           },
       },
     data() {
+       var checkNum = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('请输入产品名称'));
+        }
+        setTimeout(() => {
+       
+          if (value < 1 || value > 100) {
+            callback(new Error('设备添加数量范围在1-1000之间'));
+          } else {     
+            callback();       
+          }
+        }, 1000);
+      };
       return {
         productName:"",
         ruleForm: {},
@@ -82,9 +95,9 @@
           pid: [
             { required: true, message: '请选择产品', trigger: 'blur' },
            ],
-          //   type: [
-          //       { required: true, message: '请选择添加方式', trigger: 'change' },
-          //   ],
+            num: [
+               { validator: checkNum, trigger: 'blur' }
+            ],
           //  count: [
           //   { required: true,type:'number',message: '请输入设备数量', trigger: 'blur' }
           // ]

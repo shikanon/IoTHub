@@ -52,6 +52,39 @@
       },
     
     data() {
+      var checkDeviceName = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('请输入设备名称'));
+        }
+        setTimeout(() => {
+          // 支持英文字母、数字和特殊字符-_@.:，长度限制4~32
+          let pattern =/[^a-z|A-Z|0-9|\-|\_|\@|\.|\:)]/
+          let length =  Number(value.replace(/[^\x00-\xff]/g,"01").length )
+          if (!(length > 3 &&  length < 33 && !pattern.test(value))) {
+            callback(new Error('支持英文字母、数字和特殊字符-_@.:，长度限制4~32'))
+          } else {     
+            callback();      
+          }
+          
+        }, 1000)
+      };
+      var checkRemark = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('请输入设备名称'));
+        }
+        setTimeout(() => {
+          // 长度4~64；中文算2个；支持特殊字符“_”
+          let pattern =/[^a-z|A-Z|0-9|\_)]/
+          let length =  Number(value.replace(/[^\x00-\xff]/g,"01").length )
+          if (!(length > 3 &&  length < 65 && !pattern.test(value))) {
+            callback(new Error('支持中文、英文字母、数字和下划线，4~64个字符，中文算两个'))
+          } else {     
+            callback();      
+          }
+          
+        }, 1000)
+      };
+
       return {   
         ruleForm: { },
         productName:'',
@@ -62,10 +95,11 @@
           ],
          name: [
             { required: true, message: '请输入设备名称', trigger: 'blur' },
-
+            { validator: checkDeviceName, trigger: 'blur' }
           ],
           remark: [
             { required: true, message: '请输入备注', trigger: 'blur' },
+            { validator: checkRemark, trigger: 'blur' }
 
           ],
               

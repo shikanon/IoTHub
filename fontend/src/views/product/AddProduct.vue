@@ -66,7 +66,7 @@
           <p>更多信息</p>    
           <el-button class="el-icon-arrow-down" type="text" @click="descVisiable = true" v-if="!descVisiable">产品描述</el-button><br>
           <el-form-item  label="产品描述" prop="desc" v-if="descVisiable">
-              <el-input type="textarea" v-model="ruleForm.desc"></el-input>                <br>
+              <el-input type="textarea" v-model="ruleForm.desc" maxlength="100" show-word-limit></el-input>               
               <el-button class="el-icon-arrow-up" type="text" @click="descVisiable = false" v-if="descVisiable">收起</el-button>
           </el-form-item>
           <el-divider></el-divider>
@@ -102,6 +102,18 @@ import AfterAddProduct from './AfterAddProduct'
   export default {
     components:{CategoryList,AttributeList,AfterAddProduct},
     data() {
+     var checkProductName = (rule, value, callback) => {    
+        setTimeout(() => {
+          // 支持中文、英文字母、数字、和特殊字符_-@()，长度限制4~30，中文算2位
+          let pattern =/[^a-z|A-Z|\u4E00-\u9FA5|0-9|\-|_|\@|\(|\))]/
+          let length =  Number(value.replace(/[^\x00-\xff]/g,"01").length )
+          if (!(length > 3 &&  length < 33 && !pattern.test(value))) {
+            callback(new Error('支持中文、英文字母、数字、和特殊字符_-@()，长度限制4~30，中文算2位'))
+          } else {     
+            callback()      
+          }
+        }, 1000)
+      }
       return {
         drawer:false,
         innerDrawer:false,
@@ -123,29 +135,18 @@ import AfterAddProduct from './AfterAddProduct'
         categoryName:'',
         productId:0,
         attributes:[],
-        // ruleForm: {
-        //   RegionId:"cn-shanghai",
-        //   AliyunCommodityCode:"iothub_senior",
-        //   ServiceCode:"",
-        //   ProductName:"",
-        //   CategoryId:138,
-        //   NodeType:'1',
-        //   Gateway:false,
-        //   NetType:"WIFI",
-        //   DataFormat:'1',
-        //   AuthType:"secret",
-        //   NameSpace:"ICA",
-        //   Desc:'',
-        //   type:'1',
-          
-        // },
+   
         rules: {
           name: [
-            { required: true, message: '请输入产品名称', trigger: 'blur' },
-            ],
+           { required: true, message: '请输入产品名称', trigger: 'blur' },
+           { validator: checkProductName, trigger: 'blur' }
+          ],
           categoryName: [
             { required: true, message: '请选择所属品类', trigger: 'blur' }
           ],
+          desc:[
+           { min: 0, max: 100, message: '长度在 0 到 100 个字符', trigger: 'blur' }
+          ]
         },   
         authMethodVisiable:false ,
         descVisiable:false   

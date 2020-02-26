@@ -32,11 +32,24 @@
           }
       },
     data() {
+       var checkProductName = (rule, value, callback) => {    
+        setTimeout(() => {
+          // 支持中文、英文字母、数字、和特殊字符_-@()，长度限制4~30，中文算2位
+          let pattern =/[^a-z|A-Z|\u4E00-\u9FA5|0-9|\-|_|\@|\(|\))]/
+          let length =  Number(value.replace(/[^\x00-\xff]/g,"01").length )
+          if (!(length > 3 &&  length < 33 && !pattern.test(value))) {
+            callback(new Error('支持中文、英文字母、数字、和特殊字符_-@()，长度限制4~30，中文算2位'))
+          } else {     
+            callback()    
+          }
+        },1000)
+      }
       return {
         ruleForm: {name:''},
         rules: {
           name: [
             { required: true, message: '请输入产品名称', trigger: 'blur' },
+            { validator: checkProductName, trigger: 'blur' }
           ],
         },
            
@@ -50,11 +63,10 @@
           this.ruleForm = JSON.parse(JSON.stringify(this.product))
       },
 
-      //编辑产品提交s
+      //编辑产品提交
       submitForm() {
         this.$refs['ruleForm'].validate((valid) => {
           if (valid) {
-            
             let params ={pid:this.ruleForm.id,name:this.ruleForm.name,desc:this.ruleForm.desc}
             this.$API_IOT.updateProduct(params).then((res) => {
               if (res.data.status === 'Y') {
