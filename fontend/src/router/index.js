@@ -124,26 +124,26 @@ export default new Router({
             
           ]
         } ,
-        {
-          path: '/test1',
-          name: 'test1',
-          component: () => import( '@/views/Empty.vue'),
-          meta: {
-            title: '测试1',
-            icon:'el-icon-s-help',
-            leftMenu:true
-          }
-        },
-        {
-            path: '/test2',
-            name: 'test2',
-            component: () => import( '@/views/Empty.vue'),
-            meta: {
-              title: '测试2',
-              icon:'el-icon-s-help',
-              leftMenu:true
-            }
-        },
+        // {
+        //   path: '/test1',
+        //   name: 'test1',
+        //   component: () => import( '@/views/Empty.vue'),
+        //   meta: {
+        //     title: '测试1',
+        //     icon:'el-icon-s-help',
+        //     leftMenu:true
+        //   }
+        // },
+        // {
+        //     path: '/test2',
+        //     name: 'test2',
+        //     component: () => import( '@/views/Empty.vue'),
+        //     meta: {
+        //       title: '测试2',
+        //       icon:'el-icon-s-help',
+        //       leftMenu:true
+        //     }
+        // },
         {
           path: '/home/knowledge-base',
           name: 'knowledge-base',
