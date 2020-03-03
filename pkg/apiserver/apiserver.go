@@ -76,9 +76,17 @@ func ApiRegister() {
 	{
 		vCloud.GET("/", vCloudApi.Home)
 
-
-
-
+		vCloud.POST("/workspace", vCloudApi.AddWorkSpace)         // 创建工作空间
+		vCloud.PUT("/workspace", vCloudApi.UpdateWorkSpace)       // 修改工作空间
+		vCloud.GET("/workspace", vCloudApi.GetWorkSpace)          // 获取工作空间
+		vCloud.GET("/ast", vCloudApi.GetAllAccessTypes)           // 获取所有推流类型
+		vCloud.GET("/workspaces", vCloudApi.GetAllWorkSpaces)     // 工作空间首页
+		vCloud.POST("/wsstatus", vCloudApi.UpdateWorkSpaceStatus) // 改变工作空间状态
+		vCloud.DELETE("/workspace", vCloudApi.DeleteWorkSpace)    // 删除工作空间
+		vCloud.POST("/camera", vCloudApi.AddCamera)               // 添加摄像头
+		vCloud.DELETE("/camera", vCloudApi.DeleteCamera)          // 添加摄像头
+		vCloud.POST("/cstatus", vCloudApi.UpdateCameraStatus)     // 改变设备状态
+		vCloud.GET("/cameras", vCloudApi.GetAllCameras)           // 摄像头管理首页
 	}
 
 	router.Run("0.0.0.0:9898")

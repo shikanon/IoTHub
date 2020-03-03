@@ -27,8 +27,9 @@ func (p *WorkSpace) BeforeCreate(scope *gorm.Scope) error {
 type CameraManagement struct {
 	ID              int       `gorm:"primary_key" json:"id"`
 	Sin             string    `json:"sin"`               // sin码
+	WorkSpaceID     int       `json:"work_space_id"`     //
 	AccessAddress   string    `json:"access_address"`    // 接入地址
-	statusID        int       `json:"status_id"`         // 状态ID
+	StatusID        int       `json:"status_id"`         // 状态ID
 	CreateTime      time.Time `json:"create_time"`       // 创建时间
 	LastConnectTime time.Time `json:"last_connect_time"` // 最后连接时间
 }
