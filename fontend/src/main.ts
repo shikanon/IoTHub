@@ -8,7 +8,7 @@ import App from './App.vue'
 //element样式
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-Vue.use(ElementUI);
+Vue.use(ElementUI)
 
 //自定义主题
 import '../theme/index.css'
@@ -33,7 +33,10 @@ Router.prototype.push = function push(location) {
 import * as filters from './utils/filters'
 //API
 import * as API_IOT from './utils/api-iot'
+
 import * as API_SOTA from './utils/api-sota'
+import * as API_CLOUD from './utils/api-cloud'
+
 import axios from 'axios'
 //vuex
 import store from './store'
@@ -67,9 +70,11 @@ import jsoneditor from 'jsoneditor'
 
 Vue.prototype.$jsoneditor = jsoneditor
 
+
 //echarts
 import echarts from 'echarts'
 Vue.prototype.$echarts = echarts
+
 const i18n = new VueI18n({
     locale: 'zh', // 将要切换的语言，可以通过url拼的参数获取，用户行为select选择获取，本地manifest配置获取等，根据场景动态获取
     messages: {
@@ -84,6 +89,7 @@ Vue.config.productionTip = false
 
 //配置公共请求地址
 Vue.prototype.$API_IOT = API_IOT
+Vue.prototype.$API_CLOUD = API_CLOUD
 Vue.prototype.$API_SOTA = API_SOTA
 
 

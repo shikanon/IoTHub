@@ -91,5 +91,23 @@ export function nodeTypeFilter(nodeType) {
 
 
 
+export function accessTypeFilter(accessType) {
+        switch (accessType) {
+                case 1:
+                        accessType = "RTMP";
+                        break;
+                case 2:
+                        accessType = "HLS";
+                        break;
+                case 3:
+                        accessType = "HTTP-FLV";
+                        break;
+                                              
+                } 
+        return accessType
+}
+
+
+
 
 

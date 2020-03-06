@@ -110,8 +110,6 @@ export default new Router({
               children:[
                 {
                   path: '/home/group/details',
-                //  path: '/home/group/details/:id',
-
                   name: 'group-details',
                   component:  () =>import( '@/views/group/GroupDetails.vue'),
                   meta: {
@@ -120,6 +118,80 @@ export default new Router({
                   },
                 } 
               ]
+            } 
+            
+          ]
+        } ,
+        {
+          path: '/home/camera',
+          name: 'camera',
+          component:  () =>import( '@/views/Empty.vue'),
+          meta: {
+            title: '3D摄像头实验室',
+            icon:'el-icon-menu',
+            leftMenu:true
+          },
+          redirect: "/home/camera/workspace-list",
+          children:[
+               
+            {
+              path: '/home/camera/workspace-list',
+              name: 'workspace-list',
+              component:  () =>import( '@/views/workspace/WorkSpaceList.vue'),
+              meta: {
+                title: '工作空间',
+                leftMenu:true
+              },
+              children:[
+                {
+                  path: '/home/product/add',
+                  name: 'product-add',
+                  component:  () =>import( '@/views/product/AddProduct.vue'),
+                  meta: {
+                    title: '创建产品',
+                    leftMenu:false
+                  },
+                } ,
+                {
+                  path: '/home/product/details',
+                  name: 'product-details',
+                  component:  () =>import( '@/views/product/ProductDetails.vue'),
+                  meta: {
+                    title: '产品详情',
+                    leftMenu:false
+                  },
+                } 
+              ]
+            }     
+            ,{
+              path: '/home/camera',
+              name: 'camera-list',
+              component:  () =>import( '@/views/camera/CameraList.vue'),
+              meta: {
+                title: '摄像头',
+                leftMenu:true
+              },
+              children:[
+                {
+                  path: '/home/camera/laboratory',
+                  name: 'laboratory',
+                  component:  () =>import( '@/views/camera/Laboratory.vue'),
+                  meta: {
+                    title: '设备详情',
+                    leftMenu:false
+                  },
+                } 
+              ]
+            }  
+            ,{
+              path: '/home/laboratory',
+              name: 'laboratory-list',
+              component:  () =>import( '@/views/camera/Laboratory.vue'),
+              meta: {
+                title: '实验室',
+                leftMenu:true
+              },
+              
             } 
             
           ]

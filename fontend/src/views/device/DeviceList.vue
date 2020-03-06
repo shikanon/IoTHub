@@ -338,7 +338,7 @@
                 }else if(type === '2'){ //从分组中删除设备
 
                 }
-              this.tableData =  this.tableData.filter(item => item.name !== row.name);
+             // this.tableData =  this.tableData.filter(item => item.name !== row.name);
             }).catch(() => {
               // this.$message({
               //   type: 'info',
@@ -397,9 +397,9 @@
         disabledDevices(arr){
           this.$API_IOT.disabledDevice(arr).then((res) => {
                 if(res.data.status  === 'Y'){
-                  this.$message.success('禁用成功',function(){
-                    this.getDeviceList()
-                  })
+                  this.$message.success('禁用成功')
+                  this.getDeviceList()
+                  
                   
                 }else{
                     this.$message.error(res.message);
@@ -410,9 +410,8 @@
         activeDevices(arr){
           this.$API_IOT.activeDevices(arr).then((res) => {
                 if(res.data.status  === 'Y'){
-                  this.$message.sucess('启用成功',function(){
-                    this.getDeviceList()
-                  })
+                  this.$message.sucess('启用成功')
+                  this.getDeviceList()      
                 }else{
                     this.$message.error(res.message);
                 }              
