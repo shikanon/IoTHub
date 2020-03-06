@@ -11,7 +11,7 @@ func ErrResponse(msg string, c *gin.Context) {
 	c.JSON(400, resp)
 }
 
-func DbErrorResponse(msg string, c *gin.Context){
+func DbErrorResponse(msg string, c *gin.Context) {
 	resp := gin.H{
 		"status":  "N",
 		"message": "操作失败",
@@ -20,7 +20,7 @@ func DbErrorResponse(msg string, c *gin.Context){
 	c.JSON(400, resp)
 }
 
-func AnalyticParameterErrResponse(c *gin.Context){
+func AnalyticParameterErrResponse(c *gin.Context) {
 	resp := gin.H{
 		"status":  "N",
 		"message": "参数解析错误",
