@@ -510,3 +510,38 @@ func GetAllWorkSpaceIdAndName(c *gin.Context) {
 	}
 	c.JSON(200, resp)
 }
+
+func GetAllCameraIdAndName(c *gin.Context) {
+	db, msg := database.DbConn()
+	if db == nil {
+		DbErrorResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
+	type info struct {
+		ID int `json:"id"`
+		Sin string `json:"sin"`
+		StatusID int `json:"status_id"`
+	}
+
+	var cas []database.CameraManagement
+	db.Find(&cas)
+
+	var result []info
+	for _, val := range cas {
+		data := info{
+			ID:       val.ID,
+			Sin:      val.Sin,
+			StatusID: val.StatusID,
+		}
+		result = append(result, data)
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "所有摄像头的id、sin和状态查询成功",
+		"data":    result,
+	}
+	c.JSON(200, resp)
+}

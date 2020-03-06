@@ -88,6 +88,7 @@ func ApiRegister() {
 		vCloud.PUT("/cstatus", vCloudApi.UpdateCameraStatus)     // 改变设备状态
 		vCloud.GET("/cameras", vCloudApi.GetAllCameras)          // 摄像头管理首页
 		vCloud.GET("/wss", vCloudApi.GetAllWorkSpaceIdAndName)   // 获取所有工作空间的id和name
+		vCloud.GET("/cas", vCloudApi.GetAllCameraIdAndName)      // 获取所有摄像头的id、sin、状态
 	}
 
 	router.Run("0.0.0.0:9898")
