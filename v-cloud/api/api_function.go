@@ -15,16 +15,16 @@ func Home(c *gin.Context) {
 	defer db.Close()
 	//db.AutoMigrate(&database.CameraManagement{}, &database.AccessType{}, &database.WorkSpace{})
 
-	//var access database.AccessType
-	//access.Name = "HTTP-FLV"
-	//id, msg := database.MysqlInsertOneData(&access)
+	var access database.AccessType
+	access.Name = "HTTP-FLV"
+	id, msg := database.MysqlInsertOneData(&access)
 	//fmt.Println(id)
 	//fmt.Println(msg)
 
 	resp := gin.H{
 		"status":  "Y",
 		"message": "asasasas",
-		"data":    nil,
+		"data":    id,
 	}
 	c.JSON(200, resp)
 }
@@ -230,7 +230,7 @@ func UpdateWorkSpaceStatus(c *gin.Context) {
 	var ws database.WorkSpace
 	db.First(&ws, id)
 
-	if id == 0 {
+	if ws.StatusID == 0 {
 		ws.StatusID = 1
 	} else {
 		ws.StatusID = 0
@@ -282,6 +282,13 @@ func AddCamera(c *gin.Context) {
 		Sin string `form:"sin" json:"sin"`
 	}
 
+	db, msg := database.DbConn()
+	if db == nil {
+		DbErrorResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
 	data := Data{}
 	if err := c.ShouldBind(&data); err != nil {
 		AnalyticParameterErrResponse(c)
@@ -301,6 +308,13 @@ func AddCamera(c *gin.Context) {
 		DbErrorResponse(msg, c)
 		return
 	}
+
+	var work_space database.WorkSpace
+	db.First(&work_space, ws)
+	num := work_space.DeviceCount
+	work_space.DeviceCount = num + 1
+	db.Save(&work_space)
+
 	resp := gin.H{
 		"status":  "Y",
 		"message": "设备添加成功",
@@ -311,7 +325,7 @@ func AddCamera(c *gin.Context) {
 
 func UpdateCameraStatus(c *gin.Context) {
 	type Data struct {
-		ID int `form:"id" json:"id"`
+		ID []int `form:"id" json:"id"`
 	}
 
 	data := Data{}
@@ -320,7 +334,7 @@ func UpdateCameraStatus(c *gin.Context) {
 		return
 	}
 
-	id := data.ID
+	ids := data.ID
 
 	db, msg := database.DbConn()
 	if db == nil {
@@ -329,16 +343,18 @@ func UpdateCameraStatus(c *gin.Context) {
 	}
 	defer db.Close()
 
-	var ca database.CameraManagement
-	db.First(&ca, id)
+	for _, val := range ids {
+		var ca database.CameraManagement
+		db.First(&ca, val)
 
-	if id == 0 {
-		ca.StatusID = 1
-	} else {
-		ca.StatusID = 0
+		if ca.StatusID == 0 {
+			ca.StatusID = 1
+		} else {
+			ca.StatusID = 0
+		}
+
+		db.Save(&ca)
 	}
-
-	db.Save(&ca)
 
 	resp := gin.H{
 		"status":  "Y",
@@ -350,7 +366,7 @@ func UpdateCameraStatus(c *gin.Context) {
 
 func DeleteCamera(c *gin.Context) {
 	type Data struct {
-		ID int `form:"id" json:"id"`
+		ID []int `form:"id" json:"id"`
 	}
 
 	data := Data{}
@@ -367,8 +383,19 @@ func DeleteCamera(c *gin.Context) {
 		return
 	}
 	defer db.Close()
+	for _, val := range id {
+		var ca database.CameraManagement
+		db.First(&ca, val)
+		ws_id := ca.WorkSpaceID
+		db.Where("id = ?", val).Delete(&database.CameraManagement{})
 
-	db.Where("id = ?", id).Delete(&database.CameraManagement{})
+		var ws database.WorkSpace
+		db.First(&ws, ws_id)
+		number := ws.DeviceCount
+		ws.DeviceCount = number - 1
+		db.Save(&ws)
+	}
+
 
 	resp := gin.H{
 		"status":  "Y",
@@ -396,19 +423,19 @@ func GetAllCameras(c *gin.Context) {
 
 	if ws == 0 {
 		if len(sin) == 0 {
-			db.Model(&database.WorkSpace{}).Count(&total)
+			db.Model(&database.CameraManagement{}).Count(&total)
 			db.Limit(item).Offset((page - 1) * item).Order("id desc").Find(&cas)
 		} else {
-			db.Model(&database.WorkSpace{}).Where("sin = ?", sin).Count(&total)
+			db.Model(&database.CameraManagement{}).Where("sin = ?", sin).Count(&total)
 			db.Where("sin = ?", sin).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&cas)
 		}
 	} else {
 		if len(sin) == 0 {
-			db.Model(&database.WorkSpace{}).Where("id = ?", ws).Count(&total)
-			db.Where("id = ?", ws).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&cas)
+			db.Model(&database.CameraManagement{}).Where("work_space_id = ?", ws).Count(&total)
+			db.Where("work_space_id = ?", ws).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&cas)
 		} else {
-			db.Model(&database.WorkSpace{}).Where("id = ? AND sin = ?", ws, sin).Count(&total)
-			db.Where("id = ? AND sin = ?", ws, sin).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&cas)
+			db.Model(&database.CameraManagement{}).Where("work_space_id = ? AND sin = ?", ws, sin).Count(&total)
+			db.Where("work_space_id = ? AND sin = ?", ws, sin).Limit(item).Offset((page - 1) * item).Order("id desc").Find(&cas)
 		}
 	}
 
@@ -447,6 +474,39 @@ func GetAllCameras(c *gin.Context) {
 		"status":  "Y",
 		"message": "产品首页信息查询成功",
 		"data":    resp_data,
+	}
+	c.JSON(200, resp)
+}
+
+func GetAllWorkSpaceIdAndName(c *gin.Context) {
+	db, msg := database.DbConn()
+	if db == nil {
+		DbErrorResponse(msg, c)
+		return
+	}
+	defer db.Close()
+
+	var wss []database.WorkSpace
+	db.Find(&wss)
+
+	type resp_model struct {
+		ID   int    `json:"id"`
+		Name string `json:"name"`
+	}
+
+	result := []resp_model{}
+	for _, val := range wss {
+		data := resp_model{
+			ID:   val.ID,
+			Name: val.Name,
+		}
+		result = append(result, data)
+	}
+
+	resp := gin.H{
+		"status":  "Y",
+		"message": "工作空间的所有id和名称查询成功",
+		"data":    result,
 	}
 	c.JSON(200, resp)
 }

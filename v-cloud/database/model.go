@@ -9,7 +9,7 @@ import (
 type WorkSpace struct {
 	ID            int        `gorm:"primary_key" json:"id"`
 	Name          string     `json:"name"`                                       // 名称
-	SpaceID       string     `gorm:"unique;not null" json:"space_id"`            // 空间ID
+	SpaceID       string     `gorm:"not null" json:"space_id"`            // 空间ID
 	StatusID      int        `json:"status_id"`                                  // 状态ID
 	AccessType    AccessType `gorm:"foreignKey:AccessTypeID" json:"access_type"` //
 	AccessTypeID  int        `json:"access_type_id"`                             // 接入类型ID
