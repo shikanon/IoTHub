@@ -54,7 +54,8 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         // include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')],
-        include: [resolve('src'), resolve('test')]
+        include: [resolve('src'), resolve('test')],
+        exclude:/node_modules/ 
       },
       {
         test: /\.(mp4|webm|ogg|mp3|wav|flac|aac)(\?.*)?$/,
@@ -85,8 +86,14 @@ module.exports = {
       {
         test: /\.sass$/,
         loaders: ['style', 'css', 'sass']
-      }
-          
+      },
+      {
+      	test: /\.swf$/, //此处添加视频组件的.swf文件编译
+      	loader: 'url-loader',
+      	options:{
+ 					limit: 10000
+				}
+      },
     ]
   },
   node: {

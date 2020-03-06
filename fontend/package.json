@@ -20,9 +20,12 @@
     "gulp-clean-css": "^4.2.0",
     "gulp-css-wrap": "^0.1.2",
     "highlight.js": "^9.17.1",
+    "html2canvas": "^1.0.0-rc.5",
     "jsoneditor": "^8.1.2",
     "jszip": "^3.2.2",
     "mavon-editor": "^2.7.7",
+    "videojs-contrib-hls": "^5.15.0",
+    "videojs-flash": "^2.2.1",
     "vue": "^2.5.2",
     "vue-clipboard2": "^0.3.1",
     "vue-i18n": "^8.15.1",
@@ -30,6 +33,7 @@
     "vue-json-excel": "^0.2.98",
     "vue-json-views": "^1.1.0",
     "vue-router": "^3.0.1",
+    "vue-video-player": "^4.0.6",
     "vuex": "^3.1.2"
   },
   "devDependencies": {
