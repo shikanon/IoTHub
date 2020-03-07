@@ -16,5 +16,5 @@ services:
     links: 
       - iotorbbec 
     volumes: 
-      - ./nginx.conf/:/etc/nginx/conf.d/
+      - ./config/nginx.conf/:/etc/nginx/conf.d/
       - web_data:/etc/nginx/html/
