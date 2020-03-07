@@ -1,7 +1,8 @@
 <template>
 
-    <div>
-        <div>
+    <div >
+        <div class="select-box">
+            <span>选择摄像头</span>
             <el-select v-model="caremaSIN" placeholder="选择摄像头"  @change="changeCaremaId" >
               <el-option
               v-for="item in caremaArr"
@@ -11,6 +12,7 @@
               </el-option>
             </el-select>
         </div>
+        <el-divider></el-divider>
         <div  class="top-box">
             <div class="video-item">
                  <video-player
@@ -53,18 +55,14 @@
                 </el-select>            
             </div>
         </div> 
+        <el-divider></el-divider>
         <div class="bottom-box" >
-            <div class="btn-group">
-                <div>
-                    <el-button>相机重新标定</el-button>
-                    <el-button>效果处理代码</el-button>
-                    <el-button @click="test">截图保存</el-button>
-                </div>
-                <div class="opt-btn" >
-                    <el-button @click="changeType('rtmp')">rtmp</el-button>
-                    <el-button @click="changeType('m3u8')">m3u8</el-button>
-                    <el-button @click="changeType('flv')">flv</el-button>
-                </div>
+            <div class="btn-group">            
+                <el-button>相机重新标定</el-button>
+                <el-button>效果处理代码</el-button>
+                <el-button @click="test">截图保存</el-button>
+                <el-button >开启效果对比图</el-button>
+                 
             </div>
             <div class="video-item" >
 
@@ -82,6 +80,11 @@
                 >
                 </video-player> 
             </div>
+            <div class="test" >
+                    <el-button @click="changeType('rtmp')">rtmp</el-button>
+                    <el-button @click="changeType('m3u8')">m3u8</el-button>
+                    <el-button @click="changeType('flv')">flv</el-button>
+                </div>
             <div class="cut-screen" >
                 <canvas  id="canvas"></canvas> 
             </div>
@@ -333,37 +336,50 @@ export default {
 
 <style scoped >
 
+    .select-box{
+        margin-left: 35px;
+    }
+
   .top-box{
         display: flex;
         justify-content: space-around;
-        width: 70%;       
     }
+
   .video-item{
       display: flex;
       flex-direction: column;
-      height: 450px;
-      
+    
   }
   .bottom-box{
       display: flex;
       flex-direction: row;
-      width: 70%;
-     justify-content: flex-start
+      justify-content: center;
   }
 
   .btn-group{
-      width: 40%;
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      margin-right: 50px;
+      justify-content: space-around;
   }
+
+    .el-button:first-child{
+        margin-left: 10px;
+    }
 
 
   .video-player{
-      width: 500px;
+      width: 400px;
+      max-width: 400px;
   }
 
-  .opt-btn{
-      margin-top: 50px;
-      
-  }
+.test{
+    display: flex;
+    height: 40px;
+    margin-left: 50px;
+}
+
 
 
   
