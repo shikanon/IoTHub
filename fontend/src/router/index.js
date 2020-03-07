@@ -128,7 +128,7 @@ export default new Router({
           component:  () =>import( '@/views/Empty.vue'),
           meta: {
             title: '3D摄像头实验室',
-            icon:'el-icon-menu',
+            icon:'el-icon-video-camera',
             leftMenu:true
           },
           redirect: "/home/camera/workspace-list",
@@ -242,10 +242,15 @@ export default new Router({
       ]
     
     }, 
+    // {
+    //   path: '/',
+    //   name: 'home',
+    //   component: () => import( '@/views/Home.vue')
+    // },
     {
       path: '/',
-      name: 'home',
-      component: () => import( '@/views/Home.vue')
+      name: 'login',
+      component: () => import( '@/views/Login.vue')
     }
   ]
   
