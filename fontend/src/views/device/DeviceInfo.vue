@@ -163,7 +163,7 @@
             <AddLabel  ref="addLabel" :labelArr="device.label ? JSON.parse(JSON.stringify(device.label)) :[]" type="device" @close="addLabelVisible = false"></AddLabel>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="addLabelSubmit">确 定</el-button>
-                <el-button @click="addLabelVisible = false">取 消</el-button>
+                <el-button @click="addLabelCancel">取 消</el-button>
             </span>
         </el-dialog>
 
@@ -198,10 +198,14 @@
       created(){
       },
       methods:{
+
+        editLabel(){
+            this.addLabelVisible = true 
+            this.$refs.addLabel.init()
+        },
           
         addLabelSubmit(){
             let params = {did:this.device.id, label:this.$refs.addLabel.label} 
-            console.log(params)
             this.$API_IOT.editDeviceLabel(params).then((res) => {
                if (res.data.status === 'Y') {
                   this.$message.success('编辑标签成功')
@@ -214,6 +218,12 @@
             }) 
 
         },
+        addLabelCancel(){
+            this.addLabelVisible = false
+             this.$refs.addLabel.init()
+        },
+
+        
         test(){
            this.$confirm('测试网络延迟时将会向设备发送一条空消息，请确认对设备端业务没有影响！', '提示', {
                 confirmButtonText: '确定',
@@ -241,6 +251,7 @@
             this.remark = this.device.remark
         },
         editRemarkSubmit(){
+
             let params = {did:this.device.id, remark:this.remark } 
             this.$API_IOT.updateDevice(params).then((res) => {
                if (res.data.status === 'Y') {

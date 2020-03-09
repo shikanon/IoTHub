@@ -105,13 +105,13 @@
             </div> 
         </div>
         <p class="label-title">标签信息
-          <el-button type="text" @click="addLabelVisible = true">编辑</el-button>
+          <el-button type="text" @click="editProductLabel">编辑</el-button>
         </p>
         <p>产品标签
          <span v-for="(item,index) in product.label" :key = "index" class="label-span">{{item['key']}}:{{item['value']}}</span>
          </p>
          <el-dialog title="编辑产品信息" :visible.sync="editProductVisible" width="26%">
-            <EditProduct ref="editProduct" :product="productTemp" @close="editProductVisible = false"></EditProduct>
+            <EditProduct ref="editProduct" :product="productTemp" @close="editProductVisible = false" @success="updateSuccess"></EditProduct>
             <span slot="footer" class="dialog-footer">
                 <el-button type="primary" @click="editProductSubmit" @success="updateSuccess($event)">确 定</el-button>
                 <el-button @click=" editProductCancel">取 消</el-button>
@@ -156,8 +156,9 @@
       methods:{
           //编辑产品信息
           editProduct(){
-              this.productTemp = JSON.parse(JSON.stringify(this.product))
+              this.productTemp = JSON.parse(JSON.stringify(this.product))       
               this.editProductVisible = true
+              this.$refs.editProduct.init()
           },
 
           //编辑产品信息提交
@@ -174,6 +175,13 @@
           updateSuccess(event){
             this.editProductVisible = false
             this.product.name = event.name
+            this.product.desc = event.desc
+          },
+
+          //编辑标签
+          editProductLabel(){
+            this.addLabelVisible = true
+            this.$refs.addLabel.init()
           },
 
           //添加标签提交
@@ -195,6 +203,7 @@
 
           addLabelCancel(){
             this.addLabelVisible = false
+            this.$refs.addLabel.init()
           }
           
 

@@ -28,13 +28,16 @@
             }
         },
         created(){
-            if(this.labelArr.length === 0){
-                this.addLabel()
-            }else{
-                this.label = this.labelArr
-            }
+           this.init()
         },
         methods:{
+            init(){
+                 if(this.labelArr.length === 0){
+                    this.addLabel()
+                }else{
+                    this.label = JSON.parse(JSON.stringify(this.labelArr))
+                }
+            },
             addLabel(){
                 this.label.push({key:'',value:''})
             },
@@ -44,6 +47,7 @@
             save(){
                 this.$emit('save',this.label )
             }
+        
         }
     }
     </script>
