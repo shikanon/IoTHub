@@ -168,8 +168,6 @@
               cancelButtonText: '取消',
               type: 'warning'
             }).then(() => {
-              //this.tableData =  this.tableData.filter(item => item.name !== row.name);
-
                   this.$API_IOT.deleteProduct(id).then((res) => {
                     if(res.data.status === 'Y'){
                       this.$message.success('删除成功')    

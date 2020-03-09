@@ -30,10 +30,8 @@
         //监听productId,若发生变化，重新查询设备列表
         workSpace:{  
             handler:function(val,oldval){
-              console.log(val)
-              console.log(oldval)
-
-                if(val.work_space_id!=oldval.work_space_id){
+           
+                if (val.work_space_id != oldval.work_space_id ){
                     this.$nextTick(()=>{
                         this.init()
                     })
