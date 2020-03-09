@@ -1,6 +1,6 @@
 <template>
     <div name="device-shadow">
-        <el-button type="primary" :disabled="status === 'UNACTIVE'" @click="dialogVisiable = true">更新影子</el-button>
+        <el-button type="primary" :disabled="status === 1" @click="dialogVisiable = true">更新影子</el-button>
         <div class="shadow-box">
             <div class="title">
                 <p>最近更新时间:</p><p class="update-time"> {{updateTime}}</p>
@@ -52,8 +52,8 @@ import { create } from 'domain'
 export default {
     props:{
         status:{
-            type:String,
-            default:''
+            type:Number,
+            default:0
         }
     },
     data(){
