@@ -71,7 +71,7 @@
             this.$API_IOT.updateProduct(params).then((res) => {
               if (res.data.status === 'Y') {
                   this.$message.success('更新产品成功')
-                  this.$emit('success')
+                  this.$emit('success',params)
               } else {
                   this.$message.error(res.message);
               }       
