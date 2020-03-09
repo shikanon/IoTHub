@@ -78,9 +78,9 @@ axios.interceptors.response.use((response) =>{
        }
       
     }else{
-        return Promise.reject(error) 
-
-        //return { data: { } }; //返回一个空对象，主要是防止控制台报错
+       // return Promise.reject(error) 
+     
+        return { data: error.response,message:error.response.data.message}; //返回报错信息
     }
      
 
