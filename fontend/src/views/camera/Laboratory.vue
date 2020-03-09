@@ -79,6 +79,7 @@
                     :options="playerOptions"         
                 >
                 </video-player> 
+
             </div>
             <div class="test" >
                     <el-button @click="changeType('rtmp')">rtmp</el-button>
@@ -153,6 +154,7 @@ export default {
                 notSupportedMessage: '此视频暂无法播放，请稍后再试', // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
                 showLoading:true 
             }
+        
         }
     },
 
@@ -226,16 +228,18 @@ export default {
 
         changeType(type){
             if(type === 'rtmp'){
+          
                  this.playerOptions.sources = [{
                     type: "rtmp/mp4",
-                    src:"rtmp://10.10.6.85:1935/live/livestream",// 视频地址-改变它的值播放的视频会改变
+                 // src:"rtmp://10.10.6.85:1935/live/livestream",// 视频地址-改变它的值播放的视频会改变
+                    src:'rtmp://58.200.131.2:1935/livetv/hunantv'
                 }]
             }else if(type ==='m3u8'){
                 this.playerOptions.sources = [{
                           
                     withCredentials: false,
                     type: "application/x-mpegURL",
-                 //   src: "http://10.10.6.85:7002/live/livestream.m3u8",
+                 // src: "http://10.10.6.85:7002/live/livestream.m3u8",
                     src: "https://logos-channel.scaleengine.net/logos-channel/live/biblescreen-ad-free/playlist.m3u8"  
                      
                 }]
