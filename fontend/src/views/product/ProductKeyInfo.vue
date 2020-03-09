@@ -6,7 +6,7 @@
         </div> 
         <p class="title">产品证书</p>   
         <div class="table-info">
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">ProductSecret</div> 
                 <div class="table-row-info">
                     <span>{{product.product_secret}}</span>
@@ -14,7 +14,7 @@
                     <el-button type="text" @click="resetSecret" style="color:#f56c6c">重置</el-button>
                 </div>
             </div>
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">ProductKey</div>
                 <div class="table-row-info">
                     <span>{{product.product_key}}</span>
@@ -22,6 +22,8 @@
                 </div>
             </div>    
         </div>
+
+   
         <p>
             注：产品密钥 (ProductSecret)、设备密钥 (DeviceSecret) 为两种不同密钥。
              如您要获取的是设备密钥 (设备证书)，请前往对应的设备详情页面获取。

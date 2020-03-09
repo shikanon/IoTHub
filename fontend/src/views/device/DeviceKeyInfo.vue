@@ -2,21 +2,21 @@
     <div name="product-key-info"> 
         <p class="title">设备证书<CopyBtn btnTxt="一键复制" :content="JSON.stringify(copyTxt)"></CopyBtn></p>
         <div class="table-info">
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">ProductKey</div> 
                 <div class="table-row-info">
                     <span>{{device.product_key}}</span>
                     <CopyBtn :content="device.product_key"></CopyBtn>
                 </div>
             </div>
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">DeviceName</div>
                 <div class="table-row-info">
                     <span>{{device.name}}</span>
                     <CopyBtn :content="device.name"></CopyBtn>
                 </div>
             </div>    
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">DeviceSecret</div>
                 <div class="table-row-info">
                     <span>{{device.device_secret}}</span>

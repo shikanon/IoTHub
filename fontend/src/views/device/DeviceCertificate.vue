@@ -2,21 +2,21 @@
     <div>
         <div class="tips">设备证书用于云端对接入的设备做鉴权认证，请妥善保管！</div>
         <div class="table-info">
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">ProductKey</div> 
                 <div class="table-row-info">
                     <span>{{certificateInf.productKey}}</span>
                     <CopyBtn :content="certificateInf.productKey"></CopyBtn>
                 </div>
             </div>
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">DeviceName</div>
                 <div class="table-row-info">
                     <span>{{certificateInf.deviceName}}</span>
                     <CopyBtn :content="certificateInf.deviceName"></CopyBtn>
                 </div>
             </div>
-            <div class="table-row">
+            <div class="table-row table-row-24">
                 <div class="table-row-label">DeviceSecret</div>
                 <div v-if="!deviceSecretFlg" class="table-row-info">
                     <span>********</span>
