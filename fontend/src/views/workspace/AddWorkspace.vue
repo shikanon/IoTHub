@@ -29,9 +29,8 @@
      watch:{
         //监听productId,若发生变化，重新查询设备列表
         workSpace:{  
-            handler:function(val,oldval){
-           
-                if (val.work_space_id != oldval.work_space_id ){
+            handler:function(val,oldval){   
+                if (val && oldval && val.work_space_id != oldval.work_space_id ){
                     this.$nextTick(()=>{
                         this.init()
                     })

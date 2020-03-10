@@ -20,15 +20,12 @@
           :data="tableData"
           highlight-current-row
           style="width: 100%">
-          <el-table-column
-            prop="work_space_id"
-            label="空间ID"
-            >
-          </el-table-column>
-          <el-table-column
-            prop="name"
-            label="空间名称"
-            >
+          <el-table-column label="空间ID/名称">
+              <template slot-scope="scope">
+              <span
+                class="name-span"           
+              > {{scope.row.work_space_id}} / {{scope.row.name}}</span>
+            </template>
           </el-table-column>
            <el-table-column
             label="状态"
