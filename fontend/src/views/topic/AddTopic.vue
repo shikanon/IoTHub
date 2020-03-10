@@ -48,7 +48,7 @@
            
             setTimeout(() => {
                 // Topic类名用/分割，支持英文字母、数字、下划线、+和#（仅权限是订阅时支持），长度限制64
-                let pattern =/[^a-z|A-Z|0-9|\_|\+|\#)]/
+                let pattern =/[^a-z|A-Z|0-9|\_|\+|\#|\\\)]/
                 let length =  Number(value.replace(/[^\x00-\xff]/g,"01").length )
                 if (!( length < 65 && !pattern.test(value))) {
                     callback(new Error('Topic类名用/分割，支持英文字母、数字、下划线、+和#（仅权限是订阅时支持），长度限制64'))

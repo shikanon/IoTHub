@@ -125,9 +125,8 @@
         },
         
 
-        addTopicSubmit(){
-            this.dialogVisible = false 
-            this.$refs.addTopic.submit()
+        addTopicSubmit(){           
+            this.$refs.addTopic.submit()      
         },
 
         addTopicCancel(){
@@ -135,7 +134,6 @@
                 this.topicForm = {pid:this.queryKey,topic_name:this.tableData[0].topic_name}
             }else{
                //重置
-               console.log("1111",this.tableData[this.editRowId] )
                let row  = this.tableData[this.editRowId] 
                this.topicForm = {id:row.id,operation:row.operation,desc:row.desc,topic_name:row.topic_name}
             }
@@ -156,6 +154,7 @@
         },
 
         refresh(){
+            this.dialogVisible = false
             this.$emit('refresh')
         },
 
