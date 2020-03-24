@@ -5,7 +5,7 @@
                 <i class="el-icon-document"></i>
                 <span slot="title">技术领域</span>
             </div>
-            <LeftMenu @getInfoById="getInfoById($event)" :index="index"></LeftMenu>                  
+            <LeftMenu @getInfoById="getInfoById($event)" :index="index + ''"></LeftMenu>                  
         </el-aside>
         <el-main>  
             <div class="head">
