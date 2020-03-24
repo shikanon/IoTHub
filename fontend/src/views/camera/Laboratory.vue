@@ -1,95 +1,100 @@
 <template>
-
-    <div >
-        <div class="select-box">
-            <span>选择摄像头</span>
-            <el-select v-model="caremaSIN" placeholder="选择摄像头"  @change="changeCaremaId" >
-              <el-option
-              v-for="item in caremaArr"
-              :key="item.id"
-              :label="item.sin"
-              :value="item.id">
-              </el-option>
-            </el-select>
-        </div>
-        <el-divider></el-divider>
-        <div  class="top-box">
-            <div class="video-item">
-                 <video-player
-                    class="video-player vjs-custom-skin"
-                    ref="videoPlayer"
-                    :playsinline="true"
-                    :options="playerOptions"         
-                >
-                </video-player>
-                <P>深度分辨率</P>
-                <el-select v-model="select1" placeholder="彩色分辨率">
-                    <el-option 
-                        label="640×400 30fps"
-                        value="1">
-                    </el-option>
-                     <el-option               
-                        label="1280×720 30fps"
-                        value="2">
-                    </el-option>
-                </el-select>  
+    <div name="laboratory">
+        <div v-if="!openRouter"> 
+            <div class="select-box">
+                <span>选择摄像头</span>
+                <el-select v-model="caremaSIN" placeholder="选择摄像头"  @change="changeCaremaId" >
+                <el-option
+                v-for="item in caremaArr"
+                :key="item.id"
+                :label="item.sin"
+                :value="item.id">
+                </el-option>
+                </el-select>
             </div>
-            <div class="video-item">
-                 <video-player
-                    class="video-player vjs-custom-skin"
-                    ref="videoPlayer"
-                    :playsinline="true"
-                    :options="playerOptions"         
-                >
-                </video-player>
-                <P>彩色分辨率</P>    
-                 <el-select v-model="select2" placeholder="彩色分辨率">
-                    <el-option 
-                        label="640×400 30fps"
-                        value="1">
-                    </el-option>
-                     <el-option               
-                        label="1280×720 30fps"
-                        value="2">
-                    </el-option>
-                </el-select>            
-            </div>
-        </div> 
-        <el-divider></el-divider>
-        <div class="bottom-box" >
-            <div class="btn-group">            
-                <el-button>相机重新标定</el-button>
-                <el-button>效果处理代码</el-button>
-                <el-button @click="test">截图保存</el-button>
-                <el-button >开启效果对比图</el-button>
-                 
-            </div>
-            <div class="video-item" >
-
-
-            <!-- <video  controls="controls"  width="500" height="300"  ref="videoPlayer" webkit-playsinline>
-                <source src="https://logos-channel.scaleengine.net/logos-channel/live/biblescreen-ad-free/playlist.m3u8">
-            </video> -->
-                <!-- <video src="../assets/video.mp4" controls autoplay ></video>   -->
-
-                <video-player
-                    class="video-player vjs-custom-skin"
-                    ref="videoPlayer"
-                    :playsinline="true"
-                    :options="playerOptions"         
-                >
-                </video-player> 
-
-            </div>
-            <div class="test" >
-                    <el-button @click="changeType('rtmp')">rtmp</el-button>
-                    <el-button @click="changeType('m3u8')">m3u8</el-button>
-                    <el-button @click="changeType('flv')">flv</el-button>
+            <el-divider></el-divider>
+            <div  class="top-box">
+                <div class="video-item">
+                    <video-player
+                        class="video-player vjs-custom-skin"
+                        ref="videoPlayer"
+                        :playsinline="true"
+                        :options="playerOptions"         
+                    >
+                    </video-player>
+                    <P>深度分辨率</P>
+                    <el-select v-model="select1" placeholder="彩色分辨率">
+                        <el-option 
+                            label="640×400 30fps"
+                            value="1">
+                        </el-option>
+                        <el-option               
+                            label="1280×720 30fps"
+                            value="2">
+                        </el-option>
+                    </el-select>  
                 </div>
-            <div class="cut-screen" >
-                <canvas  id="canvas"></canvas> 
+                <div class="video-item">
+                    <video-player
+                        class="video-player vjs-custom-skin"
+                        ref="videoPlayer"
+                        :playsinline="true"
+                        :options="playerOptions"         
+                    >
+                    </video-player>
+                    <P>彩色分辨率</P>    
+                    <el-select v-model="select2" placeholder="彩色分辨率">
+                        <el-option 
+                            label="640×400 30fps"
+                            value="1">
+                        </el-option>
+                        <el-option               
+                            label="1280×720 30fps"
+                            value="2">
+                        </el-option>
+                    </el-select>            
+                </div>
+            </div> 
+            <el-divider></el-divider>
+            <div class="bottom-box" >
+                <div class="btn-group">            
+                    <el-button @click="calibrationVisiable = true">相机重新标定</el-button>
+                    <el-button @click="gotoEffectCodePage">效果处理代码</el-button>
+                    <el-button @click="test">截图保存</el-button>
+                    <el-button >开启效果对比图</el-button>
+                    
+                </div>
+                <div class="video-item" >
+
+
+                    <video-player
+                        class="video-player vjs-custom-skin"
+                        ref="videoPlayer"
+                        :playsinline="true"
+                        :options="playerOptions"         
+                    >
+                    </video-player> 
+
+                </div>
+                <!-- <div class="test" >
+                        <el-button @click="changeType('rtmp')">rtmp</el-button>
+                        <el-button @click="changeType('m3u8')">m3u8</el-button>
+                        <el-button @click="changeType('flv')">flv</el-button>
+                </div> -->
+                <div class="cut-screen" >
+                    <canvas  id="canvas"></canvas> 
+                </div>
+                  
             </div>
-        </div>
+        </div>  
+        <el-dialog title="相机重新标定" :visible.sync="calibrationVisiable" width="50%" >
+            <CameraCalibration ref="cameraCalibration"  @close="calibrationVisiable = false"></CameraCalibration>
+            <span slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="calibrationVisiable = false">确 定</el-button>
+                <el-button @click="calibrationVisiable = false">取 消</el-button>
+            </span>
+        </el-dialog>
+        <router-view/>   
     </div>
 </template>
 
@@ -109,10 +114,10 @@ import 'videojs-contrib-hls/dist/videojs-contrib-hls'//引入才可以播放m3u8
 import html2canvas from 'html2canvas'
 //import Canvas2Image from '../../utils/canvas2image'
 
-
+import CameraCalibration from './CameraCalibration'
 export default {
     components: {
-        videoPlayer
+        videoPlayer,CameraCalibration
     },
 
     data() {
@@ -122,6 +127,7 @@ export default {
             caremaArr:[],
             cameraId:"",
             caremaSIN:"",
+            openRouter:false,
             playerOptions: {
                 live: true,
                 autoplay: true, // 如果true，浏览器准备好时开始播放
@@ -153,7 +159,8 @@ export default {
                  ],           
                 notSupportedMessage: '此视频暂无法播放，请稍后再试', // 允许覆盖Video.js无法播放媒体源时显示的默认信息。
                 showLoading:true 
-            }
+            },
+            calibrationVisiable:false
         
         }
     },
@@ -171,6 +178,17 @@ export default {
             immediate:true,//关键
             deep:true
           },
+           $route: {
+            handler: function(val, oldVal){ 
+                if(val !== oldVal){
+                    this.openRouter = !this.openRouter  
+                    this.getSimpleCameraList()
+                }
+
+            },
+            // 深度观察监听
+            deep: true
+        } 
       },
 
     computed: {
@@ -314,26 +332,29 @@ export default {
         },
 
         getBlob (canvas) { //获取blob对象
-        var data = canvas.toDataURL("image/jpeg", 1);
-        data = data.split(',')[1];
-        data = window.atob(data);
-        var ia = new Uint8Array(data.length);
-        for (var i = 0; i < data.length; i++) {
-            ia[i] = data.charCodeAt(i);
-        }
-        return new Blob([ia], {
-            type: "image/jpeg"
-        });
-        }
+            var data = canvas.toDataURL("image/jpeg", 1);
+            data = data.split(',')[1];
+            data = window.atob(data);
+            var ia = new Uint8Array(data.length);
+            for (var i = 0; i < data.length; i++) {
+                ia[i] = data.charCodeAt(i);
+            }
+            return new Blob([ia], {
+                type: "image/jpeg"
+            });
+        },
 
-    
 
-    },
-    beforeDestroy(){
-        //this.$refs.videoPlayer.dispose()
-    },
-    destroyed(){
-       // this.$refs.videoPlayer.dispose()
+        beforeDestroy(){
+            //this.$refs.videoPlayer.dispose()
+        },
+        destroyed(){
+        // this.$refs.videoPlayer.dispose()
+        },
+        gotoEffectCodePage(){
+            this.$router.push({name :'effect-code'})             
+
+        }
     }
 }
 </script>

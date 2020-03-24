@@ -1,5 +1,4 @@
 // The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 
 import Vue from 'vue'
 import App from './App.vue'
@@ -36,6 +35,8 @@ import * as API_IOT from './utils/api-iot'
 
 import * as API_SOTA from './utils/api-sota'
 import * as API_CLOUD from './utils/api-cloud'
+
+import { get, post ,put ,deletes,upload} from './utils/axios'
 
 import axios from 'axios'
 //vuex
@@ -75,6 +76,13 @@ Vue.prototype.$jsoneditor = jsoneditor
 import echarts from 'echarts'
 Vue.prototype.$echarts = echarts
 
+//代码编辑器
+//import { codemirror } from 'vue-codemirror'
+
+import 'codemirror/lib/codemirror.css'
+
+//Vue.use(codemirror)
+
 const i18n = new VueI18n({
     locale: 'zh', // 将要切换的语言，可以通过url拼的参数获取，用户行为select选择获取，本地manifest配置获取等，根据场景动态获取
     messages: {
@@ -96,6 +104,12 @@ Vue.prototype.$API_SOTA = API_SOTA
 Vue.prototype.$axios = axios
 
 
+
+
+Vue.prototype.$post = post
+Vue.prototype.$get = get
+Vue.prototype.$put = put
+Vue.prototype.$delete = deletes
 
 // 导出的是对象，可以直接通过 key 和 value 来获得过滤器的名和过滤器的方法
 Object.keys(filters).forEach(key => {

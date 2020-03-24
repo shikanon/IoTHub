@@ -142,26 +142,7 @@ export default new Router({
                 title: '工作空间',
                 leftMenu:true
               },
-              children:[
-                {
-                  path: '/home/product/add',
-                  name: 'product-add',
-                  component:  () =>import( '@/views/product/AddProduct.vue'),
-                  meta: {
-                    title: '创建产品',
-                    leftMenu:false
-                  },
-                } ,
-                {
-                  path: '/home/product/details',
-                  name: 'product-details',
-                  component:  () =>import( '@/views/product/ProductDetails.vue'),
-                  meta: {
-                    title: '产品详情',
-                    leftMenu:false
-                  },
-                } 
-              ]
+              
             }     
             ,{
               path: '/home/camera',
@@ -171,17 +152,7 @@ export default new Router({
                 title: '摄像头',
                 leftMenu:true
               },
-              children:[
-                {
-                  path: '/home/camera/laboratory',
-                  name: 'laboratory',
-                  component:  () =>import( '@/views/camera/Laboratory.vue'),
-                  meta: {
-                    title: '设备详情',
-                    leftMenu:false
-                  },
-                } 
-              ]
+              
             }  
             ,{
               path: '/home/laboratory',
@@ -191,6 +162,18 @@ export default new Router({
                 title: '实验室',
                 leftMenu:true
               },
+              children:[
+                {
+                  path: '/home/laboratory/effect-code',
+                  name: 'effect-code',
+                  component:  () =>import( '@/views/camera/EffectsCode.vue'),
+                  meta: {
+                    title: '效果处理代码',
+                    leftMenu:false
+                  },
+                } ,
+               
+              ]
               
             } 
             
@@ -227,7 +210,7 @@ export default new Router({
           },
           children:[
             {
-              path: '/home/knowledge-base/api-info/:id',
+              path: '/home/knowledge-base/api-info',
               name: 'api-info',
               component:  () =>import( '@/views/knowledge-base/ApiInfo.vue'),
               meta: {
