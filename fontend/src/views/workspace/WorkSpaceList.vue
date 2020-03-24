@@ -146,8 +146,10 @@
             }
 
              this.$API_CLOUD.getWorkSpaceList(this.currentPage,this.pageSize,this.search).then((res) => {
+               if(res.data.status === "Y"){
                 this.tableData = res.data.data.data_list
                 this.total = res.data.data.num_results
+               }
             })
            
          },

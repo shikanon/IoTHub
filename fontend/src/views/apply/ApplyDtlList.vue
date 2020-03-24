@@ -113,8 +113,11 @@
            let createTime = new Date (this.productInf.create_time).getTime().toString().substr(0,10)
            
              this.$API_IOT.getApplyListDtl(productId,createTime,this.currentPage,this.pageSize).then((res) => {
-                this.tableData = res.data.data.data_list
-                this.total = res.data.data.num_results
+               if(res.data.status === "Y"){
+                  this.tableData = res.data.data.data_list
+                  this.total = res.data.data.num_results
+               }
+                
             })
          },
 
@@ -130,7 +133,9 @@
 
           download(){
               this.$API_IOT.getApplyListDtl(productId,createTime,0,0).then((res) => {
-                this.json_data = res.data.data.data_list
+                if(res.data.status === "Y"){
+                  this.json_data = res.data.data.data_list
+                }
             })
           },
 

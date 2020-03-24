@@ -180,6 +180,7 @@
           }
     
           this.$API_CLOUD.getCameraList(this.currentPage,this.pageSize,this.searchVal,this.workSpaceId).then((res) => {
+            if(res.data.status === "Y"){
                 this.tableData = res.data.data.data_list
                 this.total = res.data.data.num_results
                 let params = {}
@@ -187,7 +188,7 @@
                 params.device_active_count =  res.data.data.device_active_count
                 params.device_online_count =  res.data.data.device_online_count
                 this.$emit('setAcount',params)
-
+            }
                 //this.tableData
             })
 

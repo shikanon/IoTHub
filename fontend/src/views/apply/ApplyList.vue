@@ -107,8 +107,10 @@
      
          getApplyList(){
             this.$API_IOT.getApplyList(this.currentPage,this.pageSize,this.productId).then((res) => {
+              if(res.data.status === "Y"){
                 this.tableData = res.data.data.data_list
                 this.total = res.data.data.num_results
+              }
             })
 
             
@@ -132,8 +134,9 @@
            download(row){  
               let createTime = new Date (row.create_time).getTime().toString().substr(0,10)
               this.$API_IOT.getApplyListDtl(row.product_id,createTime,0,0).then((res) => {
-                  console.log( res.data.data.data_list)
+                if(res.data.status === "Y"){
                   this.json_data = res.data.data.data_list
+                }
               })
           },
 

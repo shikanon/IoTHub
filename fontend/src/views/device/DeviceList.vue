@@ -259,6 +259,7 @@
           if(currentPage){
             this.currentPage = currentPage
           }
+          this.tableData  = []
          // let params = {};
         //  params[this.searchKey] = this.searchVal
           this.$API_IOT.getDeviceList(this.currentPage,this.pageSize,this.productId,this.searchVal).then((res) => {
@@ -270,7 +271,6 @@
                 params.device_online_count =  res.data.data.device_online_count
                 this.$emit('setAcount',params)
 
-                //this.tableData
             })
 
         },
